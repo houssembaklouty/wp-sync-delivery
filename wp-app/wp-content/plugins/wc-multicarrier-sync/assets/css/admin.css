@@ -1,0 +1,108 @@
+/**
+ * WC MultiCarrier Sync — Admin CSS
+ */
+
+/* ─── Colonnes liste commandes ──────────────── */
+.column-wcmcs_carrier,
+.column-wcmcs_sync_status,
+.column-wcmcs_tracking {
+    width: 110px;
+}
+
+.wcmcs-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.wcmcs-na {
+    color: #aaa;
+    font-style: italic;
+}
+
+.wcmcs-retry-link {
+    display: inline-block;
+    color: #f0ad4e;
+    font-size: 11px;
+    text-decoration: none;
+    margin-top: 2px;
+}
+
+.wcmcs-retry-link:hover {
+    color: #d68910;
+    text-decoration: underline;
+}
+
+.wcmcs-tracking-link {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #0073aa;
+}
+
+.wcmcs-label-link {
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* ─── Metabox ────────────────────────────────── */
+.wcmcs-metabox p {
+    margin: 6px 0;
+    font-size: 13px;
+}
+
+.wcmcs-metabox .wcmcs-badge {
+    font-size: 12px;
+}
+
+.wcmcs-error-box {
+    background: #fff3f3;
+    border: 1px solid #dc3545;
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
+/* ─── Settings page ──────────────────────────── */
+.wcmcs-settings-wrap .nav-tab {
+    font-size: 13px;
+}
+
+.wcmcs-rule-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.wcmcs-rule-row input[type="text"] {
+    width: 250px;
+}
+
+.wcmcs-badge-hpos,
+.wcmcs-badge-as {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 6px;
+    color: #fff;
+}
+
+/* ─── Carrier label ──────────────────────────── */
+.wcmcs-carrier-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ─── Loading state ──────────────────────────── */
+.wcmcs-btn-sync:disabled,
+.wcmcs-btn-retry:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}

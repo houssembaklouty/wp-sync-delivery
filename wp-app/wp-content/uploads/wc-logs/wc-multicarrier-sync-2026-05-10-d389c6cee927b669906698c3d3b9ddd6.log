@@ -1,0 +1,22 @@
+2026-05-10T15:06:11+00:00 INFO Bulk sync déclenchée par l'admin pour 1 commandes : 18
+2026-05-10T15:06:11+00:00 INFO Lancement sync bulk : 1 commande(s).
+2026-05-10T15:06:11+00:00 INFO 1 commande(s) ajoutées à la queue async.
+2026-05-10T15:06:31+00:00 ERROR Order #18: aucun transporteur détecté.
+2026-05-10T15:06:31+00:00 ERROR Order #18: Aucun transporteur détecté pour la commande #18.
+2026-05-10T15:08:49+00:00 INFO Bulk sync déclenchée par l'admin pour 1 commandes : 18
+2026-05-10T15:08:49+00:00 INFO Lancement sync bulk : 1 commande(s).
+2026-05-10T15:08:49+00:00 INFO 1 commande(s) ajoutées à la queue async.
+2026-05-10T15:10:05+00:00 ERROR Order #18 validation échouée via colissimo: Numéro de téléphone requis par Colissimo.
+2026-05-10T15:15:48+00:00 INFO Bulk sync déclenchée par l'admin pour 2 commandes : 18, 20
+2026-05-10T15:15:48+00:00 INFO Lancement sync bulk : 2 commande(s).
+2026-05-10T15:15:48+00:00 INFO 2 commande(s) ajoutées à la queue async.
+2026-05-10T15:16:07+00:00 INFO Order #20: envoi vers API colissimo...
+2026-05-10T15:16:07+00:00 ERROR Colissimo API error 404: Erreur Colissimo HTTP 404
+2026-05-10T15:16:07+00:00 ERROR Order #20 API colissimo error: Erreur Colissimo HTTP 404
+2026-05-10T15:18:25+00:00 INFO Order #20: envoi vers API colissimo...
+2026-05-10T15:18:25+00:00 ERROR Colissimo API error 404: Erreur Colissimo HTTP 404
+2026-05-10T15:18:25+00:00 ERROR Order #20 API colissimo error: Erreur Colissimo HTTP 404
+2026-05-10T15:18:32+00:00 INFO Retry commande #20.
+2026-05-10T15:18:32+00:00 INFO Order #20: envoi vers API colissimo...
+2026-05-10T15:18:32+00:00 ERROR Colissimo API error 404: Erreur Colissimo HTTP 404
+2026-05-10T15:18:32+00:00 ERROR Order #20 API colissimo error: Erreur Colissimo HTTP 404
