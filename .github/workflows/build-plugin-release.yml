@@ -1,0 +1,89 @@
+name: Build & Release — MultiCarrier Sync TN
+
+# Construit le zip installable du plugin et publie une Release sur le repo
+# de DISTRIBUTION (houssembaklouty/multicarrier-sync-tn, privé).
+# Les sites prod reçoivent la mise à jour automatiquement via
+# plugin-update-checker (class-updater.php) + token de distribution.
+#
+# Déclencheur : push d'un tag v* (ex: git tag v2.10.1 && git push origin v2.10.1)
+# ou manuel (Actions → Run workflow).
+#
+# Secret requis (une seule fois) : Settings → Secrets → Actions → DIST_REPO_TOKEN
+# = fine-grained PAT avec Contents: Read and write sur SEULEMENT multicarrier-sync-tn.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Version du plugin (en-tête)
+        id: version
+        run: |
+          VERSION=$(grep -oP "Version:\s+\K[0-9.]+" wp-app/wp-content/plugins/wc-multicarrier-sync/wc-multicarrier-sync.php | head -1)
+          if [ -z "$VERSION" ]; then
+            echo "Version introuvable dans l'en-tête du plugin"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Plugin v$VERSION"
+
+      - name: Cohérence tag ↔ version (push de tag uniquement)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "❌ Le tag $TAG ne correspond pas à la version de l'en-tête ($VERSION)."
+            echo "Bumpsez « Version: » dans wc-multicarrier-sync.php puis re-taguez v$VERSION."
+            exit 1
+          fi
+
+      - name: Build du zip installable
+        run: |
+          cd wp-app/wp-content/plugins
+          zip -rq "$RUNNER_TEMP/wc-multicarrier-sync.zip" wc-multicarrier-sync \
+            -x "*/.git/*" "*/node_modules/*" "*.DS_Store" "*/.phpunit.result.cache"
+          cd "$RUNNER_TEMP"
+          unzip -l wc-multicarrier-sync.zip | grep -q "wc-multicarrier-sync/wc-multicarrier-sync.php" \
+            || { echo "Structure du zip invalide"; exit 1; }
+          echo "Zip prêt :"; unzip -l wc-multicarrier-sync.zip | tail -1
+
+      - name: Vérifier le secret DIST_REPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.DIST_REPO_TOKEN }}" ]; then
+            echo "❌ Secret DIST_REPO_TOKEN absent."
+            echo "Ajoutez-le : wp-sync-delivery → Settings → Secrets and variables → Actions"
+            echo "→ New repository secret : DIST_REPO_TOKEN = PAT (Contents: Read and write"
+            echo "sur houssembaklouty/multicarrier-sync-tn uniquement)."
+            exit 1
+          fi
+
+      - name: Release sur le repo de distribution
+        env:
+          GH_TOKEN: ${{ secrets.DIST_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          DIST="houssembaklouty/multicarrier-sync-tn"
+          TAG="v$VERSION"
+          # Release (recréée si elle existe déjà pour ce tag — retry-friendly)
+          gh release view "$TAG" --repo "$DIST" >/dev/null 2>&1 \
+            && gh release delete "$TAG" --repo "$DIST" --yes --cleanup-tag
+          gh release create "$TAG" \
+            --repo "$DIST" \
+            --title "MultiCarrier Sync TN v$VERSION" \
+            --notes "Mise à jour automatique — build du $(date '+%Y-%m-%d %H:%M') UTC.
+          Notes de version : voir CHANGELOG.md du repo source." \
+            --prerelease=false
+          gh release upload "$TAG" "$RUNNER_TEMP/wc-multicarrier-sync.zip" --repo "$DIST" --clobber
+          echo "✅ Release $TAG publiée sur $DIST avec wc-multicarrier-sync.zip"
+          echo "Les sites prod détecteront la mise à jour au prochain check (≤ 12 h)."
