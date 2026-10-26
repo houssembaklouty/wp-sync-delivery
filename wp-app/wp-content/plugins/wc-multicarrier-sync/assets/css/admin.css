@@ -1,5 +1,5 @@
 /**
- * WC MultiCarrier Sync — Admin CSS
+ * MultiCarrier Sync TN — Admin CSS
  */
 
 /* ─── Colonnes liste commandes ──────────────── */
@@ -12,11 +12,13 @@
 .wcmcs-badge {
     display: inline-block;
     padding: 2px 8px;
-    border-radius: 3px;
+    border-radius: 32px;
     font-size: 11px;
     font-weight: 600;
+    line-height: 1.7;
+    margin: 0;
     color: #fff;
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: 0.3px;
 }
 
@@ -100,9 +102,880 @@
     color: #333;
 }
 
+/* ─── Carriers table ─────────────────────────── */
+.wcmcs-carriers-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+.wcmcs-carriers-table th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid #ccd0d4;
+    font-weight: 600;
+    font-size: 13px;
+    color: #50575e;
+}
+
+.wcmcs-carriers-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 13px;
+}
+
+.wcmcs-carriers-table .wcmcs-carrier-row-inactive td {
+    color: #999;
+}
+
+/* ─── Carrier Cards Grid ─────────────────────── */
+.wcmcs-carrier-search-wrap {
+    margin: 0 0 12px;
+}
+
+.wcmcs-carrier-search-wrap input[type="search"] {
+    width: 280px;
+    max-width: 100%;
+}
+
+.wcmcs-carriers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+    .wcmcs-carriers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .wcmcs-carriers-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wcmcs-carrier-card.wcmcs-carrier-hidden {
+    display: none;
+}
+
+.wcmcs-carrier-empty {
+    color: #666;
+    font-style: italic;
+}
+
+.wcmcs-carrier-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+.wcmcs-card-active {
+    border-color: #c3c4c7;
+}
+
+.wcmcs-card-active:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+}
+
+.wcmcs-card-inactive {
+    background: #fafafa;
+    border-color: #eee;
+    opacity: .65;
+}
+
+.wcmcs-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.wcmcs-card-icon {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* ─── Chips de compatibilité (cards transporteurs) ── */
+.wcmcs-card-features {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 6px 0 2px;
+}
+
+.wcmcs-feature-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.wcmcs-feature-on {
+    color: #28a745;
+    border-color: #28a745;
+    background: #f0fff4;
+    font-weight: 600;
+}
+
+.wcmcs-feature-off {
+    color: #8c8f94;
+    border-color: #c3c4c7;
+    background: #f6f7f7;
+    text-decoration: line-through;
+    text-decoration-color: #8c8f94;
+}
+
+/* ─── Logos réels des transporteurs ─────────── */
+.wcmcs-card-icon .wcmcs-carrier-logo,
+.wcmcs-carrier-logo {
+    max-height: 36px;
+    max-width: 130px;
+    width: auto;
+    height: auto;
+    display: block;
+}
+
+/* Logo compact taille liste commandes (colonne Transporteur ~100px). */
+.wp-list-table .wcmcs-carrier-logo {
+    max-height: 22px;
+    max-width: 90px;
+}
+
+.wcmcs-config-modal-icon .wcmcs-carrier-logo,
+.wcmcs-config-modal-title .wcmcs-carrier-logo {
+    max-height: 28px;
+    max-width: 110px;
+}
+
+.wcmcs-card-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wcmcs-card-title strong {
+    font-size: 15px;
+    color: #1d2327;
+    line-height: 1.3;
+}
+
+.wcmcs-card-status {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 20px;
+}
+
+.wcmcs-status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.wcmcs-status-disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.wcmcs-status-soon {
+    background: #e2e4e7;
+    color: #686868;
+}
+
+.wcmcs-card-body {
+    display: flex;
+    align-items: center;
+}
+
+.wcmcs-card-soon-text {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+    font-style: italic;
+}
+
+.wcmcs-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f1;
+}
+
+.wcmcs-footer-badge {
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wcmcs-footer-configured {
+    color: #28a745;
+}
+
+.wcmcs-footer-configure {
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.wcmcs-footer-configure:hover {
+    text-decoration: underline;
+}
+
+.wcmcs-footer-na {
+    color: #aaa;
+}
+
+/* ─── iOS Toggle Switch ─────────────────────── */
+.wcmcs-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.wcmcs-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.wcmcs-toggle-slider {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    background: #c3c4c7;
+    border-radius: 20px;
+    transition: background-color .25s ease;
+    flex-shrink: 0;
+}
+
+.wcmcs-toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .25s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+
+.wcmcs-toggle input:checked + .wcmcs-toggle-slider {
+    background: #2271b1;
+}
+
+.wcmcs-toggle input:checked + .wcmcs-toggle-slider::before {
+    transform: translateX(18px);
+}
+
+.wcmcs-toggle-label {
+    font-size: 12px;
+    color: #555;
+    font-weight: 500;
+}
+
+/* ─── Config Button on Cards ────────────────── */
+.wcmcs-card-config-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background-color .15s ease, opacity .15s ease;
+    background: #2271b1;
+    color: #fff;
+}
+
+.wcmcs-card-config-btn:hover {
+    background: #135e96;
+}
+
+.wcmcs-card-config-btn.wcmcs-card-configured {
+    background: #28a745;
+}
+
+.wcmcs-card-config-btn.wcmcs-card-configured:hover {
+    background: #1e7e34;
+}
+
+/* ─── Config Modals ──────────────────────────── */
+.wcmcs-config-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, .6);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+}
+
+.wcmcs-config-overlay.wcmcs-config-visible {
+    display: flex;
+}
+
+.wcmcs-config-modal {
+    background: #fff;
+    width: 90%;
+    max-width: 95vw;
+    max-height: 85vh;
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, .3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.wcmcs-config-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.wcmcs-config-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wcmcs-config-modal-icon {
+    font-size: 24px;
+}
+
+.wcmcs-config-modal-close {
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: #666;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color .15s ease;
+}
+
+.wcmcs-config-modal-close:hover {
+    color: #dc3545;
+}
+
+.wcmcs-config-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.wcmcs-config-modal-body .form-table {
+    margin-bottom: 0;
+}
+
+/* ─── License Page ─────────────────────────── */
+.wcmcs-license-page {
+    max-width: 600px;
+}
+
+.wcmcs-license-status-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    border-radius: 8px;
+    border: 2px solid;
+}
+
+.wcmcs-status-licensed {
+    background: #d4edda;
+    border-color: #28a745;
+}
+
+.wcmcs-status-trial {
+    background: #e8f4fd;
+    border-color: #0073aa;
+}
+
+.wcmcs-status-free {
+    background: #fff8e1;
+    border-color: #f0ad4e;
+}
+
+.wcmcs-status-expired {
+    background: #f8d7da;
+    border-color: #dc3545;
+}
+
+.wcmcs-license-status-card h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+.wcmcs-license-status-card p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.wcmcs-license-key-display {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: rgba(0,0,0,.08);
+    border-radius: 4px;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.wcmcs-expires-info {
+    color: #555;
+    font-style: italic;
+}
+
 /* ─── Loading state ──────────────────────────── */
 .wcmcs-btn-sync:disabled,
 .wcmcs-btn-retry:disabled {
     opacity: 0.7;
     cursor: wait;
 }
+
+/* ─── Bulk Sync Modal ────────────────────────── */
+.wcmcs-bulk-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, .6);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wcmcs-bulk-modal {
+    background: #fff;
+    border-radius: 8px;
+    width: 720px;
+    max-width: 92vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+
+/* Modal scan des statuts : plus large que le bulk sync (7 colonnes). */
+#wcmcs-scan-modal {
+    width: 1024px;
+    max-width: 95vw;
+}
+
+@media (max-width: 1100px) {
+    #wcmcs-scan-modal {
+        width: 96vw;
+    }
+}
+
+@media (max-width: 782px) {
+    #wcmcs-scan-modal {
+        width: 100vw;
+        max-width: 100%;
+        border-radius: 0;
+    }
+}
+
+/* Mode plein écran du modal scan : borné à la zone de travail — la barre
+   d'admin WP et le menu backoffice restent visibles et cliquables. Les
+   décalages (top/left) sont mesurés en JS sur le OVERLAY (.wcmcs-scan-fs). */
+.wcmcs-bulk-overlay.wcmcs-scan-fs {
+    /* fallback CSS si le JS n'a pas mesuré : valeurs WP standard */
+    top: 32px;
+    left: 160px;
+}
+
+body.folded .wcmcs-bulk-overlay.wcmcs-scan-fs,
+body.auto-fold .wcmcs-bulk-overlay.wcmcs-scan-fs {
+    left: 36px;
+}
+
+#wcmcs-scan-modal.wcmcs-scan-fullscreen {
+    width: 100% !important;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#wcmcs-scan-modal.wcmcs-scan-fullscreen .wcmcs-scan-body {
+    max-height: none !important;
+    flex: 1;
+}
+
+/* Bouton icône plein écran (Dashicons, toujours chargés par WP admin). */
+.wcmcs-scan-full {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 6px 0 0;
+    width: 28px;
+    height: 28px;
+    line-height: 1;
+    cursor: pointer;
+    color: #2271b1;
+}
+
+.wcmcs-scan-full:hover {
+    color: #135e96;
+}
+
+.wcmcs-scan-full .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin: 0 auto;
+}
+
+/* × du modal scan : même gabarit que l'icône plein écran (harmonie du header). */
+#wcmcs-scan-modal .wcmcs-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#wcmcs-scan-modal .wcmcs-scan-full,
+#wcmcs-scan-modal .wcmcs-bulk-x {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    line-height: 1;
+}
+
+#wcmcs-scan-modal .wcmcs-bulk-x {
+    font-size: 22px;
+    color: #2271b1;
+}
+
+#wcmcs-scan-modal .wcmcs-bulk-x:hover {
+    color: #135e96;
+}
+
+/* Barre d'actions/compteurs en haut du modal scan. */
+.wcmcs-scan-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f6f7f7;
+}
+
+.wcmcs-scan-topbar .wcmcs-scan-summary {
+    flex: 1;
+    min-width: 260px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+#wcmcs-scan-start {
+    padding: 6px 18px;
+    margin-right: 4px;
+}
+
+.wcmcs-bulk-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.wcmcs-bulk-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.wcmcs-bulk-x {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #666;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.wcmcs-bulk-x:hover {
+    color: #dc3545;
+}
+
+.wcmcs-bulk-carrier-row {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wcmcs-bulk-carrier-row label {
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.wcmcs-bulk-carrier-row select {
+    flex: 1;
+    max-width: 260px;
+}
+
+.wcmcs-bulk-table-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.wcmcs-bulk-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.wcmcs-bulk-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f9f9f9;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+    z-index: 1;
+}
+
+.wcmcs-bulk-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.wcmcs-bulk-row-synced {
+    background: #e8f5e9;
+}
+
+.wcmcs-bulk-row-synced td {
+    color: #388e3c;
+}
+
+.wcmcs-bulk-row-done {
+    background: #d4edda;
+}
+
+.wcmcs-bulk-row-done .wcmcs-bulk-result {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.wcmcs-bulk-row-failed {
+    background: #f8d7da;
+}
+
+.wcmcs-bulk-row-failed .wcmcs-bulk-result {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.wcmcs-bulk-row-active td {
+    background: #fff3cd;
+}
+
+.wcmcs-bulk-row-active .wcmcs-bulk-result {
+    color: #856404;
+}
+
+.wcmcs-bulk-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #856404;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: wcmcs-spin .6s linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.wcmcs-bulk-result code {
+    font-size: 11px;
+    background: #f5f5f5;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+@keyframes wcmcs-spin {
+    to { transform: rotate(360deg); }
+}
+
+.wcmcs-bulk-progress {
+    padding: 12px 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.wcmcs-bulk-progress-bar {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.wcmcs-bulk-progress-fill {
+    height: 100%;
+    background: #2271b1;
+    border-radius: 3px;
+    transition: width .3s ease;
+}
+
+.wcmcs-bulk-progress-text {
+    font-size: 12px;
+    color: #555;
+}
+
+.wcmcs-bulk-actions {
+    padding: 12px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* ─────────────────────────────────────────────
+   Grille « Apparence des statuts » (tab réglages)
+   ───────────────────────────────────────────── */
+.wcmcs-status-design {
+    margin: 6px 0 10px;
+}
+
+.wcmcs-status-design th,
+.wcmcs-status-design td {
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+
+.wcmcs-status-design thead th {
+    font-weight: 600;
+    vertical-align: bottom;
+}
+
+.wcmcs-status-design .wcmcs-design-chip {
+    display: inline-block;
+    min-width: 70px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.wcmcs-status-design .wcmcs-design-label {
+    width: 100%;
+    max-width: 170px;
+    margin: 0;
+}
+
+.wcmcs-status-design .wcmcs-design-color {
+    width: 46px;
+    height: 30px;
+    margin: 0;
+    padding: 2px;
+    vertical-align: middle;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.wcmcs-status-design .wcmcs-design-reset {
+    height: 30px;
+    margin-left: 2px;
+    padding: 0 9px;
+    font-size: 14px;
+    line-height: 28px;
+}
+
+.wcmcs-status-design .wcmcs-design-native {
+    color: #a7aaad;
+    font-size: 13px;
+}
+
+.wcmcs-status-design .wcmcs-status-name {
+    font-size: 13px;
+}
+
+.wcmcs-status-design .wcmcs-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.wcmcs-design-wrap {
+    margin: 4px 0 2px;
+}
+
+.wcmcs-design-wrap + p.description {
+    margin-top: 10px;
+}
+
+@media (max-width: 782px) {
+    .wcmcs-status-design th,
+    .wcmcs-status-design td {
+        padding: 8px 6px;
+    }
+    .wcmcs-status-design .wcmcs-design-chip {
+        min-width: 54px;
+        padding: 3px 9px;
+    }
+    .wcmcs-status-design .wcmcs-design-label {
+        max-width: 130px;
+    }
+}
+
+/* ─────────────────────────────────────────────
+   Badge statut sync (colonne Sync) — gabarit partagé
+   identique aux badges .order-status de la classe
+   WCMCS_Order_Statuses::admin_status_css()
+   NB : le style canonique vit dans la règle .wcmcs-badge
+   en tête de fichier (padding 2px 8px, radius 32px,
+   11px/600, line-height 1.7, marge 0, pas d'uppercase).
+   ───────────────────────────────────────────── */

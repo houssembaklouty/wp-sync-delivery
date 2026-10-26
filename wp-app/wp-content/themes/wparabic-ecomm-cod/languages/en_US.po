@@ -1,0 +1,711 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WPArabicEcommCOD 3.4.0\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: wparabic-ecomm-cod\n"
+
+msgid "WPArabicEcommCOD"
+msgstr "WPArabicEcommCOD"
+
+msgid "Theme WooCommerce arabe RTL avec paiement a la livraison (COD), formulaire de commande en une etape et design mobile-first. Derive du theme GPL \"hanout\" de ar-themes.com."
+msgstr "Arabic RTL WooCommerce theme with cash on delivery (COD), one-step order form and mobile-first design. Derived from the GPL theme \"hanout\" by ar-themes.com."
+
+msgid "الصفحة غير موجودة"
+msgstr "Page not found"
+
+msgid "يبدو أن الرابط الذي تبحث عنه غير متوفر."
+msgstr "The link you are looking for seems to be unavailable."
+
+msgid "العودة إلى المتجر"
+msgstr "Back to the shop"
+
+msgid "عن المتجر"
+msgstr "About the shop"
+
+msgid "من نحن"
+msgstr "About us"
+
+msgid "طرق الدفع"
+msgstr "Payment methods"
+
+msgid "الشحن والتسليم"
+msgstr "Shipping and delivery"
+
+msgid "الشروط والسياسات"
+msgstr "Terms and policies"
+
+msgid "شروط الاستخدام"
+msgstr "Terms of use"
+
+msgid "سياسة الخصوصية"
+msgstr "Privacy policy"
+
+msgid "سياسة الإستبدال والإسترجاع"
+msgstr "Exchange and return policy"
+
+msgid "تواصل معنا"
+msgstr "Contact us"
+
+msgid "أسئلة شائعة"
+msgstr "FAQ"
+
+msgid "اتصل بنا"
+msgstr "Contact"
+
+msgid "هاتف"
+msgstr "Phone"
+
+msgid "تابعنا على"
+msgstr "Follow us"
+
+msgid "رابط لـ %s"
+msgstr "Link to %s"
+
+msgid "Menu principal"
+msgstr "Main menu"
+
+msgid "Menu mobile"
+msgstr "Mobile menu"
+
+msgid "Menu principal — %s"
+msgstr "Main menu — %s"
+
+msgid "خيارات القالب"
+msgstr "Theme options"
+
+msgid "%1$s — %2$s"
+msgstr "%1$s — %2$s"
+
+msgid "أطلب الآن والدفع فقط عند استلام المنتج|توصيل سريع لجميع الولايات"
+msgstr "Order now, pay on delivery|Fast delivery to every governorate"
+
+msgid "يستخدم قالب WPArabicEcommCOD"
+msgstr "Powered by the WPArabicEcommCOD theme"
+
+msgid "أقسام الصفحة الرئيسية"
+msgstr "Homepage sections"
+
+msgid "اسحب الأقسام هنا ورتّبها من الأعلى إلى الأسفل. إذا أفرغت هذه المنطقة تُعرض الأقسام الافتراضية."
+msgstr "Drag sections here and order them from top to bottom. If this area is empty, the default sections are shown."
+
+msgid "Pied de page %d"
+msgstr "Footer %d"
+
+msgid "Colonne du pied de page."
+msgstr "Footer column."
+
+msgid "Colonne laterale"
+msgstr "Sidebar"
+
+msgid "Affichee sur les pages et les articles."
+msgstr "Shown on pages and posts."
+
+msgid "لا توجد نتائج"
+msgstr "No results"
+
+msgid "أريد طلب"
+msgstr "I would like to order"
+
+msgid "تعذر إتمام الطلب"
+msgstr "The order could not be completed"
+
+msgid "يرجى المحاولة مرة أخرى أو الاتصال بنا."
+msgstr "Please try again or contact us."
+
+msgid "تعذر إرسال الطلب. يرجى تحديث الصفحة والمحاولة مرة أخرى."
+msgstr "The order could not be sent. Please refresh the page and try again."
+
+msgid "منتجات ذات صلة"
+msgstr "Related products"
+
+msgid "قد يعجبك أيضاً"
+msgstr "You may also like"
+
+msgid "القائمة"
+msgstr "Menu"
+
+msgid "سلة التسوق"
+msgstr "Cart"
+
+msgid "اللون (Hex)"
+msgstr "Color (Hex)"
+
+msgid "اتركه فارغًا لعرض قائمة منسدلة عادية بدون دوائر ملونة."
+msgstr "Leave empty to show text buttons instead of color swatches."
+
+msgid "اللون"
+msgstr "Color"
+
+msgid "تونس"
+msgstr "Tunis"
+
+msgid "أريانة"
+msgstr "Ariana"
+
+msgid "بن عروس"
+msgstr "Ben Arous"
+
+msgid "منوبة"
+msgstr "Manouba"
+
+msgid "نابل"
+msgstr "Nabeul"
+
+msgid "زغوان"
+msgstr "Zaghouan"
+
+msgid "بنزرت"
+msgstr "Bizerte"
+
+msgid "باجة"
+msgstr "Beja"
+
+msgid "جندوبة"
+msgstr "Jendouba"
+
+msgid "الكاف"
+msgstr "Kef"
+
+msgid "سليانة"
+msgstr "Siliana"
+
+msgid "سوسة"
+msgstr "Sousse"
+
+msgid "المنستير"
+msgstr "Monastir"
+
+msgid "المهدية"
+msgstr "Mahdia"
+
+msgid "صفاقس"
+msgstr "Sfax"
+
+msgid "القيروان"
+msgstr "Kairouan"
+
+msgid "القصرين"
+msgstr "Kasserine"
+
+msgid "سيدي بوزيد"
+msgstr "Sidi Bouzid"
+
+msgid "ڨابس"
+msgstr "Gabes"
+
+msgid "مدنين"
+msgstr "Medenine"
+
+msgid "تطاوين"
+msgstr "Tataouine"
+
+msgid "ڨفصة"
+msgstr "Gafsa"
+
+msgid "توزر"
+msgstr "Tozeur"
+
+msgid "ڨبلي"
+msgstr "Kebili"
+
+msgid "الاسم بالكامل"
+msgstr "Full name"
+
+msgid "إذا أخفيته، يُسجَّل رقم الهاتف مكان الاسم في لوحة الطلبات."
+msgstr "If hidden, the phone number replaces the name in the orders list."
+
+msgid "رقم الهاتف"
+msgstr "Phone number"
+
+msgid "الولاية"
+msgstr "Governorate"
+
+msgid "المعتمدية"
+msgstr "Delegation"
+
+msgid "العنوان"
+msgstr "Address"
+
+msgid "إذا أخفيته، سيتعيّن عليك أخذ العنوان عبر الهاتف."
+msgstr "If hidden, you will have to ask for the address by phone."
+
+msgid "البريد الإلكتروني"
+msgstr "Email"
+
+msgid "يُستعمل لإرسال تأكيد الطلب. اختياري دائمًا."
+msgstr "Used to send the order confirmation. Always optional."
+
+msgid "يرجى ملء جميع الحقول المطلوبة"
+msgstr "Please fill in all required fields"
+
+msgid "يرجى اختيار %s"
+msgstr "Please choose %s"
+
+msgid " و "
+msgstr " and "
+
+msgid "يرجى اختيار الخيار المناسب"
+msgstr "Please choose an option"
+
+msgid "اختر %s"
+msgstr "Choose %s"
+
+msgid "العنوان (الشارع، الحي، رقم المنزل)"
+msgstr "Address (street, area, house no.)"
+
+msgid "البريد الإلكتروني (اختياري)"
+msgstr "Email (optional)"
+
+msgid "أضف معلوماتك في الأسفل للطلب"
+msgstr "Enter your details below to order"
+
+msgid "يجب أن يتكون رقم الهاتف من 8 أرقام"
+msgstr "The phone number must have 8 digits"
+
+msgid "انقر هنا لتأكيد الطلب"
+msgstr "Click here to confirm your order"
+
+msgid "أنقر هنا للطلب عبر الواتساب"
+msgstr "Order via WhatsApp"
+
+msgid "ملخص الطلب"
+msgstr "Order summary"
+
+msgid "سعر التوصيل"
+msgstr "Shipping"
+
+msgid "إختر %s"
+msgstr "Select: %s"
+
+msgid "مجانا"
+msgstr "Free"
+
+msgid "السعر الإجمالي"
+msgstr "Total"
+
+msgid "تم تقديم الطلب بنجاح"
+msgstr "Order placed successfully"
+
+msgid "سيقوم فريقنا بالتواصل معكم لتأكيد الطلبية."
+msgstr "Our team will contact you to confirm the order."
+
+msgid "انتهت صلاحية الجلسة. يرجى تحديث الصفحة."
+msgstr "Your session has expired. Please refresh the page."
+
+msgid "الولاية غير صحيحة"
+msgstr "Invalid governorate"
+
+msgid "المعتمدية غير صحيحة"
+msgstr "Invalid delegation"
+
+msgid "المنتج غير موجود"
+msgstr "Product not found"
+
+msgid "الكمية المطلوبة غير متوفرة. الحد الأقصى : %d"
+msgstr "Requested quantity unavailable. Maximum: %d"
+
+msgid "الخيار المختار غير متوفر حاليا"
+msgstr "The selected option is currently unavailable"
+
+msgid "طلبك قيد المعالجة. لقد استلمنا هذا الطلب للتو."
+msgstr "Your order is being processed: we have just received it."
+
+msgid "عدد كبير من الطلبات. يرجى المحاولة بعد بضع دقائق."
+msgstr "Too many orders. Please try again in a few minutes."
+
+msgid "حدث خطأ أثناء إنشاء الطلب. يرجى المحاولة مرة أخرى."
+msgstr "An error occurred while creating the order. Please try again."
+
+msgid "الدفع عند الاستلام"
+msgstr "Cash on delivery"
+
+msgid "تم تأكيد طلبك بنجاح! سيتم الاتصال بك قريبًا على الرقم %s"
+msgstr "Your order is confirmed! We will call you shortly at %s"
+
+msgid "اللغة"
+msgstr "Language"
+
+msgid "اللغة الافتراضية للمتجر"
+msgstr "Default shop language"
+
+msgid "لغة الواجهة للزوار. لا تؤثر على لغة لوحة التحكم."
+msgstr "Interface language for visitors. Does not affect the dashboard language."
+
+msgid "إظهار قائمة اختيار اللغة للزوار"
+msgstr "Show the language switcher to visitors"
+
+msgid "في رأس الصفحة وفي قائمة الهاتف. يحفظ اختيار الزائر لمدة سنة."
+msgstr "In the header and the mobile menu. The visitor’s choice is remembered for one year."
+
+msgid "اقتراح اللغة : %s"
+msgstr "Offer language: %s"
+
+msgid "الألوان"
+msgstr "Colors"
+
+msgid "اللون الرئيسي (الأزرار، الروابط، الأسعار)"
+msgstr "Primary color (buttons, links, prices)"
+
+msgid "لون التمرير (الأزرار عند المرور)"
+msgstr "Hover color (buttons on hover)"
+
+msgid "خلفية الشريط العلوي"
+msgstr "Top bar background"
+
+msgid "لون نص الشريط العلوي"
+msgstr "Top bar text color"
+
+msgid "خلفية أسفل الصفحة"
+msgstr "Footer background"
+
+msgid "لون نص أسفل الصفحة"
+msgstr "Footer text color"
+
+msgid "اتركه فارغًا ليُختار تلقائيًا حسب لون الخلفية (فاتح على خلفية داكنة، داكن على خلفية فاتحة)."
+msgstr "Leave empty to pick automatically from the background (light on dark, dark on light)."
+
+msgid "الشريط العلوي"
+msgstr "Top bar"
+
+msgid "الرسائل"
+msgstr "Messages"
+
+msgid "افصل بين الرسائل بالرمز |"
+msgstr "Separate messages with the | symbol"
+
+msgid "سرعة تمرير الرسائل"
+msgstr "Message scrolling speed"
+
+msgid "بالبكسل في الثانية (10 بطيء جدًا — 200 سريع جدًا). القيمة المقترحة : 50."
+msgstr "In pixels per second (10 very slow — 200 very fast). Suggested value: 50."
+
+msgid "التخطيط"
+msgstr "Layout"
+
+msgid "الشريط العلوي وأسفل الصفحة يبقيان بعرض الشاشة دائمًا."
+msgstr "The top bar and the footer always stay full width."
+
+msgid "بعرض الشاشة"
+msgstr "Full width"
+
+msgid "محتوى محدود العرض"
+msgstr "Boxed content"
+
+msgid "الصفحة الرئيسية"
+msgstr "Homepage"
+
+msgid "المتجر"
+msgstr "Shop"
+
+msgid "صفحة المنتج"
+msgstr "Product page"
+
+msgid "بقية الصفحات"
+msgstr "Other pages"
+
+msgid "إظهار تبويب « معلومات إضافية »"
+msgstr "Show the “Additional information” tab"
+
+msgid "إظهار تبويب « المراجعات »"
+msgstr "Show the “Reviews” tab"
+
+msgid "يخفي التبويب فقط. لإيقاف التقييمات نهائيًا : ووكومرس ← الإعدادات ← المنتجات."
+msgstr "Only hides the tab. To disable reviews entirely: WooCommerce → Settings → Products."
+
+msgid "إظهار « ملخص الطلب » في نموذج الطلب"
+msgstr "Show the “Order summary” in the order form"
+
+msgid "المنتج، سعر التوصيل والسعر الإجمالي تحت زر تأكيد الطلب."
+msgstr "Product, shipping and total, below the confirm button."
+
+msgid "زر « اشتري الآن » العائم"
+msgstr "Floating “Buy now” button"
+
+msgid "يظهر في أسفل الشاشة على الهاتف واللوحي عندما يخرج زر تأكيد الطلب من الشاشة."
+msgstr "Shown at the bottom of the screen on mobile and tablet when the confirm button scrolls out of view."
+
+msgid "حقول نموذج الطلب"
+msgstr "Order form fields"
+
+msgid "اختر الحقول التي تظهر في نموذج الطلب. رقم الهاتف والولاية يظهران دائمًا: الهاتف هو وسيلة تأكيد الطلب، والولاية تحدد سعر التوصيل."
+msgstr "Choose the fields shown in the order form. Phone and governorate are always shown: the phone is used to confirm the order and the governorate sets the shipping cost."
+
+msgid "التواصل"
+msgstr "Contact"
+
+msgid "اتركه فارغًا لإخفاء زر الاتصال العائم."
+msgstr "Leave empty to hide the floating call button."
+
+msgid "رقم واتساب (اختياري)"
+msgstr "WhatsApp number (optional)"
+
+msgid "اتركه فارغًا لاستعمال رقم الهاتف أعلاه. أدخل رقمًا آخر إذا كان رقم واتساب مختلفًا، مثال : 216XXXXXXXX أو XXXXXXXX."
+msgstr "Leave empty to use the phone number above. Enter another number if your WhatsApp is different, e.g. 216XXXXXXXX or XXXXXXXX."
+
+msgid "إظهار زر « الطلب عبر الواتساب »"
+msgstr "Show the “Order via WhatsApp” button"
+
+msgid "في صفحة المنتج، تحت زر تأكيد الطلب. يستعمل رقم واتساب، أو رقم الهاتف إن كان فارغًا."
+msgstr "On the product page, below the confirm button. Uses the WhatsApp number, or the phone number if empty."
+
+msgid "شبكات التواصل"
+msgstr "Social networks"
+
+msgid "أسفل الصفحة"
+msgstr "Footer"
+
+msgid "نص الحقوق"
+msgstr "Copyright text"
+
+msgid "سطر إضافي أسفل اسم المتجر. اتركه فارغًا لإخفائه."
+msgstr "Extra line below the shop name. Leave empty to hide it."
+
+msgid "سطر الإسناد"
+msgstr "Credit line"
+
+msgid "اتركه فارغًا لإخفائه."
+msgstr "Leave empty to hide it."
+
+msgid "اتركه فارغًا لاستعمال النص الأساسي أعلاه."
+msgstr "Leave empty to use the base text above."
+
+msgid "الوصف"
+msgstr "Description"
+
+msgid "نص الزر"
+msgstr "Button text"
+
+msgid "ميزة %d"
+msgstr "Feature %d"
+
+msgid "النص"
+msgstr "Text"
+
+msgid "الترجمات"
+msgstr "Translations"
+
+msgid "إظهار هذا القسم في الصفحة الرئيسية"
+msgstr "Show this section on the homepage"
+
+msgid "اختر صورة"
+msgstr "Choose an image"
+
+msgid "إزالة"
+msgstr "Remove"
+
+msgid "— تلقائي —"
+msgstr "— Automatic —"
+
+msgid "قسم المنتجات"
+msgstr "Products section"
+
+msgid "شبكة منتجات مع عنوان ووصف."
+msgstr "Product grid with title and description."
+
+msgid "منتجاتنا أصلية و ذات جودة عالية"
+msgstr "Authentic, high-quality products"
+
+msgid "تصفح قائمة المنتجات الأكثر رواجا"
+msgstr "Browse our most popular products"
+
+msgid "عدد المنتجات"
+msgstr "Number of products"
+
+msgid "عدد الأعمدة"
+msgstr "Number of columns"
+
+msgid "الترتيب"
+msgstr "Order by"
+
+msgid "الأحدث"
+msgstr "Newest"
+
+msgid "الأكثر مبيعًا"
+msgstr "Best sellers"
+
+msgid "عشوائي"
+msgstr "Random"
+
+msgid "التصنيف"
+msgstr "Category"
+
+msgid "قسم المميزات"
+msgstr "Features section"
+
+msgid "أربع مزايا بأيقونة وعنوان ونص."
+msgstr "Four features with icon, title and text."
+
+msgid "لماذا تختارنا ؟"
+msgstr "Why choose us?"
+
+msgid "جودة مضمونة وخدمة قريبة منك"
+msgstr "Guaranteed quality and service close to you"
+
+msgid "توصيل سريع"
+msgstr "Fast delivery"
+
+msgid "إلى جميع ولايات الجمهورية"
+msgstr "To every governorate"
+
+msgid "تدفع فقط عند استلام طلبك"
+msgstr "You pay only when you receive your order"
+
+msgid "جودة مضمونة"
+msgstr "Guaranteed quality"
+
+msgid "منتجات مختارة بعناية"
+msgstr "Carefully selected products"
+
+msgid "استبدال مجاني"
+msgstr "Free exchange"
+
+msgid "إن لم يناسبك المنتج"
+msgstr "If the product doesn’t suit you"
+
+msgid "الأيقونات من Font Awesome، مثال : fa-truck-fast"
+msgstr "Font Awesome icons, e.g. fa-truck-fast"
+
+msgid "ميزة"
+msgstr "Feature"
+
+msgid "الأيقونة"
+msgstr "Icon"
+
+msgid "قسم التصنيفات"
+msgstr "Categories section"
+
+msgid "تصنيفات المتجر بعدة نماذج عرض : فسيفساء، شبكة، دوائر أو شريط متحرك."
+msgstr "Shop categories in several layouts: mosaic, grid, circles or carousel."
+
+msgid "فسيفساء (كبيرة + متوسطتان + عريضة)"
+msgstr "Mosaic (large + 2 medium + wide)"
+
+msgid "شبكة بطاقات"
+msgstr "Card grid"
+
+msgid "دوائر"
+msgstr "Circles"
+
+msgid "شريط متحرك"
+msgstr "Carousel"
+
+msgid "أقسام المتجر"
+msgstr "Shop categories"
+
+msgid "اختر الموديل الذي يناسبك"
+msgstr "Choose the model that suits you"
+
+msgid "تسوق الان"
+msgstr "Shop now"
+
+msgid "المنتجات : %s"
+msgstr "Products: %s"
+
+msgid "السابق"
+msgstr "Previous"
+
+msgid "التالي"
+msgstr "Next"
+
+msgid "نموذج العرض"
+msgstr "Display layout"
+
+msgid "البلاطة الكبيرة"
+msgstr "Large tile"
+
+msgid "البلاطة المتوسطة العلوية"
+msgstr "Top medium tile"
+
+msgid "البلاطة المتوسطة السفلية"
+msgstr "Bottom medium tile"
+
+msgid "البلاطة العريضة"
+msgstr "Wide tile"
+
+msgid "العدد الأقصى للتصنيفات"
+msgstr "Maximum number of categories"
+
+msgid "إظهار عدد المنتجات"
+msgstr "Show the number of products"
+
+msgid "التصنيفات المعروضة"
+msgstr "Displayed categories"
+
+msgid "بدون اختيار : كل التصنيفات التي تحتوي على منتجات."
+msgstr "None checked: every category that has products."
+
+msgid "لافتة ترويجية"
+msgstr "Promotional banner"
+
+msgid "صورة خلفية مع عنوان ونص وزر."
+msgstr "Background image with title, text and button."
+
+msgid "صورة الخلفية"
+msgstr "Background image"
+
+msgid "رابط الزر"
+msgstr "Button link"
+
+msgid "الارتفاع"
+msgstr "Height"
+
+msgid "كبير (16:9)"
+msgstr "Large (16:9)"
+
+msgid "شريط (215px)"
+msgstr "Strip (215px)"
+
+msgid "اختيار اللغة (الحالية : %s)"
+msgstr "Choose language (current: %s)"
+
+msgid "ترجمات ناقصة للغات المتجر :"
+msgstr "Missing translations for the shop languages:"
+
+msgid "نصوص القالب مترجمة، لكن بعض نصوص ووردبريس أو ووكومرس ستظهر بالإنجليزية. ثبّتها من لوحة التحكم ← التحديثات ← تحديث الترجمات، أو بإضافة اللغة في الإعدادات ← عام."
+msgstr "Theme texts are translated, but some WordPress or WooCommerce texts will appear in English. Install them from Dashboard → Updates → Update translations, or by adding the language in Settings → General."
+
+msgid "التوصيل"
+msgstr "Shipping"
+
+msgid "نتائج البحث عن : %s"
+msgstr "Search results for: %s"
+
+msgid "آخر المقالات"
+msgstr "Latest posts"
+
+msgid "لا توجد نتائج."
+msgstr "No results."
+
+msgid "اسم التصنيف"
+msgstr "Category name"
+
+msgid "جميع التصنيفات"
+msgstr "All categories"
+
+msgid "نص البحث"
+msgstr "Search text"
+
+msgid "ما الذي تبحث عنه؟"
+msgstr "What are you looking for?"
+
+msgid "بحث"
+msgstr "Search"
+
+msgid "الكل"
+msgstr "All"
+
+msgid "عرض:"
+msgstr "Show:"
+
+msgid "تخفيض!"
+msgstr "Sale!"
+
+msgid "اشتري الآن"
+msgstr "Buy now"
+
+msgid "جديد"
+msgstr "New"

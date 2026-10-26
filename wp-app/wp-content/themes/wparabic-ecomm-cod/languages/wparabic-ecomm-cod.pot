@@ -1,0 +1,1016 @@
+# Copyright (C) 2026 
+# This file is distributed under the GNU General Public License v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WPArabicEcommCOD 3.5.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/wparabic-ecomm-cod\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-06T12:23:36+01:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: wparabic-ecomm-cod\n"
+
+#. Theme Name of the theme
+#: style.css
+msgid "WPArabicEcommCOD"
+msgstr ""
+
+#. Description of the theme
+#: style.css
+msgid "Theme WooCommerce arabe RTL avec paiement a la livraison (COD), formulaire de commande en une etape et design mobile-first. Derive du theme GPL \"hanout\" de ar-themes.com."
+msgstr ""
+
+#: 404.php:18
+msgid "الصفحة غير موجودة"
+msgstr ""
+
+#: 404.php:19
+msgid "يبدو أن الرابط الذي تبحث عنه غير متوفر."
+msgstr ""
+
+#: 404.php:24
+msgid "العودة إلى المتجر"
+msgstr ""
+
+#: footer.php:26
+msgid "عن المتجر"
+msgstr ""
+
+#: footer.php:28
+msgid "من نحن"
+msgstr ""
+
+#: footer.php:29
+msgid "طرق الدفع"
+msgstr ""
+
+#: footer.php:30
+msgid "الشحن والتسليم"
+msgstr ""
+
+#: footer.php:34
+msgid "الشروط والسياسات"
+msgstr ""
+
+#: footer.php:36
+msgid "شروط الاستخدام"
+msgstr ""
+
+#: footer.php:37
+msgid "سياسة الخصوصية"
+msgstr ""
+
+#: footer.php:38
+msgid "سياسة الإستبدال والإسترجاع"
+msgstr ""
+
+#: footer.php:49
+msgid "تواصل معنا"
+msgstr ""
+
+#: footer.php:51
+msgid "أسئلة شائعة"
+msgstr ""
+
+#: footer.php:52
+msgid "اتصل بنا"
+msgstr ""
+
+#: footer.php:54
+msgid "هاتف"
+msgstr ""
+
+#: footer.php:59
+msgid "تابعنا على"
+msgstr ""
+
+#: footer.php:71
+#, php-format
+msgid "رابط لـ %s"
+msgstr ""
+
+#: functions.php:46
+msgid "Menu principal"
+msgstr ""
+
+#: functions.php:47
+msgid "Menu mobile"
+msgstr ""
+
+#. translators: %s: language name
+#: functions.php:54
+#, php-format
+msgid "Menu principal — %s"
+msgstr ""
+
+#: functions.php:79
+msgid "خيارات القالب"
+msgstr ""
+
+#. translators: 1: libelle du theme (« خيارات القالب »), 2: nom de la section.
+#: functions.php:94
+#, php-format
+msgctxt "nom de widget"
+msgid "%1$s — %2$s"
+msgstr ""
+
+#: functions.php:118
+msgid "أطلب الآن والدفع فقط عند استلام المنتج|توصيل سريع لجميع الولايات"
+msgstr ""
+
+#: functions.php:122
+msgid "يستخدم قالب WPArabicEcommCOD"
+msgstr ""
+
+#: functions.php:267
+msgid "أقسام الصفحة الرئيسية"
+msgstr ""
+
+#: functions.php:268
+msgid "اسحب الأقسام هنا ورتّبها من الأعلى إلى الأسفل. إذا أفرغت هذه المنطقة تُعرض الأقسام الافتراضية."
+msgstr ""
+
+#: functions.php:285
+#, php-format
+msgid "Pied de page %d"
+msgstr ""
+
+#: functions.php:286
+msgid "Colonne du pied de page."
+msgstr ""
+
+#: functions.php:292
+msgid "Colonne laterale"
+msgstr ""
+
+#: functions.php:293
+msgid "Affichee sur les pages et les articles."
+msgstr ""
+
+#: functions.php:357
+msgid "لا توجد نتائج"
+msgstr ""
+
+#: functions.php:362
+msgid "أريد طلب"
+msgstr ""
+
+#: functions.php:363
+msgid "تعذر إتمام الطلب"
+msgstr ""
+
+#: functions.php:364
+msgid "يرجى المحاولة مرة أخرى أو الاتصال بنا."
+msgstr ""
+
+#: functions.php:365
+msgid "تعذر إرسال الطلب. يرجى تحديث الصفحة والمحاولة مرة أخرى."
+msgstr ""
+
+#: functions.php:601
+msgid "منتجات ذات صلة"
+msgstr ""
+
+#: functions.php:604
+msgid "قد يعجبك أيضاً"
+msgstr ""
+
+#: header.php:54
+msgid "القائمة"
+msgstr ""
+
+#: header.php:90
+msgid "سلة التسوق"
+msgstr ""
+
+#: inc/attribute-colors.php:60
+#: inc/attribute-colors.php:71
+msgid "اللون (Hex)"
+msgstr ""
+
+#: inc/attribute-colors.php:62
+#: inc/attribute-colors.php:74
+msgid "اتركه فارغًا لعرض قائمة منسدلة عادية بدون دوائر ملونة."
+msgstr ""
+
+#: inc/attribute-colors.php:104
+msgid "اللون"
+msgstr ""
+
+#: inc/cod-form.php:22
+msgid "تونس"
+msgstr ""
+
+#: inc/cod-form.php:23
+msgid "أريانة"
+msgstr ""
+
+#: inc/cod-form.php:24
+msgid "بن عروس"
+msgstr ""
+
+#: inc/cod-form.php:25
+msgid "منوبة"
+msgstr ""
+
+#: inc/cod-form.php:26
+msgid "نابل"
+msgstr ""
+
+#: inc/cod-form.php:27
+msgid "زغوان"
+msgstr ""
+
+#: inc/cod-form.php:28
+msgid "بنزرت"
+msgstr ""
+
+#: inc/cod-form.php:29
+msgid "باجة"
+msgstr ""
+
+#: inc/cod-form.php:30
+msgid "جندوبة"
+msgstr ""
+
+#: inc/cod-form.php:31
+msgid "الكاف"
+msgstr ""
+
+#: inc/cod-form.php:32
+msgid "سليانة"
+msgstr ""
+
+#: inc/cod-form.php:33
+msgid "سوسة"
+msgstr ""
+
+#: inc/cod-form.php:34
+msgid "المنستير"
+msgstr ""
+
+#: inc/cod-form.php:35
+msgid "المهدية"
+msgstr ""
+
+#: inc/cod-form.php:36
+msgid "صفاقس"
+msgstr ""
+
+#: inc/cod-form.php:37
+msgid "القيروان"
+msgstr ""
+
+#: inc/cod-form.php:38
+msgid "القصرين"
+msgstr ""
+
+#: inc/cod-form.php:39
+msgid "سيدي بوزيد"
+msgstr ""
+
+#: inc/cod-form.php:40
+msgid "ڨابس"
+msgstr ""
+
+#: inc/cod-form.php:41
+msgid "مدنين"
+msgstr ""
+
+#: inc/cod-form.php:42
+msgid "تطاوين"
+msgstr ""
+
+#: inc/cod-form.php:43
+msgid "ڨفصة"
+msgstr ""
+
+#: inc/cod-form.php:44
+msgid "توزر"
+msgstr ""
+
+#: inc/cod-form.php:45
+msgid "ڨبلي"
+msgstr ""
+
+#: inc/cod-form.php:96
+#: inc/cod-form.php:434
+#: inc/cod-form.php:435
+msgid "الاسم بالكامل"
+msgstr ""
+
+#: inc/cod-form.php:97
+msgid "إذا أخفيته، يُسجَّل رقم الهاتف مكان الاسم في لوحة الطلبات."
+msgstr ""
+
+#: inc/cod-form.php:105
+#: inc/cod-form.php:447
+#: inc/cod-form.php:448
+#: inc/customizer.php:268
+msgid "رقم الهاتف"
+msgstr ""
+
+#: inc/cod-form.php:114
+#: inc/cod-form.php:376
+#: inc/cod-form.php:453
+#: inc/tn-states.php:128
+msgid "الولاية"
+msgstr ""
+
+#: inc/cod-form.php:123
+#: inc/cod-form.php:379
+#: inc/cod-form.php:472
+msgid "المعتمدية"
+msgstr ""
+
+#: inc/cod-form.php:132
+#: inc/cod-form.php:488
+#: inc/home-widgets.php:126
+#: inc/home-widgets.php:136
+#: inc/home-widgets.php:427
+#: inc/home-widgets.php:542
+#: inc/home-widgets.php:551
+#: inc/home-widgets.php:860
+#: inc/home-widgets.php:1014
+msgid "العنوان"
+msgstr ""
+
+#: inc/cod-form.php:133
+msgid "إذا أخفيته، سيتعيّن عليك أخذ العنوان عبر الهاتف."
+msgstr ""
+
+#: inc/cod-form.php:141
+#: inc/cod-form.php:504
+msgid "البريد الإلكتروني"
+msgstr ""
+
+#: inc/cod-form.php:142
+msgid "يُستعمل لإرسال تأكيد الطلب. اختياري دائمًا."
+msgstr ""
+
+#: inc/cod-form.php:221
+#: inc/cod-form.php:719
+#: inc/cod-form.php:736
+msgid "يرجى ملء جميع الحقول المطلوبة"
+msgstr ""
+
+#: inc/cod-form.php:230
+#, php-format
+msgid "يرجى اختيار %s"
+msgstr ""
+
+#: inc/cod-form.php:230
+msgid " و "
+msgstr ""
+
+#: inc/cod-form.php:231
+msgid "يرجى اختيار الخيار المناسب"
+msgstr ""
+
+#: inc/cod-form.php:333
+#, php-format
+msgid "اختر %s"
+msgstr ""
+
+#: inc/cod-form.php:377
+msgid "العنوان (الشارع، الحي، رقم المنزل)"
+msgstr ""
+
+#: inc/cod-form.php:378
+msgid "البريد الإلكتروني (اختياري)"
+msgstr ""
+
+#: inc/cod-form.php:407
+msgid "أضف معلوماتك في الأسفل للطلب"
+msgstr ""
+
+#: inc/cod-form.php:450
+#: inc/cod-form.php:749
+msgid "يجب أن يتكون رقم الهاتف من 8 أرقام"
+msgstr ""
+
+#: inc/cod-form.php:537
+msgid "انقر هنا لتأكيد الطلب"
+msgstr ""
+
+#: inc/cod-form.php:550
+msgid "أنقر هنا للطلب عبر الواتساب"
+msgstr ""
+
+#: inc/cod-form.php:565
+#: inc/cod-form.php:629
+msgid "ملخص الطلب"
+msgstr ""
+
+#: inc/cod-form.php:594
+msgid "سعر التوصيل"
+msgstr ""
+
+#: inc/cod-form.php:599
+#, php-format
+msgid "إختر %s"
+msgstr ""
+
+#: inc/cod-form.php:603
+msgid "مجانا"
+msgstr ""
+
+#: inc/cod-form.php:606
+msgid "السعر الإجمالي"
+msgstr ""
+
+#: inc/cod-form.php:624
+#: inc/cod-form.php:702
+msgid "تم تقديم الطلب بنجاح"
+msgstr ""
+
+#: inc/cod-form.php:625
+msgid "سيقوم فريقنا بالتواصل معكم لتأكيد الطلبية."
+msgstr ""
+
+#: inc/cod-form.php:692
+msgid "انتهت صلاحية الجلسة. يرجى تحديث الصفحة."
+msgstr ""
+
+#: inc/cod-form.php:754
+msgid "الولاية غير صحيحة"
+msgstr ""
+
+#: inc/cod-form.php:758
+msgid "المعتمدية غير صحيحة"
+msgstr ""
+
+#: inc/cod-form.php:763
+msgid "المنتج غير موجود"
+msgstr ""
+
+#. translators: %d: maximum quantity
+#: inc/cod-form.php:793
+#, php-format
+msgid "الكمية المطلوبة غير متوفرة. الحد الأقصى : %d"
+msgstr ""
+
+#: inc/cod-form.php:802
+msgid "الخيار المختار غير متوفر حاليا"
+msgstr ""
+
+#: inc/cod-form.php:818
+msgid "طلبك قيد المعالجة. لقد استلمنا هذا الطلب للتو."
+msgstr ""
+
+#: inc/cod-form.php:829
+msgid "عدد كبير من الطلبات. يرجى المحاولة بعد بضع دقائق."
+msgstr ""
+
+#: inc/cod-form.php:835
+#: inc/cod-form.php:921
+msgid "حدث خطأ أثناء إنشاء الطلب. يرجى المحاولة مرة أخرى."
+msgstr ""
+
+#: inc/cod-form.php:879
+#: inc/home-widgets.php:475
+#: inc/languages.php:466
+msgid "الدفع عند الاستلام"
+msgstr ""
+
+#: inc/cod-form.php:951
+#, php-format
+msgid "تم تأكيد طلبك بنجاح! سيتم الاتصال بك قريبًا على الرقم %s"
+msgstr ""
+
+#: inc/customizer.php:27
+msgid "اللغة"
+msgstr ""
+
+#: inc/customizer.php:43
+msgid "اللغة الافتراضية للمتجر"
+msgstr ""
+
+#: inc/customizer.php:44
+msgid "لغة الواجهة للزوار. لا تؤثر على لغة لوحة التحكم."
+msgstr ""
+
+#: inc/customizer.php:55
+msgid "إظهار قائمة اختيار اللغة للزوار"
+msgstr ""
+
+#: inc/customizer.php:56
+msgid "في رأس الصفحة وفي قائمة الهاتف. يحفظ اختيار الزائر لمدة سنة."
+msgstr ""
+
+#. translators: %s: language name
+#: inc/customizer.php:68
+#, php-format
+msgid "اقتراح اللغة : %s"
+msgstr ""
+
+#: inc/customizer.php:76
+msgid "الألوان"
+msgstr ""
+
+#: inc/customizer.php:83
+msgid "اللون الرئيسي (الأزرار، الروابط، الأسعار)"
+msgstr ""
+
+#: inc/customizer.php:84
+msgid "لون التمرير (الأزرار عند المرور)"
+msgstr ""
+
+#: inc/customizer.php:85
+msgid "خلفية الشريط العلوي"
+msgstr ""
+
+#: inc/customizer.php:86
+msgid "لون نص الشريط العلوي"
+msgstr ""
+
+#: inc/customizer.php:87
+msgid "خلفية أسفل الصفحة"
+msgstr ""
+
+#: inc/customizer.php:114
+msgid "لون نص أسفل الصفحة"
+msgstr ""
+
+#: inc/customizer.php:115
+msgid "اتركه فارغًا ليُختار تلقائيًا حسب لون الخلفية (فاتح على خلفية داكنة، داكن على خلفية فاتحة)."
+msgstr ""
+
+#: inc/customizer.php:121
+msgid "الشريط العلوي"
+msgstr ""
+
+#: inc/customizer.php:130
+msgid "الرسائل"
+msgstr ""
+
+#: inc/customizer.php:131
+msgid "افصل بين الرسائل بالرمز |"
+msgstr ""
+
+#: inc/customizer.php:144
+msgid "سرعة تمرير الرسائل"
+msgstr ""
+
+#: inc/customizer.php:145
+msgid "بالبكسل في الثانية (10 بطيء جدًا — 200 سريع جدًا). القيمة المقترحة : 50."
+msgstr ""
+
+#: inc/customizer.php:153
+msgid "التخطيط"
+msgstr ""
+
+#: inc/customizer.php:154
+msgid "الشريط العلوي وأسفل الصفحة يبقيان بعرض الشاشة دائمًا."
+msgstr ""
+
+#: inc/customizer.php:159
+msgid "بعرض الشاشة"
+msgstr ""
+
+#: inc/customizer.php:160
+msgid "محتوى محدود العرض"
+msgstr ""
+
+#: inc/customizer.php:164
+#: inc/home-widgets.php:1085
+#: inc/home-widgets.php:1086
+msgid "الصفحة الرئيسية"
+msgstr ""
+
+#: inc/customizer.php:165
+msgid "المتجر"
+msgstr ""
+
+#: inc/customizer.php:166
+#: inc/customizer.php:185
+msgid "صفحة المنتج"
+msgstr ""
+
+#: inc/customizer.php:167
+msgid "بقية الصفحات"
+msgstr ""
+
+#: inc/customizer.php:191
+msgid "إظهار تبويب « معلومات إضافية »"
+msgstr ""
+
+#: inc/customizer.php:192
+msgid "إظهار تبويب « المراجعات »"
+msgstr ""
+
+#: inc/customizer.php:192
+msgid "يخفي التبويب فقط. لإيقاف التقييمات نهائيًا : ووكومرس ← الإعدادات ← المنتجات."
+msgstr ""
+
+#: inc/customizer.php:193
+msgid "إظهار « ملخص الطلب » في نموذج الطلب"
+msgstr ""
+
+#: inc/customizer.php:193
+msgid "المنتج، سعر التوصيل والسعر الإجمالي تحت زر تأكيد الطلب."
+msgstr ""
+
+#: inc/customizer.php:213
+msgid "زر « اشتري الآن » العائم"
+msgstr ""
+
+#: inc/customizer.php:214
+msgid "يظهر في أسفل الشاشة على الهاتف واللوحي عندما يخرج زر تأكيد الطلب من الشاشة."
+msgstr ""
+
+#: inc/customizer.php:225
+msgid "حقول نموذج الطلب"
+msgstr ""
+
+#: inc/customizer.php:226
+msgid "اختر الحقول التي تظهر في نموذج الطلب. رقم الهاتف والولاية يظهران دائمًا: الهاتف هو وسيلة تأكيد الطلب، والولاية تحدد سعر التوصيل."
+msgstr ""
+
+#: inc/customizer.php:259
+msgid "التواصل"
+msgstr ""
+
+#: inc/customizer.php:269
+msgid "اتركه فارغًا لإخفاء زر الاتصال العائم."
+msgstr ""
+
+#: inc/customizer.php:278
+msgid "رقم واتساب (اختياري)"
+msgstr ""
+
+#: inc/customizer.php:279
+msgid "اتركه فارغًا لاستعمال رقم الهاتف أعلاه. أدخل رقمًا آخر إذا كان رقم واتساب مختلفًا، مثال : 216XXXXXXXX أو XXXXXXXX."
+msgstr ""
+
+#: inc/customizer.php:289
+msgid "إظهار زر « الطلب عبر الواتساب »"
+msgstr ""
+
+#: inc/customizer.php:290
+msgid "في صفحة المنتج، تحت زر تأكيد الطلب. يستعمل رقم واتساب، أو رقم الهاتف إن كان فارغًا."
+msgstr ""
+
+#: inc/customizer.php:297
+msgid "شبكات التواصل"
+msgstr ""
+
+#: inc/customizer.php:315
+msgid "أسفل الصفحة"
+msgstr ""
+
+#: inc/customizer.php:324
+msgid "نص الحقوق"
+msgstr ""
+
+#: inc/customizer.php:325
+msgid "سطر إضافي أسفل اسم المتجر. اتركه فارغًا لإخفائه."
+msgstr ""
+
+#: inc/customizer.php:334
+msgid "سطر الإسناد"
+msgstr ""
+
+#: inc/customizer.php:335
+msgid "اتركه فارغًا لإخفائه."
+msgstr ""
+
+#: inc/customizer.php:408
+#: inc/home-widgets.php:161
+msgid "اتركه فارغًا لاستعمال النص الأساسي أعلاه."
+msgstr ""
+
+#: inc/home-widgets.php:129
+#: inc/home-widgets.php:428
+#: inc/home-widgets.php:543
+#: inc/home-widgets.php:861
+msgid "الوصف"
+msgstr ""
+
+#: inc/home-widgets.php:132
+#: inc/home-widgets.php:1016
+msgid "نص الزر"
+msgstr ""
+
+#: inc/home-widgets.php:135
+#, php-format
+msgid "ميزة %d"
+msgstr ""
+
+#: inc/home-widgets.php:136
+#: inc/home-widgets.php:552
+#: inc/home-widgets.php:1015
+msgid "النص"
+msgstr ""
+
+#: inc/home-widgets.php:160
+msgid "الترجمات"
+msgstr ""
+
+#: inc/home-widgets.php:229
+msgid "إظهار هذا القسم في الصفحة الرئيسية"
+msgstr ""
+
+#: inc/home-widgets.php:293
+msgid "اختر صورة"
+msgstr ""
+
+#: inc/home-widgets.php:295
+msgid "إزالة"
+msgstr ""
+
+#: inc/home-widgets.php:302
+msgid "— تلقائي —"
+msgstr ""
+
+#: inc/home-widgets.php:327
+msgid "قسم المنتجات"
+msgstr ""
+
+#: inc/home-widgets.php:328
+msgid "شبكة منتجات مع عنوان ووصف."
+msgstr ""
+
+#: inc/home-widgets.php:337
+msgid "منتجاتنا أصلية و ذات جودة عالية"
+msgstr ""
+
+#: inc/home-widgets.php:338
+msgid "تصفح قائمة المنتجات الأكثر رواجا"
+msgstr ""
+
+#: inc/home-widgets.php:429
+msgid "عدد المنتجات"
+msgstr ""
+
+#: inc/home-widgets.php:430
+#: inc/home-widgets.php:887
+msgid "عدد الأعمدة"
+msgstr ""
+
+#: inc/home-widgets.php:431
+msgid "الترتيب"
+msgstr ""
+
+#: inc/home-widgets.php:432
+msgid "الأحدث"
+msgstr ""
+
+#: inc/home-widgets.php:433
+msgid "الأكثر مبيعًا"
+msgstr ""
+
+#: inc/home-widgets.php:434
+msgid "عشوائي"
+msgstr ""
+
+#: inc/home-widgets.php:436
+msgid "التصنيف"
+msgstr ""
+
+#: inc/home-widgets.php:461
+msgid "قسم المميزات"
+msgstr ""
+
+#: inc/home-widgets.php:462
+msgid "أربع مزايا بأيقونة وعنوان ونص."
+msgstr ""
+
+#: inc/home-widgets.php:469
+msgid "لماذا تختارنا ؟"
+msgstr ""
+
+#: inc/home-widgets.php:470
+msgid "جودة مضمونة وخدمة قريبة منك"
+msgstr ""
+
+#: inc/home-widgets.php:474
+msgid "توصيل سريع"
+msgstr ""
+
+#: inc/home-widgets.php:474
+msgid "إلى جميع ولايات الجمهورية"
+msgstr ""
+
+#: inc/home-widgets.php:475
+msgid "تدفع فقط عند استلام طلبك"
+msgstr ""
+
+#: inc/home-widgets.php:476
+msgid "جودة مضمونة"
+msgstr ""
+
+#: inc/home-widgets.php:476
+msgid "منتجات مختارة بعناية"
+msgstr ""
+
+#: inc/home-widgets.php:477
+msgid "استبدال مجاني"
+msgstr ""
+
+#: inc/home-widgets.php:477
+msgid "إن لم يناسبك المنتج"
+msgstr ""
+
+#: inc/home-widgets.php:545
+msgid "الأيقونات من Font Awesome، مثال : fa-truck-fast"
+msgstr ""
+
+#: inc/home-widgets.php:549
+msgid "ميزة"
+msgstr ""
+
+#: inc/home-widgets.php:550
+msgid "الأيقونة"
+msgstr ""
+
+#: inc/home-widgets.php:585
+msgid "قسم التصنيفات"
+msgstr ""
+
+#: inc/home-widgets.php:586
+msgid "تصنيفات المتجر بعدة نماذج عرض : فسيفساء، شبكة، دوائر أو شريط متحرك."
+msgstr ""
+
+#: inc/home-widgets.php:597
+msgid "فسيفساء (كبيرة + متوسطتان + عريضة)"
+msgstr ""
+
+#: inc/home-widgets.php:598
+msgid "شبكة بطاقات"
+msgstr ""
+
+#: inc/home-widgets.php:599
+msgid "دوائر"
+msgstr ""
+
+#: inc/home-widgets.php:600
+msgid "شريط متحرك"
+msgstr ""
+
+#: inc/home-widgets.php:607
+msgid "أقسام المتجر"
+msgstr ""
+
+#: inc/home-widgets.php:608
+msgid "اختر الموديل الذي يناسبك"
+msgstr ""
+
+#: inc/home-widgets.php:743
+#: inc/home-widgets.php:959
+msgid "تسوق الان"
+msgstr ""
+
+#. translators: %s: number of products
+#: inc/home-widgets.php:753
+#, php-format
+msgid "المنتجات : %s"
+msgstr ""
+
+#: inc/home-widgets.php:797
+msgid "السابق"
+msgstr ""
+
+#: inc/home-widgets.php:815
+msgid "التالي"
+msgstr ""
+
+#: inc/home-widgets.php:866
+msgid "نموذج العرض"
+msgstr ""
+
+#: inc/home-widgets.php:872
+msgid "البلاطة الكبيرة"
+msgstr ""
+
+#: inc/home-widgets.php:873
+msgid "البلاطة المتوسطة العلوية"
+msgstr ""
+
+#: inc/home-widgets.php:874
+msgid "البلاطة المتوسطة السفلية"
+msgstr ""
+
+#: inc/home-widgets.php:875
+msgid "البلاطة العريضة"
+msgstr ""
+
+#: inc/home-widgets.php:885
+msgid "العدد الأقصى للتصنيفات"
+msgstr ""
+
+#: inc/home-widgets.php:890
+msgid "إظهار عدد المنتجات"
+msgstr ""
+
+#: inc/home-widgets.php:905
+msgid "التصنيفات المعروضة"
+msgstr ""
+
+#: inc/home-widgets.php:906
+msgid "بدون اختيار : كل التصنيفات التي تحتوي على منتجات."
+msgstr ""
+
+#: inc/home-widgets.php:948
+msgid "لافتة ترويجية"
+msgstr ""
+
+#: inc/home-widgets.php:949
+msgid "صورة خلفية مع عنوان ونص وزر."
+msgstr ""
+
+#: inc/home-widgets.php:1013
+msgid "صورة الخلفية"
+msgstr ""
+
+#: inc/home-widgets.php:1017
+msgid "رابط الزر"
+msgstr ""
+
+#: inc/home-widgets.php:1018
+msgid "الارتفاع"
+msgstr ""
+
+#: inc/home-widgets.php:1019
+msgid "كبير (16:9)"
+msgstr ""
+
+#: inc/home-widgets.php:1020
+msgid "شريط (215px)"
+msgstr ""
+
+#. translators: %s: current language name
+#: inc/languages.php:326
+#, php-format
+msgid "اختيار اللغة (الحالية : %s)"
+msgstr ""
+
+#: inc/languages.php:450
+msgid "ترجمات ناقصة للغات المتجر :"
+msgstr ""
+
+#: inc/languages.php:452
+msgid "نصوص القالب مترجمة، لكن بعض نصوص ووردبريس أو ووكومرس ستظهر بالإنجليزية. ثبّتها من لوحة التحكم ← التحديثات ← تحديث الترجمات، أو بإضافة اللغة في الإعدادات ← عام."
+msgstr ""
+
+#: inc/shipping.php:38
+msgid "التوصيل"
+msgstr ""
+
+#: index.php:24
+#, php-format
+msgid "نتائج البحث عن : %s"
+msgstr ""
+
+#: index.php:28
+msgid "آخر المقالات"
+msgstr ""
+
+#: index.php:64
+msgid "لا توجد نتائج."
+msgstr ""
+
+#: template-parts/search-form.php:19
+msgid "اسم التصنيف"
+msgstr ""
+
+#: template-parts/search-form.php:21
+msgid "جميع التصنيفات"
+msgstr ""
+
+#: template-parts/search-form.php:25
+msgid "نص البحث"
+msgstr ""
+
+#: template-parts/search-form.php:30
+msgid "ما الذي تبحث عنه؟"
+msgstr ""
+
+#: template-parts/search-form.php:45
+msgid "بحث"
+msgstr ""
+
+#: woocommerce/archive-product.php:27
+msgid "الكل"
+msgstr ""
+
+#: woocommerce/archive-product.php:62
+msgid "عرض:"
+msgstr ""
+
+#: woocommerce/content-product.php:39
+msgid "تخفيض!"
+msgstr ""
+
+#: woocommerce/content-product.php:91
+#: woocommerce/single-product.php:121
+msgid "اشتري الآن"
+msgstr ""
+
+#: woocommerce/single-product.php:69
+msgid "جديد"
+msgstr ""

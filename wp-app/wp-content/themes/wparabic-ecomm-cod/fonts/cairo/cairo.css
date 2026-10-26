@@ -1,0 +1,23 @@
+/* Cairo — SIL Open Font License 1.1
+   Deux graisses seulement, comme le theme de reference : 500 (Medium) et bold (ExtraBold).
+   Les sources .eot d'origine ont ete retirees (IE hors support, elles renvoyaient 404). */
+
+@font-face {
+    font-family: 'Cairo';
+    src: url('Cairo-ExtraBold.woff2') format('woff2'),
+         url('Cairo-ExtraBold.woff') format('woff'),
+         url('Cairo-ExtraBold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Cairo';
+    src: url('Cairo-Medium.woff2') format('woff2'),
+         url('Cairo-Medium.woff') format('woff'),
+         url('Cairo-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}

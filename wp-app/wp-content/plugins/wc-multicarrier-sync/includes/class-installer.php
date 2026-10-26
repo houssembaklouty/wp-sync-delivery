@@ -56,7 +56,6 @@ class WCMCS_Installer {
         $defaults = [
             'wcmcs_debug_logs'          => 'no',
             'wcmcs_allow_resync'        => 'no',
-            'wcmcs_batch_size'          => 10,
             'wcmcs_max_auto_retries'    => 0,
             'wcmcs_default_carrier'     => '',
             'wcmcs_rules_by_shipping_method' => [],

@@ -66,6 +66,74 @@ class WCMCS_Logger {
     }
 
     // ─────────────────────────────────────────────
+    //  Protection PII
+    // ─────────────────────────────────────────────
+
+    /**
+     * Clés considérées comme données personnelles / sensibles (RGPD) dans
+     * les payloads — tous les namings observés chez les 11 transporteurs :
+     * FR (client, nom, tel, prix…), EN (name, phone, address, city…),
+     * INTIGO (ClientName, ClientPhone…), Aramex (PersonName, EmailAddress,
+     * Line1…), Fiabilo (token !) et variantes.
+     */
+    const PII_KEYS = [
+        // FR — Colissimo / FirstDelivery / Jetpack / Fiabilo / Navex / Adex / AFEX
+        'client', 'nom', 'adresse', 'ville', 'prix', 'msg', 'commentaire',
+        'tel', 'tel1', 'tel2', 'telephone', 'telephone2', 'cp',
+        // EN / Shipper / Ciblex / AFEX
+        'name', 'phone', 'phone1', 'phone2', 'address', 'address1', 'address2',
+        'city', 'price', 'client_name',
+        // INTIGO
+        'clientname', 'clientphone', 'subdivision', 'dropoff', 'pickup',
+        'additionalinfo', 'descproduit', 'amount',
+        // Aramex
+        'personname', 'emailaddress', 'line1', 'line2', 'line3',
+        // Identifiants (Fiabilo token en body !)
+        'token', 'apikey', 'api_key', 'password', 'accountpin', 'authorization',
+    ];
+
+    /**
+     * Masque les données personnelles d'un payload avant logging debug.
+     *
+     * @param array $payload Payload à nettoyer (supporte l'imbrication).
+     * @return array
+     */
+    public static function redact_pii( array $payload ): array {
+        foreach ( $payload as $key => $value ) {
+            if ( is_array( $value ) ) {
+                $payload[ $key ] = self::redact_pii( $value );
+                continue;
+            }
+            if ( in_array( strtolower( (string) $key ), self::PII_KEYS, true )
+                && $value !== '' && $value !== null ) {
+                $payload[ $key ] = '[REDACTED]';
+            }
+        }
+        return $payload;
+    }
+
+    /**
+     * Redacte un corps de réponse API brut avant log debug : le JSON est
+     * décodé → redacté → ré-encodé ; un corps non-JSON n'est JAMAIS loggé
+     * tel quel (seuls le code HTTP et la taille sont conservés — un HTML/CDATA
+     * de réponse peut contenir les coordonnées du destinataire).
+     *
+     * @param string $raw_body   Corps brut.
+     * @param int    $max_length Troncature (0 = sans limite).
+     * @return string Corps redacté (ou résumé si non-JSON).
+     */
+    public static function redact_body( string $raw_body, int $max_length = 1000 ): string {
+        $decoded = json_decode( $raw_body, true );
+        if ( is_array( $decoded ) ) {
+            $redacted = wp_json_encode( self::redact_pii( $decoded ), JSON_UNESCAPED_UNICODE );
+            return substr( (string) $redacted, 0, $max_length );
+        }
+        // Non-JSON (HTML d'erreur, XML SOAP…) : ne pas logger le contenu
+        // potentiellement personnel — taille seule.
+        return sprintf( '[non-JSON — %d octets masqués]', strlen( $raw_body ) );
+    }
+
+    // ─────────────────────────────────────────────
     //  Méthodes publiques de log
     // ─────────────────────────────────────────────
 

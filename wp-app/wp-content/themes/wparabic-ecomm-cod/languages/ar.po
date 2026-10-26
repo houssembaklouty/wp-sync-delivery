@@ -1,0 +1,33 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WPArabicEcommCOD 3.4.0\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"X-Domain: wparabic-ecomm-cod\n"
+
+msgid "Theme WooCommerce arabe RTL avec paiement a la livraison (COD), formulaire de commande en une etape et design mobile-first. Derive du theme GPL \"hanout\" de ar-themes.com."
+msgstr "قالب ووكومرس عربي من اليمين إلى اليسار مع الدفع عند الاستلام، ونموذج طلب من خطوة واحدة وتصميم للهاتف أولاً."
+
+msgid "Menu principal"
+msgstr "القائمة الرئيسية"
+
+msgid "Menu mobile"
+msgstr "قائمة الهاتف"
+
+msgid "Menu principal — %s"
+msgstr "القائمة الرئيسية — %s"
+
+msgid "Pied de page %d"
+msgstr "أسفل الصفحة %d"
+
+msgid "Colonne du pied de page."
+msgstr "عمود في أسفل الصفحة."
+
+msgid "Colonne laterale"
+msgstr "العمود الجانبي"
+
+msgid "Affichee sur les pages et les articles."
+msgstr "يظهر في الصفحات والمقالات."

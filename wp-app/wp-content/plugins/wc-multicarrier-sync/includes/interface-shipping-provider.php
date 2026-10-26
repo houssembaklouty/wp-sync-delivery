@@ -78,4 +78,12 @@ interface WCMCS_ShippingProviderInterface {
      * @return bool
      */
     public function is_configured(): bool;
+
+    /**
+     * Indique si le provider est actif (implémenté et disponible).
+     * Les providers inactifs sont listés mais non utilisables.
+     *
+     * @return bool
+     */
+    public function is_active(): bool;
 }

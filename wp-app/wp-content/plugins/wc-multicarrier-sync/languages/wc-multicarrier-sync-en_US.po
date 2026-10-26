@@ -1,0 +1,363 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MultiCarrier Sync TN 2.10.0"
+
+msgid "%s ne supporte pas l'annulation des colis via l'API. Contactez votre agence."
+msgstr "%s does not support parcel cancellation via API. Contact your agency."
+
+msgid "1 · Commande passée (COD / non payée d’avance)"
+msgstr "1 · Order placed (COD / unpaid upfront)"
+
+msgid "2 · Après synchronisation"
+msgstr "2 · After carrier sync"
+
+msgid "3 · À la livraison"
+msgstr "3 · On delivery"
+
+msgid "4 · Au retour"
+msgstr "4 · On return"
+
+msgid "AFEX : annulation refusée (code %d) — vérifiez que le colis est encore annulable."
+msgstr "AFEX: cancellation refused (code %d) — check that the parcel can still be cancelled."
+
+msgid "AFEX : annulation refusée — %s"
+msgstr "AFEX: cancellation refused — %s"
+
+msgid "AFEX : bordereau PDF non disponible (HTTP %d) — vérifiez votre clé API."
+msgstr "AFEX: label PDF unavailable (HTTP %d) — check your API key."
+
+msgid "AFEX : échec décodage bordereau PDF."
+msgstr "AFEX: label PDF decoding failed."
+
+msgid "AFEX : échec sauvegarde bordereau PDF."
+msgstr "AFEX: label PDF save failed."
+
+msgid "API saturée — pause 3 s puis nouvel essai..."
+msgstr "API rate limited — pause 3 s then retry..."
+
+msgid "Adex : BL PDF non disponible (HTTP %d) — vérifiez que le colis est encore annulable/existant."
+msgstr "Adex: waybill PDF unavailable (HTTP %d) — check that the parcel still exists."
+
+msgid "Adex : échec décodage BL PDF."
+msgstr "Adex: waybill PDF decoding failed."
+
+msgid "Adex : échec sauvegarde BL PDF."
+msgstr "Adex: waybill PDF save failed."
+
+msgid "Annexe A Aramex : PDX/PPX = groupe EXP · seul OND = DOM. Une combinaison incohérente est alignée automatiquement sur le type choisi."
+msgstr "Aramex Annex A: PDX/PPX = group EXP · only OND = DOM. An inconsistent combination is automatically aligned with the selected type."
+
+msgid "Annulation..."
+msgstr "Cancelling..."
+
+msgid "Annule le colis chez le transporteur — uniquement s'il est encore en attente (avant enlèvement). La commande redevient synchronisable."
+msgstr "Cancels the parcel with the carrier — only if it is still pending (before pickup). The order becomes syncable again."
+
+msgid "Annuler le colis chez le transporteur (colis en attente uniquement)"
+msgstr "Cancel the parcel with the carrier (pending parcels only)"
+
+msgid "Annuler le colis chez le transporteur ? Uniquement s'il est encore en attente (avant enlèvement) — action irréversible."
+msgstr "Cancel the parcel with the carrier? Only if it is still pending (before pickup) — irreversible action."
+
+msgid "Annulé"
+msgstr "Cancelled"
+
+msgid "Aperçu"
+msgstr "Preview"
+
+msgid "Aperçu live : le badge se met à jour à la frappe et au changement de couleur. Laissez vos libellés vide pour le défaut de la langue. Statuts natifs WooCommerce (En cours / En attente) : libellés figés, couleur seule modifiable."
+msgstr "Live preview: the badge updates as you type and when the color changes. Leave labels empty for the language default. Native WooCommerce statuses (Processing / On hold): fixed labels, only the color is editable."
+
+msgid "Apparence des statuts"
+msgstr "Status appearance"
+
+msgid "Aucun"
+msgstr "None"
+
+msgid "Aucun colis synchronisé à vérifier."
+msgstr "No synced parcel to check."
+
+msgid "Aucun colis sélectionné."
+msgstr "No parcel selected."
+
+msgid "Aucun n° de suivi sur cette commande — rien à annuler."
+msgstr "No tracking number on this order — nothing to cancel."
+
+msgid "Aucun n° de suivi sur cette commande."
+msgstr "No tracking number on this order."
+
+msgid "Badges appliqués à la liste des commandes et au modal « Vérifier les statuts ». Le texte passe automatiquement en noir ou blanc selon la couleur."
+msgstr "Badges applied to the orders list and the \"Check statuses\" modal. Text automatically switches to black or white depending on the color."
+
+msgid "Chargement des colis..."
+msgstr "Loading parcels..."
+
+msgid "Codes à confirmer avec Aramex Tunisie pour la livraison locale COD (PDX = express domestique recommandé)."
+msgstr "Codes to confirm with Aramex Tunisia for local COD delivery (PDX = recommended domestic express)."
+
+msgid "Colis %2$s annulé chez %1$s. La commande est de nouveau synchronisable."
+msgstr "Parcel %2$s cancelled with %1$s. The order can be synced again."
+
+msgid "Commande"
+msgstr "Order"
+
+msgid "Compte Colissimo (API v1 — colissimodelivery.tn)"
+msgstr "Colissimo account (API v1 — colissimodelivery.tn)"
+
+msgid "Confirmée"
+msgstr "Confirmed"
+
+msgid "Couleur"
+msgstr "Color"
+
+msgid "Couleurs des badges"
+msgstr "Badge colors"
+
+msgid "Déjà synchronisé"
+msgstr "Already synced"
+
+msgid "Emballée"
+msgstr "Packed"
+
+msgid "En attente"
+msgstr "On hold"
+
+msgid "En attente (WC natif)"
+msgstr "On hold (WC native)"
+
+msgid "En attente — reçue non payée, file de confirmation"
+msgstr "On hold — received unpaid, confirmation queue"
+
+msgid "En cours"
+msgstr "Processing"
+
+msgid "En cours (WC natif)"
+msgstr "Processing (WC native)"
+
+msgid "En cours — traitement immédiat"
+msgstr "Processing — immediate handling"
+
+msgid "Enregistrer"
+msgstr "Save"
+
+msgid "Erreur :"
+msgstr "Error:"
+
+msgid "Erreur réseau."
+msgstr "Network error."
+
+msgid "Fermer & recharger"
+msgstr "Close & reload"
+
+msgid "Filtrer"
+msgstr "Filter"
+
+msgid "FirstDelivery : localités indisponibles (échec récent, nouvelle tentative dans quelques minutes)."
+msgstr "FirstDelivery: localities unavailable (recent failure, retry in a few minutes)."
+
+msgid "Historique (%d)"
+msgstr "History (%d)"
+
+msgid "INTIGO : régions indisponibles (échec récent, nouvelle tentative dans quelques minutes)."
+msgstr "INTIGO: regions unavailable (recent failure, retry in a few minutes)."
+
+msgid "INTIGO : réponse des régions invalide."
+msgstr "INTIGO: invalid regions response."
+
+msgid "Jetpack : token de suivi manquant — renseignez-le dans les réglages Jetpack (espace expéditeur → Paramètres → API, champ token de tracking, distinct du token d'ajout)."
+msgstr "Jetpack: tracking token missing — set it in the Jetpack settings (sender account → Settings → API, tracking token field, distinct from the add token)."
+
+msgid "La localité (locality_id) est résolue automatiquement PAR COMMANDE depuis la liste /localities de FirstDelivery (match ville/délégation + gouvernorat). Ce réglage n'est qu'un SECOURS si la localité de la commande n'est pas résolue. Laisser 0 pour ne pas envoyer de secours."
+msgstr "The locality (locality_id) is resolved automatically PER ORDER from the FirstDelivery /localities list (city/delegation + governorate matching). This setting is only a FALLBACK when the order's locality cannot be resolved. Leave 0 to send no fallback."
+
+msgid "Laissez vide pour le libellé par défaut (traduit selon la langue du site)."
+msgstr "Leave empty for the default label (translated per site language)."
+
+msgid "Laissez vide pour le libellé par défaut. La langue utilisée suit le réglage « Langue du site » de WordPress (fr/en/ar)."
+msgstr "Leave empty for the default label. Language follows the WordPress \"Site language\" setting (fr/en/ar)."
+
+msgid "Libellés personnalisés"
+msgstr "Custom labels"
+
+msgid "Livrée"
+msgstr "Delivered"
+
+msgid "Localité par défaut (secours)"
+msgstr "Default locality (fallback)"
+
+msgid "Navex : aucun code de suivi dans la réponse de création (bloc « colis » absent). Détail dans les logs — contactez Navex si cela persiste."
+msgstr "Navex: no tracking code in the creation response (« colis » block missing). See logs — contact Navex if this persists."
+
+msgid "Ne pas changer (comportement WooCommerce)"
+msgstr "Do not change (WooCommerce default)"
+
+msgid "N° suivi"
+msgstr "Tracking #"
+
+msgid "Paiement en attente"
+msgstr "Payment pending"
+
+msgid "Pipeline par défaut : Commande (COD) → En attente → Confirmée → Emballée → Téléchargée → Livrée / Retournée. L’admin peut passer d’une étape à l’autre librement (ex. En attente → Téléchargée). Le suivi automatique et le scan des statuts suivent toutes les étapes."
+msgstr "Default pipeline: Order (COD) → On hold → Confirmed → Packed → Synced → Delivered / Returned. Admin can freely jump between steps (e.g. On hold → Synced). Auto tracking and status scan follow all steps."
+
+msgid "Plein écran"
+msgstr "Fullscreen"
+
+msgid "Remettre la couleur par défaut"
+msgstr "Reset to default color"
+
+msgid "Retournée"
+msgstr "Returned"
+
+msgid "Retournée (statut personnalisé)"
+msgstr "Returned (custom status)"
+
+msgid "Retry en cours..."
+msgstr "Retrying..."
+
+msgid "Réduire"
+msgstr "Shrink"
+
+msgid "Réessayer la synchronisation"
+msgstr "Retry sync"
+
+msgid "Résultat"
+msgstr "Result"
+
+msgid "Seule une commande synchronisée peut être annulée chez le transporteur."
+msgstr "Only a synced order can be cancelled with the carrier."
+
+msgid "Statut"
+msgstr "Status"
+
+msgid "Statut commande"
+msgstr "Order status"
+
+msgid "Sync"
+msgstr "Sync"
+
+msgid "Synchronisation..."
+msgstr "Syncing..."
+
+msgid "Synchroniser avec le transporteur"
+msgstr "Sync with carrier"
+
+msgid "Synchroniser cette commande ?"
+msgstr "Sync this order?"
+
+msgid "Synchronisé !"
+msgstr "Synced!"
+
+msgid "Terminée"
+msgstr "Completed"
+
+msgid "Tout"
+msgstr "All"
+
+msgid "Tracking"
+msgstr "Tracking"
+
+msgid "Transporteur"
+msgstr "Carrier"
+
+msgid "Transporteur inconnu sur cette commande."
+msgstr "Unknown carrier for this order."
+
+msgid "Téléchargement..."
+msgstr "Downloading..."
+
+msgid "Télécharger étiquette"
+msgstr "Download label"
+
+msgid "Téléchargée"
+msgstr "Synced"
+
+msgid "Téléchargée — étiquette tirée, colis au transporteur"
+msgstr "Synced — label printed, parcel handed to carrier"
+
+msgid "Téléphone \"%s\" : l'API AFEX attend exactement 8 chiffres."
+msgstr "Phone \"%s\": the AFEX API expects exactly 8 digits."
+
+msgid "Une synchronisation est en cours pour cette commande — réessayez l'annulation après."
+msgstr "A synchronization is in progress for this order — retry the cancellation afterwards."
+
+msgid "Vérification..."
+msgstr "Checking..."
+
+msgid "Vérifier les statuts des colis"
+msgstr "Check parcel statuses"
+
+msgid "[WCMCS] Colis annulé chez %1$s (tracking %2$s). Commande re-synchronisable."
+msgstr "[WCMCS] Parcel cancelled with %1$s (tracking %2$s). Order can be re-synced."
+
+msgid "[WCMCS] Colis encore chez %1$s (« %2$s ») — statut commande : « %3$s »."
+msgstr "[WCMCS] Parcel still with %1$s (\"%2$s\") — order status: \"%3$s\"."
+
+msgid "[WCMCS] Livré chez %1$s (%2$s) — statut commande : « %3$s »."
+msgstr "[WCMCS] Delivered by %1$s (%2$s) — order status: \"%3$s\"."
+
+msgid "[WCMCS] Retour chez %1$s (%2$s) — statut commande : « %3$s »."
+msgstr "[WCMCS] Return at %1$s (%2$s) — order status: \"%3$s\"."
+
+msgid "[WCMCS] Sync réussi via %1$s — statut commande : « %2$s »."
+msgstr "[WCMCS] Sync completed via %1$s — order status: \"%2$s\"."
+
+msgid "colis affichés"
+msgstr "parcels shown"
+
+msgid "colis vérifié(s)"
+msgstr "parcel(s) checked"
+
+msgid "erreur(s) API"
+msgstr "API error(s)"
+
+msgid "inconnu"
+msgstr "unknown"
+
+msgid "livré → « Livrée », retour → « Retournée », colis « En attente »/« En cours » (FirstDelivery) → « En attente », note à chaque changement d'état."
+msgstr "Delivered → \"Delivered\", return → \"Returned\", parcel \"En attente\"/\"En cours\" (FirstDelivery) → \"On hold\", note on each state change."
+
+msgid "non configuré"
+msgstr "not configured"
+
+msgid "pré-état livreur : %s (clôture runsheet en attente)"
+msgstr "courier pre-state: %s (runsheet closure pending)"
+
+msgid "statut(s) mis à jour"
+msgstr "status(es) updated"
+
+msgid "État actuel"
+msgstr "Current state"
+
+msgid "↺ Retry"
+msgstr "↺ Retry"
+
+msgid "⇄ Synchroniser"
+msgstr "⇄ Sync"
+
+msgid "▶ Lancer la vérification"
+msgstr "▶ Start checking"
+
+msgid "☎ Marquer confirmée"
+msgstr "☎ Mark confirmed"
+
+msgid "✕ Annuler"
+msgstr "✕ Cancel"
+
+msgid "✕ Annuler le colis"
+msgstr "✕ Cancel parcel"
+
+msgid "📍 Vérifier le statut"
+msgstr "📍 Check status"
+
+msgid "📍 Vérifier tous les statuts"
+msgstr "📍 Check all statuses"
+
+msgid "📦 Marquer emballée"
+msgstr "📦 Mark packed"
+
+msgid "📦 Synchronisation transporteur"
+msgstr "📦 Carrier sync"
+
+msgid "📦 Synchroniser commandes"
+msgstr "📦 Sync orders"

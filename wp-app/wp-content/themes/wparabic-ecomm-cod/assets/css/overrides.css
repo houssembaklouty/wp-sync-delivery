@@ -1,0 +1,1664 @@
+/* ===========================================================================
+   Surcharges propres a ce theme.
+   Tout le reste du design vient de style.css (theme hanout vendore, GPL v2+).
+   Garder ce fichier COURT : chaque regle ici est un ecart avec la reference.
+   =========================================================================== */
+
+/* ===========================================================================
+   PLEINE LARGEUR (container fluide)
+   ---------------------------------------------------------------------------
+   Le theme plafonne la largeur via DEUX echelles independantes :
+     A. .container                              -> vendor.css (540/720/940/1130)
+     B. .head-mast-container/.head-search-...   -> style.css  (540/720/940/1130)
+   Ne traiter que la premiere laisserait tout l'en-tete bloque a 1130px.
+
+   .container-fluid, lui, ne recoit JAMAIS de largeur dans vendor.css : il est
+   nativement pleine largeur, rien a surcharger. Les gabarits emettent l'une ou
+   l'autre classe selon Personnaliser -> (panneau du theme) -> التخطيط, via
+   wparabic_container_class() (functions.php). .container n'est donc plus
+   surcharge : c'est ce qui rend le mode « limite » possible.
+
+   Restent ici les deux conteneurs d'en-tete, qui eux sont toujours en pleine
+   largeur (decision : l'en-tete et le pied ne suivent pas le reglage). Les
+   media queries n'ajoutant AUCUNE specificite, ces regles battent les quatre
+   paliers de style.css par le seul ordre de chargement (overrides.css est enfile en
+   dernier, functions.php).
+
+   Sous 576px les trois conteneurs sont deja a 100% : le mobile est inchange.
+   =========================================================================== */
+
+.head-mast-container,
+.head-search-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Marges laterales progressives. La gouttiere reste coherente : .row porte
+   margin:0 -15px et .col-* padding:0 15px, donc le contenu commence bien au
+   niveau du padding du conteneur.
+   Volontairement PAS applique a .container : ses largeurs sont fixes, un
+   padding de 50px rognerait le contenu de 70px au lieu de l'ecarter du bord. */
+@media (min-width: 576px) {
+  .container-fluid,
+  .head-mast-container,
+  .head-search-container {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-fluid,
+  .head-mast-container,
+  .head-search-container {
+    padding-right: 30px;
+    padding-left: 30px;
+  }
+}
+
+@media (min-width: 992px) {
+  .container-fluid,
+  .head-mast-container,
+  .head-search-container {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+}
+
+@media (min-width: 1350px) {
+  .container-fluid,
+  .head-mast-container,
+  .head-search-container {
+    padding-right: 50px;
+    padding-left: 50px;
+  }
+}
+
+/* Le tiroir mobile fait 370px : sa recherche reste pleine largeur, sans marge. */
+#mobilemenu .head-search-container {
+  width: 100%;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+/* --- Plafonds de hauteur ---------------------------------------------------
+   .block-item-* sont des boites a ratio (height:0 + padding-bottom:%). En
+   pleine largeur la banniere atteindrait ~1380px de haut sur un 2560px.
+   max-height est inoperant sur du padding : on bascule en hauteur fixe, ce qui
+   reste propre puisque .block-item est en background-size:cover.
+
+   Reserve au mode pleine largeur : ces seuils sont exprimes en largeur d'ECRAN,
+   or en mode limite le conteneur plafonne a 1130px quel que soit l'ecran. Le
+   ratio d'origine y suffit — c'est exactement le rendu de la reference. */
+   Le conteneur est emis A L'INTERIEUR de la <section> du widget
+   (before_widget, functions.php), d'ou l'ordre .widget_x .container-fluid. */
+@media (min-width: 1200px) {
+  .widget_at-home-hero .container-fluid .block-item-lg,
+  .widget_at-home-hero .container-fluid .block-item-xl {
+    padding-bottom: 0;
+    height: 520px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .widget_at-home-hero .container-fluid .block-item-lg,
+  .widget_at-home-hero .container-fluid .block-item-xl {
+    height: 560px;
+  }
+
+  /* Tuiles de categories : le duo est calibre lg ~ 2 x md + gouttiere,
+     on plafonne les deux ensemble pour conserver ce rapport. */
+  .widget_at-home-woocommerce-categories .container-fluid .block-item-lg {
+    padding-bottom: 0;
+    height: 520px;
+  }
+
+  .widget_at-home-woocommerce-categories .container-fluid .block-item-md {
+    padding-bottom: 0;
+    height: 245px;
+  }
+}
+
+/* --- Colonnes produits sur grand ecran -------------------------------------
+   La grille est en CSS Grid (repeat(N,1fr)) : les classes col-* des cartes sont
+   neutralisees par flex:none. C'est donc columns-N qui decide.
+   Les images sont generees en 630x630 (add_image_size) : au-dela les cartes
+   seraient floues, on ajoute donc des colonnes plutot que de les elargir.
+
+   Specificite alignee sur style.css, qui utilise
+   « .widget_at-home-latest-products .row-items.columns-5 » (0,3,0) : une regle
+   en 0,2,0 perdrait malgre l'ordre de chargement. Le .container-fluid ajoute
+   ici ne fait que renforcer ce compte.
+
+   Comme les plafonds de hauteur, reserve au mode pleine largeur : a 1130px,
+   6 ou 7 colonnes donneraient des cartes de 150px. */
+@media (min-width: 1600px) {
+  .container-fluid .row-items[class*="columns"],
+  .container-fluid .thanks-products {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (min-width: 2000px) {
+  .container-fluid .row-items[class*="columns"],
+  .container-fluid .thanks-products {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+/* --- Grilles incompletes : centrer les cartes -----------------------------
+   Une grille repeat(N,1fr) avec moins de N cartes laisse des colonnes vides
+   d'un seul cote (ex. 4 produits dans columns-5, ou 4 avantages passes a 6
+   colonnes en pleine largeur au-dela de 1600px). Dans ce cas on passe la
+   grille en flex centre : les cartes gardent exactement la largeur qu'elles
+   auraient dans la grille a N colonnes, mais la rangee est centree.
+   :has() : Chrome 105+, Safari 15.4+, Firefox 121+ ; ailleurs la grille
+   d'origine s'applique, sans casse. */
+@media (min-width: 993px) {
+  .row-items.columns-3:not(:has(> :nth-child(3))) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+  .row-items.columns-3:not(:has(> :nth-child(3))) > [class*="col-"] {
+    flex: 0 0 calc((100% - 2 * 25px) / 3);
+    max-width: calc((100% - 2 * 25px) / 3);
+  }
+  .row-items.columns-4:not(:has(> :nth-child(4))) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+  .row-items.columns-4:not(:has(> :nth-child(4))) > [class*="col-"] {
+    flex: 0 0 calc((100% - 3 * 25px) / 4);
+    max-width: calc((100% - 3 * 25px) / 4);
+  }
+  .row-items.columns-5:not(:has(> :nth-child(5))) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+  .row-items.columns-5:not(:has(> :nth-child(5))) > [class*="col-"] {
+    flex: 0 0 calc((100% - 4 * 25px) / 5);
+    max-width: calc((100% - 4 * 25px) / 5);
+  }
+}
+
+/* Pleine largeur : la grille passe a 6 colonnes (voir plus haut). */
+@media (min-width: 1600px) {
+  .container-fluid .row-items[class*="columns"]:not(:has(> :nth-child(6))) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+  .container-fluid .row-items[class*="columns"]:not(:has(> :nth-child(6))) > [class*="col-"] {
+    flex: 0 0 calc((100% - 5 * 25px) / 6);
+    max-width: calc((100% - 5 * 25px) / 6);
+  }
+}
+
+/* Pleine largeur : la grille passe a 7 colonnes (voir plus haut). */
+@media (min-width: 2000px) {
+  .container-fluid .row-items[class*="columns"]:not(:has(> :nth-child(7))) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+  .container-fluid .row-items[class*="columns"]:not(:has(> :nth-child(7))) > [class*="col-"] {
+    flex: 0 0 calc((100% - 6 * 25px) / 7);
+    max-width: calc((100% - 6 * 25px) / 7);
+  }
+}
+
+/* --- Banniere d'accroche (widget at-home-hero) ----------------------------
+   Tout le reste vient de .block-item / .block-item-content de style.css. */
+
+/* Teinte grise sur l'image (rgb(43 44 44 / 40%) definie dans style.css via
+   .block-item::before) : desactivable par case a cocher dans le widget. */
+.widget_at-home-hero .block-item.block-item-no-overlay::before {
+  display: none;
+}
+
+#page .block-item-subtitle {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: inherit;
+  opacity: 0.9;
+}
+
+@media (min-width: 992px) {
+  #page .block-item-subtitle {
+    font-size: 18px;
+  }
+}
+
+/* --- Section « pourquoi nous » de l'accueil : tuiles sans image produit ---- */
+.widget_at-home-post-type-items .item-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  background-color: #f6f9fc;
+  border-radius: 6px;
+}
+
+.widget_at-home-post-type-items .item-thumb i {
+  font-size: 52px;
+  color: var(--wparabic-primary, #259bea);
+}
+
+.widget_at-home-post-type-items .item-content {
+  text-align: center;
+}
+
+.widget_at-home-post-type-items .item-excerpt {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: #8e8e8e;
+}
+
+/* --- Produits lies / ventes incitatives (sous la fiche produit) -----------
+   functions.php fait emettre aux boucles WooCommerce le conteneur du theme
+   (.row.row-items.products.columns-N) au lieu de <ul class="products"> : les
+   cartes, le bouton et les colonnes viennent donc de .row-items (style.css).
+   Ne reste ici que ce qui est propre a ces sections. */
+#page .related.products,
+#page .upsells.products {
+  margin: 50px 0 0;
+  text-align: center;
+}
+
+/* Titre au meme style que les sections de l'accueil (.section-title). */
+#page .related.products > h2,
+#page .upsells.products > h2 {
+  display: inline-block;
+  position: relative;
+  margin: 0 0 20px;
+  color: #000;
+  font-size: 26px;
+}
+
+#page .related.products > h2::after,
+#page .upsells.products > h2::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  height: 6px;
+  background: var(--wparabic-primary, #259bea);
+  opacity: 0.6;
+}
+
+#page .related.products .row-items,
+#page .upsells.products .row-items {
+  text-align: start;
+}
+
+/* Grand ecran : WooCommerce n'affiche que 4 produits lies. Les 6 ou 7
+   colonnes du mode pleine largeur laisseraient la moitie de la ligne vide. */
+@media (min-width: 1600px) {
+  #page .container-fluid .related .row-items[class*="columns"],
+  #page .container-fluid .upsells .row-items[class*="columns"] {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tablette : 3 colonnes (style.css ne descend a 3 que pour les widgets). */
+@media (min-width: 768px) and (max-width: 991px) {
+  #page .related .row-items[class*="columns"],
+  #page .upsells .row-items[class*="columns"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  #page .related.products,
+  #page .upsells.products {
+    margin-top: 35px;
+  }
+  #page .related.products > h2,
+  #page .upsells.products > h2 {
+    font-size: 22px;
+  }
+}
+
+/* --- Barre d'achat flottante ----------------------------------------------
+   style.css (vendore) pose .sticky-atc-btn{display:none} mais ne definit AUCUNE
+   regle d'affichage : le JS basculait une classe .visible qui n'existait nulle
+   part, la barre ne s'affichait donc jamais. Le theme d'origine la revelait par
+   un style en ligne (slideDown), d'ou l'absence de regle.
+
+   Bornee au mobile et a la tablette : au-dela de 991px le formulaire COD occupe
+   la colonne de droite, en permanence a l'ecran. Aucune regle d'affichage
+   n'existant au-dessus de ce palier, rien a desactiver en JS.
+
+   Specificite (1,2,0) contre (0,1,0) : la regle passe quel que soit l'ordre. */
+@media (max-width: 991px) {
+  /* display:block en permanence, mais glissee hors de l'ecran : on ne peut pas
+     animer depuis display:none. visibility retire la barre de l'ordre de
+     tabulation et de l'arbre d'accessibilite tant qu'elle est masquee. */
+  #page .sticky-atc-btn {
+    display: block;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+  }
+
+  #page .sticky-atc-btn.visible {
+    visibility: visible;
+    transform: translateY(0);
+    transition: transform 0.25s ease, visibility 0s;
+  }
+
+  /* Le bouton d'appel flottant passe a bottom:30px sur mobile et chevauchait
+     la barre (66px de haut). On le remonte juste au-dessus, en conservant le
+     meme ecart visuel. */
+  body.has-sticky-atc .callus-icon {
+    bottom: 96px;
+    transition: bottom 0.25s ease;
+  }
+}
+
+/* --- Onglets de la fiche produit ------------------------------------------
+   Le CSS vendore pose .wc-tabs li{margin:0;padding:0} : la reference n'avait
+   qu'un seul onglet, l'absence d'espacement ne se voyait pas. Avec les onglets
+   natifs (description, informations, avis) il en faut un. */
+#page .wc-tabs {
+  gap: 25px;
+}
+
+#page .wc-tabs li a {
+  display: inline-block;
+  padding-bottom: 3px;
+  font-weight: 700;
+}
+
+#page .wc-tabs li.active a {
+  color: #000;
+  border-bottom: 2px solid var(--wparabic-primary, #259bea);
+}
+
+/* --- Page « commande recue » ----------------------------------------------- */
+.woocommerce-order {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.woocommerce-order .woocommerce-thankyou-order-received {
+  margin-bottom: 25px;
+  padding: 18px 20px;
+  border-radius: 6px;
+  background: var(--wparabic-primary-lighter, #f0f9ff);
+  border: 2px solid var(--wparabic-primary, #259bea);
+  color: #000;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.woocommerce-order .woocommerce-order-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 0 0 30px;
+  padding: 0;
+  list-style: none;
+}
+
+.woocommerce-order .woocommerce-order-overview li {
+  flex: 1 1 160px;
+  padding: 12px 15px;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #8e8e8e;
+}
+
+.woocommerce-order .woocommerce-order-overview li strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+  color: #000;
+}
+
+/* --- Adresse de livraison -------------------------------------------------
+   Le formulaire COD est une grille a 2 colonnes (cod-form.css) : l'adresse
+   occupe la ligne entiere, elle a besoin de place. En dessous de 488px la
+   grille passe a une colonne, la regle devient sans effet. */
+#codplugin_address_field {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+#codplugin_address_field .woocommerce-input-wrapper,
+#codplugin_address_field input {
+  width: 100%;
+}
+
+/* Memes cotes que les autres champs du formulaire. */
+#codplugin-checkout #full_address {
+  height: 50px;
+  border: 2px solid var(--wparabic-primary-light, #bce0f7);
+}
+
+/* --- Champ etale sur les deux colonnes ------------------------------------
+   Emise par inc/cod-form.php quand un nombre impair de champs precede
+   l'adresse : sans elle, le dernier resterait seul avec une cellule vide a sa
+   droite. Jamais emise a configuration par defaut (quatre champs avant
+   l'adresse). Le calcul est fait en PHP et non par :nth-child(), qui compterait
+   aussi les six <input type="hidden"> du formulaire. */
+#codplugin_woo_single_form .cod-span-2 {
+  grid-column: 1 / -1;
+}
+
+/* --- Cascade gouvernorat -> delegation ------------------------------------ */
+#codplugin_city:disabled {
+  background-color: #f7f8f8;
+  cursor: not-allowed;
+}
+
+/* --- Variations WooCommerce dans la carte COD -----------------------------
+   Le <table class="variations"> est un frere de #codplugin_woo_single_form :
+   il n'entre donc pas dans sa grille 2 colonnes, il lui faut la sienne.
+   auto-fit gere 1, 2 ou N attributs sans condition.
+
+   Attention : WooCommerce 10.7 emet <th class="label">, alors que le CSS
+   vendore (style.css:4644, 6731) ne cible que td.label / td — sans les regles
+   ci-dessous la cellule de libelle herite du table,td,th{border:1px solid}
+   de cod-form.css et prend un cadre gris.
+   -------------------------------------------------------------------------- */
+#codplugin-checkout .variations_form {
+  margin: 0 0 15px;
+}
+
+#codplugin-checkout table.variations {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-collapse: collapse;
+}
+
+#codplugin-checkout .variations tbody {
+  display: grid;
+  grid-gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+#codplugin-checkout .variations tr {
+  display: block;
+}
+
+#codplugin-checkout .variations th,
+#codplugin-checkout .variations td {
+  display: block;
+  width: auto;
+  max-width: none;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+#codplugin-checkout .variations th.label {
+  margin: 0 0 5px;
+  text-align: start;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+#codplugin-checkout .variations th.label label {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Memes cotes que #codplugin_state / #codplugin_city (cod-form.css).
+   La fleche du select est laissee au style global : c'est deja celle des
+   autres champs de la carte, RTL comprise. */
+#codplugin-checkout .variations select {
+  width: 100%;
+  height: 50px;
+  border: 2px solid var(--wparabic-primary-light, #bce0f7);
+  border-radius: 3px;
+  color: #333;
+  cursor: pointer;
+}
+
+/* required est pose par wparabic_variation_dropdown_args() : le vert arrive
+   des qu'une option est choisie, comme les champs du formulaire COD. */
+#codplugin-checkout .variations select:valid {
+  border-color: #69bf29;
+}
+
+#codplugin-checkout .variations select:focus {
+  border-color: var(--wparabic-primary, #259bea);
+  outline: none;
+}
+
+/* --- Messages d'indisponibilite -------------------------------------------
+   .woocommerce-info n'est pas stylee : woocommerce_enqueue_styles est vide. */
+#codplugin-checkout .wc-no-matching-variations,
+#codplugin-checkout .stock.out-of-stock,
+#codplugin-checkout .codplugin-variation-hint {
+  margin: 0 0 15px;
+  padding: 8px 12px;
+  border-radius: 3px;
+  background: #fdecec;
+  color: #d65d67;
+  font-size: 14px;
+  text-align: center;
+}
+
+#codplugin-checkout #nrwooconfirm[disabled] {
+  background-color: var(--wparabic-primary-disabled, #a9cfe9);
+  cursor: not-allowed;
+}
+
+/* --- Boutons de variation (inc/attribute-colors.php) ----------------------
+   Chaque attribut est une rangee de boutons ; le <select> natif reste pour
+   wc-add-to-cart-variation.js mais est masque (accessible aux lecteurs
+   d'ecran via les boutons, pas via le select). */
+#codplugin-checkout .variations select.wparabic-hidden-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Un attribut par ligne : les boutons ont besoin de toute la largeur. */
+#codplugin-checkout .variations tbody {
+  grid-template-columns: 1fr;
+}
+
+#codplugin-checkout .variations td.value {
+  position: relative;
+}
+
+#codplugin-checkout .wparabic-chosen {
+  margin: 0;
+  font-weight: 400;
+  color: #555;
+}
+
+#codplugin-checkout .wparabic-chosen:empty {
+  display: none;
+}
+
+#codplugin-checkout .wparabic-chosen::before {
+  content: ":\00a0";
+  color: #333;
+  font-weight: 700;
+}
+
+#codplugin-checkout .wparabic-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+}
+
+#codplugin-checkout .wparabic-swatch {
+  position: relative;
+  margin: 0;
+  border: 1px solid #e1e5e5;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+#codplugin-checkout .wparabic-swatch:hover:not(.is-disabled) {
+  border-color: #999;
+}
+
+#codplugin-checkout .wparabic-swatch:focus-visible {
+  outline: 2px solid var(--wparabic-primary, #259bea);
+  outline-offset: 2px;
+}
+
+/* Pointure, taille... */
+#codplugin-checkout .wparabic-swatch--text {
+  min-width: 58px;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 15px;
+  line-height: 38px;
+  text-align: center;
+}
+
+#codplugin-checkout .wparabic-swatch--text.is-active {
+  border: 1px solid #000;
+  background: #ececec;
+  box-shadow: inset 0 0 0 1px #000;
+  font-weight: 700;
+}
+
+/* Couleur */
+#codplugin-checkout .wparabic-swatch--color {
+  width: 58px;
+  height: 40px;
+  padding: 4px;
+  line-height: 0;
+}
+
+#codplugin-checkout .wparabic-swatch-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+}
+
+#codplugin-checkout .wparabic-swatch--color.is-active {
+  border-color: #000;
+  box-shadow: inset 0 0 0 1px #000;
+}
+
+/* Indisponible (epuise ou combinaison inexistante) */
+#codplugin-checkout .wparabic-swatch.is-disabled {
+  color: #b5b5b5;
+  border-color: #eee;
+  background: #fff;
+  cursor: not-allowed;
+}
+
+#codplugin-checkout .wparabic-swatch--color.is-disabled {
+  opacity: 0.35;
+}
+
+#codplugin-checkout .wparabic-swatch--text.is-disabled::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  right: 8px;
+  border-top: 1px solid #d0d0d0;
+  transform: rotate(-20deg);
+}
+
+@media (max-width: 488px) {
+  #codplugin-checkout .wparabic-swatches {
+    gap: 8px;
+  }
+  #codplugin-checkout .wparabic-swatch--text,
+  #codplugin-checkout .wparabic-swatch--color {
+    min-width: 52px;
+    height: 40px;
+  }
+  #codplugin-checkout .wparabic-swatch--color {
+    width: 52px;
+  }
+}
+
+/* --- Libelle de variation dans le recapitulatif ---------------------------
+   Une ligne par article : le selecteur par prefixe couvre les lignes 1..N
+   rendues par wparabic_cod_form() (badge « x count » inclus), tout en
+   restant compatible avec l'ancien HTML en cache (#codplugin_variation_label
+   nu, #codplugin_count_number nu). */
+#codplugin_variation_label,
+[id^="codplugin_variation_label_"] {
+  display: block;
+  font-weight: 400 !important;
+  font-size: 13px;
+  color: #8e8e8e;
+}
+
+#codplugin_count_number,
+[id^="codplugin_count_number_"] {
+  display: inline-block;
+  font-size: 12px;
+  height: 18px;
+  line-height: 18px;
+  padding: 0 3px;
+  background-color: var(--wparabic-primary, #259bea);
+  border-radius: 3px;
+  color: #fff;
+  font-weight: 700;
+}
+
+#codplugin_count_number:before,
+[id^="codplugin_count_number_"]:before {
+  content: 'x ';
+}
+
+@media (max-width: 488px) {
+  #codplugin-checkout .variations tbody {
+    grid-gap: 13px;
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Numeros de telephone en RTL --------------------------------------------
+   functions.php (wparabic_ltr_phone / wparabic_ltr_phones) entoure les numeros
+   de <bdi dir="ltr"> : sans cela « 20 439 475 » s'affichait « 475 439 20 ». */
+.ltr-number {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Champs telephone : le placeholder arabe garde le sens de la page ; des
+   qu'un numero est saisi (meme avec espaces ou +216), le champ passe en LTR
+   pour qu'il reste dans l'ordre, aligne a droite comme les autres champs.
+   (unicode-bidi: plaintext masquait le placeholder dans certains navigateurs.) */
+input[type="tel"]:not(:placeholder-shown),
+.rtl #codplugin_woo_single_form input[type="tel"]:not(:placeholder-shown) {
+  /* rtl.css force « .rtl #codplugin_woo_single_form input { direction: rtl } » */
+  direction: ltr;
+  text-align: right;
+}
+
+/* Boutique en francais / anglais (LTR) : le numero reste aligne a gauche. */
+html:not([dir="rtl"]) input[type="tel"]:not(:placeholder-shown) {
+  text-align: left;
+}
+
+/* --- Formulaire COD : une colonne sur mobile et tablette -------------------
+   cod-form.css ne passe a 1 colonne que sous 489px. Sous 992px (meme seuil
+   que la barre d'achat flottante), chaque champ prend toute la largeur. */
+@media (max-width: 991px) {
+  #codplugin_woo_single_form {
+    grid-template-columns: 1fr;
+  }
+  #codplugin_woo_single_form .cod-span-2 {
+    grid-column: auto;
+  }
+}
+
+/* --- Survol de tous les boutons : Personnaliser > الألوان > لون التمرير -------
+   style.css applique deja var(--wparabic-accent) au survol des boutons
+   generiques (.btn, .button, submit...). Les boutons ci-dessous ont une couleur
+   posee par identifiant ou par un selecteur plus fort : il faut leur donner
+   le survol explicitement. Le bouton WhatsApp garde son vert de marque. */
+#codplugin-checkout #nrwooconfirm,
+.sticky-atc-btn a,
+.callus-icon,
+.btn,
+.button {
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#codplugin-checkout #nrwooconfirm:not([disabled]):hover,
+#nrwooconfirm.atc-buy-button .button:hover,
+.sticky-atc-btn a:hover,
+.callus-icon:hover,
+#page .block-item .btn:hover,
+#page .btn-block-item:hover,
+#page .item-product .button:hover,
+#page .woocommerce-pagination .page-numbers a:hover,
+#page .category-search-btn:hover {
+  background-color: var(--wparabic-accent, #ea593c);
+  border-color: var(--wparabic-accent, #ea593c);
+  color: #fff;
+}
+
+/* --- Selecteur de langue (inc/languages.php) ------------------------------
+   Liste deroulante a drapeaux. Ouverture : classe .is-open (main.js) ou
+   :focus-within sans JS. Position en inset-inline-end : juste en RTL et LTR. */
+.lang-switcher {
+  position: relative;
+}
+
+.lang-switcher-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #e1e5e5;
+  border-radius: 20px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lang-switcher-toggle:hover,
+.lang-switcher.is-open .lang-switcher-toggle {
+  border-color: var(--wparabic-primary, #259bea);
+}
+
+.lang-switcher-toggle:focus-visible,
+.lang-switcher-menu a:focus-visible {
+  outline: 2px solid var(--wparabic-primary, #259bea);
+  outline-offset: 2px;
+}
+
+.lang-flag {
+  display: block;
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.lang-switcher-chevron {
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+
+.lang-switcher.is-open .lang-switcher-chevron {
+  transform: rotate(180deg);
+}
+
+.lang-switcher-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 160px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid #e1e5e5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.25);
+}
+
+.lang-switcher.is-open .lang-switcher-menu,
+.lang-switcher:not(.js-ready):focus-within .lang-switcher-menu {
+  display: block;
+}
+
+.lang-switcher-menu li {
+  margin: 0;
+}
+
+.lang-switcher-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: #333;
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lang-switcher-menu a:hover {
+  background: var(--wparabic-primary-lighter, #f0f9ff);
+  color: #000;
+}
+
+.lang-switcher-menu a.is-active {
+  background: var(--wparabic-primary-lighter, #f0f9ff);
+  color: var(--wparabic-primary, #259bea);
+  font-weight: 700;
+}
+
+.lang-switcher--header {
+  margin-inline-end: 10px;
+}
+
+/* Menu mobile : pleine largeur, liste dans le flux. */
+.lang-switcher--mobile {
+  margin: 15px 0;
+}
+
+.lang-switcher--mobile .lang-switcher-toggle {
+  width: 100%;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.lang-switcher--mobile .lang-switcher-menu {
+  position: static;
+  margin-top: 6px;
+  box-shadow: none;
+}
+
+/* Petits ecrans : le selecteur de l'en-tete passe dans le menu mobile. */
+@media (max-width: 575px) {
+  .lang-switcher--header {
+    display: none;
+  }
+}
+
+/* Boutique en LTR (francais / anglais) : le compteur de quantite est ecrit
+   « + n - » pour le RTL ; on garde l'ordre visuel « - n + ». */
+html:not([dir="rtl"]) #codplugin-checkout .form-qte {
+  direction: rtl;
+}
+
+/* --- Bandeau superieur : defilement continu (marquee) ----------------------
+   header.php + initTopMarquee() dans assets/js/main.js. Sans JS, ou avec
+   « reduire les animations », les messages restent fixes et centres. */
+.top-marquee {
+  position: relative;
+  max-height: none;
+  overflow: hidden;
+}
+
+.top-marquee-track {
+  display: block;
+}
+
+.top-marquee-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 30px;
+}
+
+.top-marquee-item {
+  display: inline-block;
+}
+
+/* En mouvement : une seule ligne, piste plus large que l'ecran. */
+.top-marquee.is-running .top-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: wparabic-marquee var(--marquee-duration, 20s) linear infinite;
+  will-change: transform;
+}
+
+.top-marquee.is-running .top-marquee-group {
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  column-gap: 0;
+}
+
+.top-marquee.is-running .top-marquee-item {
+  flex-shrink: 0;
+  padding: 0 30px;
+  white-space: nowrap;
+}
+
+/* Pause au survol pour lire un message. */
+.top-marquee.is-running:hover .top-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Bords en fondu, de la couleur du bandeau (Personnaliser > الألوان). */
+.top-marquee.is-running::before,
+.top-marquee.is-running::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 40px;
+  pointer-events: none;
+}
+
+.top-marquee.is-running::before {
+  left: 0;
+  background: linear-gradient(to right, var(--wparabic-topbar-bg, #000), transparent);
+}
+
+.top-marquee.is-running::after {
+  right: 0;
+  background: linear-gradient(to left, var(--wparabic-topbar-bg, #000), transparent);
+}
+
+@keyframes wparabic-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--marquee-shift, -50%));
+  }
+}
+
+@media (min-width: 992px) {
+  .top-marquee.is-running .top-marquee-item {
+    padding: 0 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-marquee-track {
+    animation: none !important;
+  }
+}
+
+/* Bloc « ملخص الطلب » masque par le marchand (Personnaliser > صفحة المنتج).
+   Garde dans le DOM : main.js en a besoin. */
+#codplugin-checkout .codplugin-summary.is-hidden {
+  display: none;
+}
+
+/* --- Pied de page centre sur mobile et tablette ----------------------------
+   Sous 992px les colonnes (col-lg-4) s'empilent : titres, traits, liens,
+   telephone, icones et barre du bas sont centres. Au-dela, les colonnes
+   gardent leur alignement. */
+@media (max-width: 991px) {
+  .footer-widgets,
+  .footer-widgets .widget,
+  .footer-info {
+    text-align: center;
+  }
+
+  .footer-widgets .widget-title:after {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .footer-widgets .list-social-icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-info .footer-copyrights,
+  .footer-info .footer-credit {
+    text-align: center;
+  }
+
+  /* Barre du bas : copyright et credit l'un sous l'autre (col-sm-6). */
+  .footer-info .row > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* --- Couleur du texte du pied de page ---------------------------------------
+   --wparabic-footer-text : Personnaliser > الألوان > لون نص أسفل الصفحة, ou
+   automatique selon le fond (functions.php, wparabic_footer_text_color).
+   Selecteurs prefixes par .footer pour passer devant style.css (liens de
+   menu #666, logo #000, .footer #333). */
+.footer .footer-widgets,
+.footer .footer-widgets .widget,
+.footer .footer-widgets .widget-title,
+.footer .footer-widgets p,
+.footer .footer-widgets li,
+.footer .footer-widgets a,
+.footer .footer-widgets .widget a,
+.footer .footer-widgets .widget_nav_menu li a,
+.footer .footer-widgets .site-logo a,
+.footer .footer-widgets .social-icon {
+  color: var(--wparabic-footer-text, #333);
+}
+
+.footer .footer-widgets .social-icon {
+  border-color: color-mix(in srgb, var(--wparabic-footer-text, #333) 35%, transparent);
+}
+
+.footer .footer-widgets .widget a:hover,
+.footer .footer-widgets .widget_nav_menu li a:hover,
+.footer .footer-widgets .social-icon:hover {
+  color: var(--wparabic-primary, #259bea);
+  border-color: var(--wparabic-primary, #259bea);
+}
+
+/* --- Vignettes produit : ratio de WooCommerce --------------------------------
+   style.css force .item-thumb img { aspect-ratio: 1 / 1; object-fit: cover } :
+   le reglage Personnaliser > WooCommerce > Images du produit > Recadrage
+   n'avait aucun effet visible. --wparabic-thumb-ratio vient de ce reglage
+   (functions.php, wparabic_thumb_ratio) : 1 / 1, 3 / 4..., ou auto. */
+.item-thumb img {
+  aspect-ratio: var(--wparabic-thumb-ratio, 1 / 1);
+}
+
+/* Non recadre : image entiere, jamais coupee. */
+.thumbs-uncropped .item-thumb img {
+  height: auto;
+  object-fit: contain;
+}
+
+/* --- Formulaire de commande : piege a robots et message d'erreur ----------
+   .codplugin-hp : champ « Website » invisible pour les visiteurs, rempli
+   seulement par les robots (voir wparabic_cod_ajax_handler). Sorti de
+   l'ecran et de la grille du formulaire ; pas display:none, que certains
+   robots detectent. */
+#codplugin_woo_single_form .codplugin-hp {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+#codplugin-checkout .codplugin-submit-error:focus {
+  outline: 2px solid var(--wparabic-accent, #ea593c);
+  outline-offset: 2px;
+}
+
+/* Origine des commandes (WooCommerce) : element sans rendu qui ne contient
+   que des champs caches. Sans cette regle il occupait une case de la grille
+   du formulaire et decalait tous les champs. */
+#codplugin_woo_single_form wc-order-attribution-inputs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* --- Section categories : modeles grille, cercles, carrousel ---------------
+   inc/home-widgets.php (WPArabic_Home_Widget_Categories::render_list).
+   Penses mobile d'abord ; positions en inset-inline-* : justes en RTL et LTR. */
+.wparabic-cats {
+  position: relative;
+}
+
+.wparabic-cats-track {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wparabic-cat {
+  margin: 0;
+  min-width: 0;
+}
+
+.wparabic-cat-link {
+  display: block;
+  color: #222;
+  text-align: center;
+  text-decoration: none;
+}
+
+.wparabic-cat-media {
+  display: block;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+.wparabic-cat-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.wparabic-cat-link:hover .wparabic-cat-media img {
+  transform: scale(1.06);
+}
+
+.wparabic-cat-name {
+  /* Deux lignes au plus : les noms longs ne sont plus coupes a la premiere. */
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.wparabic-cat-count {
+  display: block;
+  margin-top: 2px;
+  color: #8e8e8e;
+  font-size: 13px;
+}
+
+.wparabic-cat-link:hover .wparabic-cat-name {
+  color: var(--wparabic-primary, #259bea);
+}
+
+/* Grille et carrousel : cartes. */
+.wparabic-cats--grid .wparabic-cat-link,
+.wparabic-cats--carousel .wparabic-cat-link {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #efefef;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 5px 20px -12px rgba(0, 0, 0, 0.2);
+}
+
+.wparabic-cats--grid .wparabic-cat-media,
+.wparabic-cats--carousel .wparabic-cat-media {
+  /* Ratio reglable par l'admin (widget, « نسبة الصور ») via la variable
+     posee sur .wparabic-cats ; 1/1 par defaut. */
+  aspect-ratio: var(--wparabic-ratio, 1 / 1);
+}
+
+.wparabic-cats--grid .wparabic-cat-name,
+.wparabic-cats--carousel .wparabic-cat-name {
+  padding: 12px 10px 0;
+}
+
+.wparabic-cats--grid .wparabic-cat-link > :last-child,
+.wparabic-cats--carousel .wparabic-cat-link > :last-child {
+  padding-bottom: 12px;
+}
+
+/* --- Grille : 2 colonnes mobile, 3 tablette, reglage (2-6) au-dela.
+   En flex centre : une derniere ligne incomplete reste centree. */
+.wparabic-cats--grid .wparabic-cats-track {
+  --gap: 12px;
+  --cols: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.wparabic-cats--grid .wparabic-cat {
+  flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+}
+
+@media (min-width: 768px) {
+  .wparabic-cats--grid .wparabic-cats-track {
+    --gap: 20px;
+    --cols: 3;
+  }
+}
+
+@media (min-width: 992px) {
+  .wparabic-cats--cols-2 .wparabic-cats-track {
+    --cols: 2;
+  }
+  .wparabic-cats--cols-4 .wparabic-cats-track {
+    --cols: 4;
+  }
+  .wparabic-cats--cols-5 .wparabic-cats-track {
+    --cols: 5;
+  }
+  .wparabic-cats--cols-6 .wparabic-cats-track {
+    --cols: 6;
+  }
+}
+
+/* --- Blocs egaux : tuiles plein cadre de meme taille, nom en calque bas.
+   Meme piste flex que la grille (--cols), le reste est specifique. -------- */
+.wparabic-cats--equal .wparabic-cats-track {
+  --gap: 12px;
+  --cols: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.wparabic-cats--equal .wparabic-cat {
+  flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+}
+
+@media (min-width: 768px) {
+  .wparabic-cats--equal .wparabic-cats-track {
+    --gap: 20px;
+    --cols: 3;
+  }
+}
+
+.wparabic-cats--equal .wparabic-cat-link {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #222;
+}
+
+.wparabic-cats--equal .wparabic-cat-media {
+  /* Ratio reglable par l'admin (widget, « نسبة الصور »), 1/1 par defaut. */
+  aspect-ratio: var(--wparabic-ratio, 1 / 1);
+}
+
+.wparabic-cats--equal .wparabic-cat-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 34px 14px 12px;
+  color: #fff;
+  text-align: start;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 45%);
+  background: linear-gradient(to top, rgb(0 0 0 / 55%), transparent);
+}
+
+.wparabic-cats--equal .wparabic-cat-name {
+  color: #fff;
+}
+
+.wparabic-cats--equal .wparabic-cat-count {
+  color: rgb(255 255 255 / 85%);
+}
+
+/* --- Grille 6 colonnes : manquait dans style.css (regles 2 a 5 seulement).
+   Le widget « أقسام حسب التصنيف » propose 2 a 6 colonnes. ------------------ */
+.row-items.columns-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+@media (min-width: 993px) {
+  .row-items.columns-6:not(:has(> :nth-child(6))) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+  .row-items.columns-6:not(:has(> :nth-child(6))) > [class*="col-"] {
+    flex: 0 0 calc((100% - 5 * 25px) / 6);
+    max-width: calc((100% - 5 * 25px) / 6);
+  }
+}
+
+/* --- Option « عرض كامل » : la grille sort du conteneur, bord a bord -------
+   Plutot que le classique calc(50% - 50vw) — qui se cale sur le bloc
+   parent et decalle de quelques px en RTL — on deverrouille le conteneur
+   de la section elle-meme quand elle contient le marqueur .wparabic-row-full
+   (padding/marges bootstrap neutralises, max-width retire). :has() est
+   deja requis par les grilles incompletes plus haut. Le titre de section,
+   centre, s'etale lui aussi sur toute la largeur. */
+.widget-section:has(.wparabic-row-full) > [class*="container"] {
+  max-width: none;
+  padding-inline: 0;
+}
+
+.widget-section:has(.wparabic-row-full) > [class*="container"] > .row {
+  margin-inline: 0;
+}
+
+.widget-section:has(.wparabic-row-full) > [class*="container"] > .row > .col-12 {
+  max-width: none;
+  padding-inline: 0;
+}
+
+/* Tuiles de categories : un peu d'air par rapport aux bords de l'ecran
+   (les grilles produits ont deja leur padding interne de 15px). */
+.wparabic-cats.wparabic-row-full {
+  padding-inline: 15px;
+}
+
+/* --- Option « تمرير أفقي » : une seule rangee qui glisse --------------------
+   La grille (display:grid) devient une piste flex non retournable : les
+   cartes gardent la largeur qu'elles auraient a N colonnes (N = reglage
+   عدد الأعمدة = cartes visibles d'un coup d'oeil), les suivantes se
+   revelent au glissement. Magnétique (scroll-snap) : la piste s'arrete
+   proprement sur une carte. Le glissement RTL est natif. */
+.wparabic-scroll .row-items[class*="columns"] {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.wparabic-scroll .row-items[class*="columns"] > [class*="col-"] {
+  scroll-snap-align: start;
+  max-width: none;
+}
+
+/* Le carrousel produits reutilise le JS + les fleches du carrousel
+   categories (data-wparabic-carousel) : il lui faut un contexte de
+   position pour les boutons. */
+.wparabic-scroll[data-wparabic-carousel] {
+  position: relative;
+}
+
+.wparabic-scroll .row-items.columns-2 > [class*="col-"] { flex: 0 0 calc((100% - 1 * 25px) / 2); }
+.wparabic-scroll .row-items.columns-3 > [class*="col-"] { flex: 0 0 calc((100% - 2 * 25px) / 3); }
+.wparabic-scroll .row-items.columns-4 > [class*="col-"] { flex: 0 0 calc((100% - 3 * 25px) / 4); }
+.wparabic-scroll .row-items.columns-5 > [class*="col-"] { flex: 0 0 calc((100% - 4 * 25px) / 5); }
+.wparabic-scroll .row-items.columns-6 > [class*="col-"] { flex: 0 0 calc((100% - 5 * 25px) / 6); }
+
+/* Mobile : 1,8 carte visible pour signaler le glissement. */
+@media (max-width: 575px) {
+  .wparabic-scroll .row-items[class*="columns"] > [class*="col-"] {
+    flex: 0 0 calc((100% - 25px) * 0.55);
+  }
+}
+
+/* --- Widget « أقسام حسب التصنيف » : groupes de cartes produits, un par
+   catégorie choisie ; l'espacement entre groupes vient de là. ---------- */
+.wparabic-pbc-group {
+  margin-bottom: 40px;
+}
+
+.wparabic-pbc-group:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Cercles : une rangee qui defile au doigt sur mobile, lignes centrees
+   au-dela. */
+.wparabic-cats--circles .wparabic-cats-track {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wparabic-cats--circles .wparabic-cats-track::-webkit-scrollbar {
+  display: none;
+}
+
+.wparabic-cats--circles .wparabic-cat {
+  flex: 0 0 88px;
+  scroll-snap-align: start;
+}
+
+.wparabic-cats--circles .wparabic-cat-media {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 8px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--wparabic-primary, #259bea);
+}
+
+.wparabic-cats--circles .wparabic-cat-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+  .wparabic-cats--circles .wparabic-cats-track {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 28px;
+    overflow: visible;
+  }
+  .wparabic-cats--circles .wparabic-cat {
+    flex-basis: 130px;
+  }
+  .wparabic-cats--circles .wparabic-cat-media {
+    width: 120px;
+    height: 120px;
+  }
+  .wparabic-cats--circles .wparabic-cat-name {
+    font-size: 15px;
+  }
+}
+
+/* --- Carrousel : 2,5 cartes mobile (la carte coupee montre la suite),
+   3 tablette, 4 bureau ; fleches au-dela du mobile. */
+.wparabic-cats--carousel .wparabic-cats-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wparabic-cats--carousel .wparabic-cats-track::-webkit-scrollbar {
+  display: none;
+}
+
+.wparabic-cats--carousel .wparabic-cat {
+  flex: 0 0 calc((100% - 2 * 12px) / 2.5);
+  scroll-snap-align: start;
+}
+
+.wparabic-cats-nav {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .wparabic-cats--carousel .wparabic-cats-track {
+    gap: 20px;
+  }
+  .wparabic-cats--carousel .wparabic-cat {
+    flex-basis: calc((100% - 2 * 20px) / 3);
+  }
+  .wparabic-cats-nav {
+    position: absolute;
+    top: 40%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid #e1e5e5;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25);
+    color: #222;
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: opacity 0.2s, background-color 0.2s, color 0.2s;
+  }
+  .wparabic-cats-nav:hover {
+    background: var(--wparabic-accent, #ea593c);
+    border-color: var(--wparabic-accent, #ea593c);
+    color: #fff;
+  }
+  .wparabic-cats-nav--prev {
+    inset-inline-start: -14px;
+  }
+  .wparabic-cats-nav--next {
+    inset-inline-end: -14px;
+  }
+  .wparabic-cats-nav[disabled] {
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Les chevrons sont ecrits pour le RTL : on les retourne en LTR. */
+  html:not([dir="rtl"]) .wparabic-cats-nav i {
+    transform: scaleX(-1);
+  }
+}
+
+/* --- Carrousel produits : fleches visibles a TOUTES les largeurs ------------
+   Le carrousel categories les masque sous 768 px (glissement au doigt) ;
+   pour les cartes produits on les veut toujours la : c'est un carrousel
+   assume, avec ses deux boutons, meme sur petit ecran (ou le glissement
+   reste possible en parallele). Version compacte, rentree de quelques px
+   pour ne pas deborder. */
+@media (max-width: 767px) {
+  .wparabic-scroll .wparabic-cats-nav {
+    position: absolute;
+    top: 40%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid #e1e5e5;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25);
+    color: #222;
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+  .wparabic-scroll .wparabic-cats-nav:hover {
+    background: var(--wparabic-accent, #ea593c);
+    border-color: var(--wparabic-accent, #ea593c);
+    color: #fff;
+  }
+  .wparabic-scroll .wparabic-cats-nav--prev {
+    inset-inline-start: 4px;
+  }
+  .wparabic-scroll .wparabic-cats-nav--next {
+    inset-inline-end: 4px;
+  }
+  .wparabic-scroll .wparabic-cats-nav[disabled] {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 992px) {
+  .wparabic-cats--carousel .wparabic-cat {
+    flex-basis: calc((100% - 3 * 20px) / 4);
+  }
+}
+
+/* --- Formulaire COD : un bloc de variation par « مقطع » --------------------
+   inc/cod-form.php rend autant de blocs qu'il y a d'articles possibles
+   (filtre wparabic_cod_max_articles, 10 par défaut) ; main.js n'affiche que
+   la quantité demandée et vide les blocs masqués. Chaque article exige SON
+   choix de couleur et de pointure. */
+.codplugin-variations {
+  margin-bottom: 0;
+}
+
+.codplugin-article {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--wparabic-primary-light, #bce0f7);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.codplugin-article:last-child {
+  margin-bottom: 0;
+}
+
+.codplugin-article.is-hidden {
+  display: none !important;
+}
+
+.codplugin-article-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.codplugin-article-num {
+  display: inline-block;
+  padding: 0 14px;
+  line-height: 24px;
+  border-radius: 12px;
+  background: var(--wparabic-primary, #259bea);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Choix complet pour cet article : réutilise le vert de validation du thème. */
+.codplugin-article.is-complete .codplugin-article-num {
+  background: #69bf29;
+}
+
+.codplugin-article .codplugin-variation-hint {
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+}
+
+/* Le compteur « + » marque la limite : plus d'articles que de blocs rendus. */
+#codplugin_add_button.at-limit {
+  opacity: 0.35;
+  cursor: default;
+}

@@ -1,0 +1,363 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MultiCarrier Sync TN 2.10.0"
+
+msgid "%s ne supporte pas l'annulation des colis via l'API. Contactez votre agence."
+msgstr "%s لا تدعم إلغاء الطرود عبر API. تواصل مع وكالتك."
+
+msgid "1 · Commande passée (COD / non payée d’avance)"
+msgstr "1 · عند إنشاء الطلب (الدفع عند التسليم / غير مدفوع مسبقا)"
+
+msgid "2 · Après synchronisation"
+msgstr "2 · بعد المزامنة"
+
+msgid "3 · À la livraison"
+msgstr "3 · عند التسليم"
+
+msgid "4 · Au retour"
+msgstr "4 · عند الإرجاع"
+
+msgid "AFEX : annulation refusée (code %d) — vérifiez que le colis est encore annulable."
+msgstr "AFEX: رُفض الإلغاء (الرمز %d) — تحقق من أن الطرد لا يزال قابلًا للإلغاء."
+
+msgid "AFEX : annulation refusée — %s"
+msgstr "AFEX: رُفض الإلغاء — %s"
+
+msgid "AFEX : bordereau PDF non disponible (HTTP %d) — vérifiez votre clé API."
+msgstr "AFEX: ‏الوصل PDF غير متوفر (HTTP %d) — تحقق من مفتاح API."
+
+msgid "AFEX : échec décodage bordereau PDF."
+msgstr "AFEX: فشل فك ترميز الوصل PDF."
+
+msgid "AFEX : échec sauvegarde bordereau PDF."
+msgstr "AFEX: فشل حفظ الوصل PDF."
+
+msgid "API saturée — pause 3 s puis nouvel essai..."
+msgstr "API محدودة — توقف 3 ث ثم المحاولة مجددا..."
+
+msgid "Adex : BL PDF non disponible (HTTP %d) — vérifiez que le colis est encore annulable/existant."
+msgstr "Adex: ‏بون التسليم PDF غير متوفر (HTTP %d) — تحقق من أن الطرد لا يزال موجودًا."
+
+msgid "Adex : échec décodage BL PDF."
+msgstr "Adex: فشل فك ترميز بون التسليم PDF."
+
+msgid "Adex : échec sauvegarde BL PDF."
+msgstr "Adex: فشل حفظ بون التسليم PDF."
+
+msgid "Annexe A Aramex : PDX/PPX = groupe EXP · seul OND = DOM. Une combinaison incohérente est alignée automatiquement sur le type choisi."
+msgstr "الملحق A لدى Aramex: ‏PDX/PPX = المجموعة EXP · ‏OND فقط = DOM. تتم محاذاة أي تركيبة غير متسقة تلقائيًا مع النوع المختار."
+
+msgid "Annulation..."
+msgstr "جارٍ الإلغاء..."
+
+msgid "Annule le colis chez le transporteur — uniquement s'il est encore en attente (avant enlèvement). La commande redevient synchronisable."
+msgstr "يلغي الطرد لدى شركة النقل — فقط إذا كان لا يزال في الانتظار (قبل الاستلام). يصبح الطلب قابلاً للمزامنة من جديد."
+
+msgid "Annuler le colis chez le transporteur (colis en attente uniquement)"
+msgstr "إلغاء الطرد لدى شركة النقل (الطرود في الانتظار فقط)"
+
+msgid "Annuler le colis chez le transporteur ? Uniquement s'il est encore en attente (avant enlèvement) — action irréversible."
+msgstr "إلغاء الطرد لدى شركة النقل؟ فقط إذا كان لا يزال في الانتظار (قبل الاستلام) — إجراء لا رجعة فيه."
+
+msgid "Annulé"
+msgstr "ملغى"
+
+msgid "Aperçu"
+msgstr "معاينة"
+
+msgid "Aperçu live : le badge se met à jour à la frappe et au changement de couleur. Laissez vos libellés vide pour le défaut de la langue. Statuts natifs WooCommerce (En cours / En attente) : libellés figés, couleur seule modifiable."
+msgstr "معاينة مباشرة: تتحدث الشارة أثناء الكتابة وتغيير اللون. اترك العناوين فارغة للقيمة الافتراضية للغة. حالات WooCommerce الأصلية (قيد المعالجة / معلق): عناوين ثابتة، اللون فقط قابل للتعديل."
+
+msgid "Apparence des statuts"
+msgstr "مظهر الحالات"
+
+msgid "Aucun"
+msgstr "لا شي"
+
+msgid "Aucun colis synchronisé à vérifier."
+msgstr "لا يوجد طرد متمزامن للتحقق."
+
+msgid "Aucun colis sélectionné."
+msgstr "لم يتم تحديد أي طرد."
+
+msgid "Aucun n° de suivi sur cette commande — rien à annuler."
+msgstr "لا يوجد رقم تتبع على هذا الطلب — لا شيء لإلغائه."
+
+msgid "Aucun n° de suivi sur cette commande."
+msgstr "لا يوجد رقم تتبع على هذا الطلب."
+
+msgid "Badges appliqués à la liste des commandes et au modal « Vérifier les statuts ». Le texte passe automatiquement en noir ou blanc selon la couleur."
+msgstr "شارات مطبقة على قائمة الطلبات ووحدة \"التحقق من الحالات\". يتحول النص تلقائيا إلى الأسود أو الأبيض حسب اللون."
+
+msgid "Chargement des colis..."
+msgstr "جار تحميل الطرود..."
+
+msgid "Codes à confirmer avec Aramex Tunisie pour la livraison locale COD (PDX = express domestique recommandé)."
+msgstr "رموز يجب تأكيدها مع Aramex تونس للتوصيل المحلي بالدفع عند الاستلام (PDX = التوصيل السريع المحلي الموصى به)."
+
+msgid "Colis %2$s annulé chez %1$s. La commande est de nouveau synchronisable."
+msgstr "تم إلغاء الطرد %2$s لدى %1$s. يمكن مزامنة الطلب من جديد."
+
+msgid "Commande"
+msgstr "الطلب"
+
+msgid "Compte Colissimo (API v1 — colissimodelivery.tn)"
+msgstr "حساب Colissimo (API v1 — colissimodelivery.tn)"
+
+msgid "Confirmée"
+msgstr "مؤكدة"
+
+msgid "Couleur"
+msgstr "اللون"
+
+msgid "Couleurs des badges"
+msgstr "ألوان الشارات"
+
+msgid "Déjà synchronisé"
+msgstr "تمت المزامنة مسبقا"
+
+msgid "Emballée"
+msgstr "معبأة"
+
+msgid "En attente"
+msgstr "معلق"
+
+msgid "En attente (WC natif)"
+msgstr "معلق (أصلي)"
+
+msgid "En attente — reçue non payée, file de confirmation"
+msgstr "معلق — مستلم غير مدفوع، طابور التأكيد"
+
+msgid "En cours"
+msgstr "قيد المعالجة"
+
+msgid "En cours (WC natif)"
+msgstr "قيد المعالجة (أصلي)"
+
+msgid "En cours — traitement immédiat"
+msgstr "قيد المعالجة — علاج فوري"
+
+msgid "Enregistrer"
+msgstr "حفظ"
+
+msgid "Erreur :"
+msgstr "خطأ:"
+
+msgid "Erreur réseau."
+msgstr "خطأ في الشبكة."
+
+msgid "Fermer & recharger"
+msgstr "إغلاق وإعادة التحميل"
+
+msgid "Filtrer"
+msgstr "تصفية"
+
+msgid "FirstDelivery : localités indisponibles (échec récent, nouvelle tentative dans quelques minutes)."
+msgstr "FirstDelivery: ‏المحليات غير متوفرة (فشل حديث، ستُعاد المحاولة بعد دقائق)."
+
+msgid "Historique (%d)"
+msgstr "السجل (%d)"
+
+msgid "INTIGO : régions indisponibles (échec récent, nouvelle tentative dans quelques minutes)."
+msgstr "INTIGO: ‏المناطق غير متوفرة (فشل حديث، ستُعاد المحاولة بعد دقائق)."
+
+msgid "INTIGO : réponse des régions invalide."
+msgstr "INTIGO: استجابة المناطق غير صالحة."
+
+msgid "Jetpack : token de suivi manquant — renseignez-le dans les réglages Jetpack (espace expéditeur → Paramètres → API, champ token de tracking, distinct du token d'ajout)."
+msgstr "Jetpack: رمز التتبع مفقود — أدخله في إعدادات Jetpack (حساب المرسل → الإعدادات → API، حقل رمز التتبع، مختلف عن رمز الإضافة)."
+
+msgid "La localité (locality_id) est résolue automatiquement PAR COMMANDE depuis la liste /localities de FirstDelivery (match ville/délégation + gouvernorat). Ce réglage n'est qu'un SECOURS si la localité de la commande n'est pas résolue. Laisser 0 pour ne pas envoyer de secours."
+msgstr "تُحل المحلية (locality_id) تلقائيًا لكل طلب من قائمة FirstDelivery ‏/localities (مطابقة المدينة/المندوبية + الولاية). هذا الإعداد مجرد احتياط إذا تعذّر حل محلية الطلب. اترك 0 لعدم إرسال أي احتياط."
+
+msgid "Laissez vide pour le libellé par défaut (traduit selon la langue du site)."
+msgstr "اتركه فارغا للعنوان الافتراضي (مترجم حسب لغة الموقع)."
+
+msgid "Laissez vide pour le libellé par défaut. La langue utilisée suit le réglage « Langue du site » de WordPress (fr/en/ar)."
+msgstr "اتركه فارغا للعنوان الافتراضي. اللغة تتبع إعداد \"لغة الموقع\" في ووردبريس (fr/en/ar)."
+
+msgid "Libellés personnalisés"
+msgstr "العناوين المخصصة"
+
+msgid "Livrée"
+msgstr "تم التوصيل"
+
+msgid "Localité par défaut (secours)"
+msgstr "المحلية الافتراضية (احتياطية)"
+
+msgid "Navex : aucun code de suivi dans la réponse de création (bloc « colis » absent). Détail dans les logs — contactez Navex si cela persiste."
+msgstr "Navex: لا يوجد رقم تتبع في استجابة الإنشاء (كتلة « colis » غائبة). راجع السجلات — تواصل مع Navex إذا استمر ذلك."
+
+msgid "Ne pas changer (comportement WooCommerce)"
+msgstr "لا تغيير (السلوك الافتراضي لـ WooCommerce)"
+
+msgid "N° suivi"
+msgstr "رقم التتبع"
+
+msgid "Paiement en attente"
+msgstr "الدفع معلق"
+
+msgid "Pipeline par défaut : Commande (COD) → En attente → Confirmée → Emballée → Téléchargée → Livrée / Retournée. L’admin peut passer d’une étape à l’autre librement (ex. En attente → Téléchargée). Le suivi automatique et le scan des statuts suivent toutes les étapes."
+msgstr "المسار الافتراضي: طلب (COD) → معلق → مؤكدة → معبأة → تم التحميل → تم التوصيل / مرتجعة. يمكن للمسؤول الانتقال بين الخطوات بحرية (مثال: معلق → تم التحميل). التتبع التلقائي ومسح الحالات يتبعان كل الخطوات."
+
+msgid "Plein écran"
+msgstr "ملء الشاشة"
+
+msgid "Remettre la couleur par défaut"
+msgstr "إعادة اللون الافتراضي"
+
+msgid "Retournée"
+msgstr "مرتجعة"
+
+msgid "Retournée (statut personnalisé)"
+msgstr "مرتجعة (حالة مخصصة)"
+
+msgid "Retry en cours..."
+msgstr "إعادة المحاولة جار..."
+
+msgid "Réduire"
+msgstr "تصغير"
+
+msgid "Réessayer la synchronisation"
+msgstr "إعادة محاولة المزامنة"
+
+msgid "Résultat"
+msgstr "النتيجة"
+
+msgid "Seule une commande synchronisée peut être annulée chez le transporteur."
+msgstr "لا يمكن إلغاء الطرد لدى شركة النقل إلا إذا كان الطلب مُزامَنًا."
+
+msgid "Statut"
+msgstr "الحالة"
+
+msgid "Statut commande"
+msgstr "حالة الطلب"
+
+msgid "Sync"
+msgstr "مزامنة"
+
+msgid "Synchronisation..."
+msgstr "المزامنة جار..."
+
+msgid "Synchroniser avec le transporteur"
+msgstr "المزامنة مع الناقل"
+
+msgid "Synchroniser cette commande ?"
+msgstr "مزامنة هذا الطلب؟"
+
+msgid "Synchronisé !"
+msgstr "تمت المزامنة!"
+
+msgid "Terminée"
+msgstr "منتهية"
+
+msgid "Tout"
+msgstr "الكل"
+
+msgid "Tracking"
+msgstr "رقم التتبع"
+
+msgid "Transporteur"
+msgstr "ناقل الطرد"
+
+msgid "Transporteur inconnu sur cette commande."
+msgstr "شركة النقل غير معروفة على هذا الطلب."
+
+msgid "Téléchargement..."
+msgstr "التحميل جار..."
+
+msgid "Télécharger étiquette"
+msgstr "تحميل البطاقة"
+
+msgid "Téléchargée"
+msgstr "تم التحميل"
+
+msgid "Téléchargée — étiquette tirée, colis au transporteur"
+msgstr "تم التحميل — البطاقة مطبوعة، الطرد لدى الناقل"
+
+msgid "Téléphone \"%s\" : l'API AFEX attend exactement 8 chiffres."
+msgstr "الهاتف \"%s\": تتوقع واجهة AFEX ‏8 أرقام بالضبط."
+
+msgid "Une synchronisation est en cours pour cette commande — réessayez l'annulation après."
+msgstr "توجد مزامنة جارية لهذا الطلب — أعد محاولة الإلغاء بعد قليل."
+
+msgid "Vérification..."
+msgstr "التحقق جار..."
+
+msgid "Vérifier les statuts des colis"
+msgstr "التحقق من حالات الطرود"
+
+msgid "[WCMCS] Colis annulé chez %1$s (tracking %2$s). Commande re-synchronisable."
+msgstr "[WCMCS] تم إلغاء الطرد لدى %1$s (تتبع %2$s). يمكن إعادة المزامنة."
+
+msgid "[WCMCS] Colis encore chez %1$s (« %2$s ») — statut commande : « %3$s »."
+msgstr "[WCMCS] الطرد لا يزال لدى %1$s («%2$s») — حالة الطلب: «%3$s»."
+
+msgid "[WCMCS] Livré chez %1$s (%2$s) — statut commande : « %3$s »."
+msgstr "[WCMCS] تم التوصيل عند %1$s (%2$s) — حالة الطلب: «%3$s»."
+
+msgid "[WCMCS] Retour chez %1$s (%2$s) — statut commande : « %3$s »."
+msgstr "[WCMCS] إرجاع لدى %1$s (%2$s) — حالة الطلب: «%3$s»."
+
+msgid "[WCMCS] Sync réussi via %1$s — statut commande : « %2$s »."
+msgstr "[WCMCS] تمت المزامنة عبر %1$s — حالة الطلب: «%2$s»."
+
+msgid "colis affichés"
+msgstr "طرود معروضة"
+
+msgid "colis vérifié(s)"
+msgstr "طرد/طرود تم التحقق"
+
+msgid "erreur(s) API"
+msgstr "خطأ/أخطاء API"
+
+msgid "inconnu"
+msgstr "غير معروف"
+
+msgid "livré → « Livrée », retour → « Retournée », colis « En attente »/« En cours » (FirstDelivery) → « En attente », note à chaque changement d'état."
+msgstr "توصيل → « تم التوصيل »، إرجاع → « مرتجعة »، طرد « مُعلق »/« قيد المعالجة » (FirstDelivery) → « معلق »، ملاحظة عند كل تغيير للحالة."
+
+msgid "non configuré"
+msgstr "غير مهيأ"
+
+msgid "pré-état livreur : %s (clôture runsheet en attente)"
+msgstr "حالة السائق المسبقة: %s (بانتظار إغلاق جولة التوصيل)"
+
+msgid "statut(s) mis à jour"
+msgstr "حالة/حالات محدثة"
+
+msgid "État actuel"
+msgstr "الحالة الحالية"
+
+msgid "↺ Retry"
+msgstr "↺ إعادة محاولة"
+
+msgid "⇄ Synchroniser"
+msgstr "⇄ مزامنة"
+
+msgid "▶ Lancer la vérification"
+msgstr "▶ بدء التحقق"
+
+msgid "☎ Marquer confirmée"
+msgstr "☎ تحديد الطلب كمؤكد"
+
+msgid "✕ Annuler"
+msgstr "✕ إلغاء"
+
+msgid "✕ Annuler le colis"
+msgstr "✕ إلغاء الطرد"
+
+msgid "📍 Vérifier le statut"
+msgstr "📍 التحقق من الحالة"
+
+msgid "📍 Vérifier tous les statuts"
+msgstr "📍 التحقق من جميع الحالات"
+
+msgid "📦 Marquer emballée"
+msgstr "📦 تحديد الطلب كمعبأ"
+
+msgid "📦 Synchronisation transporteur"
+msgstr "📦 مزامنة الناقل"
+
+msgid "📦 Synchroniser commandes"
+msgstr "📦 مزامنة الطلبات"
