@@ -260,6 +260,7 @@ class CODCRM_SMS_Gateway {
 
 		wp_safe_redirect( add_query_arg( [
 			'page'     => CODCRM_Work_Queue::PAGE_SETTINGS,
+			'tab'      => 'sms',
 			'sms_test' => $res['ok'] ? 'ok' : rawurlencode( $res['message'] ),
 		], admin_url( 'admin.php' ) ) );
 		exit;

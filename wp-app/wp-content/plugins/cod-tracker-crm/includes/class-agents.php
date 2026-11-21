@@ -12,7 +12,7 @@ class CODCRM_Agents {
 	const META_AGENT   = '_codcrm_agent_id';
 
 	public static function init(): void {
-		add_action( 'wcmcs_order_synced', [ __CLASS__, 'auto_assign_on_sync' ], 20, 1 );
+		// La répartition automatique est gérée par CODCRM_Dispatcher.
 	}
 
 	/** Crée le rôle agent et donne les capacités au propriétaire (idempotent). */
@@ -37,14 +37,9 @@ class CODCRM_Agents {
 		return get_users( [ 'role' => self::ROLE, 'orderby' => 'display_name', 'order' => 'ASC' ] );
 	}
 
-	/** Agents actifs pour l'auto-assignation (option ; défaut : tous). @return int[] */
+	/** Agents actifs pour la répartition automatique. @return int[] */
 	public static function active_agent_ids(): array {
-		$all = array_map( static function ( $u ) { return (int) $u->ID; }, self::get_agents() );
-		$sel = get_option( 'codcrm_active_agents', null );
-		if ( ! is_array( $sel ) ) {
-			return $all;
-		}
-		return array_values( array_intersect( $all, array_map( 'intval', $sel ) ) );
+		return CODCRM_Dispatcher::active_agents();
 	}
 
 	public static function agent_of( WC_Order $order ): int {
@@ -70,7 +65,12 @@ class CODCRM_Agents {
 	 *
 	 * @return bool True si l'assignation a changé.
 	 */
-	public static function assign( WC_Order $order, int $agent_id, int $actor_id = 0, string $source = 'agent' ): bool {
+	/**
+	 * @param string $reason  Raison affichée dans la timeline (règle, méthode, réattribution…).
+	 * @param string $by      'auto' (moteur de répartition, réattribuable) | 'manual' (jamais réattribuée).
+	 * @param string $outcome Résultat de l'événement ('reassigned' pour une réattribution).
+	 */
+	public static function assign( WC_Order $order, int $agent_id, int $actor_id = 0, string $source = 'agent', string $reason = '', string $by = 'manual', string $outcome = '' ): bool {
 		$old = self::agent_of( $order );
 		if ( $old === $agent_id ) {
 			return false;
@@ -81,16 +81,27 @@ class CODCRM_Agents {
 
 		if ( $agent_id ) {
 			$order->update_meta_data( self::META_AGENT, $agent_id );
+			$order->update_meta_data( CODCRM_Dispatcher::META_ASSIGNED_AT, wp_date( 'Y-m-d H:i:s', CODCRM_Dispatcher::now() ) );
+			$order->update_meta_data( CODCRM_Dispatcher::META_ASSIGNED_BY, 'auto' === $by ? 'auto' : 'manual' );
+			$order->delete_meta_data( CODCRM_Dispatcher::META_WAITING );
 		} else {
 			$order->delete_meta_data( self::META_AGENT );
+			$order->delete_meta_data( CODCRM_Dispatcher::META_ASSIGNED_AT );
+			$order->delete_meta_data( CODCRM_Dispatcher::META_ASSIGNED_BY );
 		}
 		$order->save_meta_data();
 
+		$note = $agent_id
+			? sprintf( __( 'Assignée à %s', 'cod-tracker-crm' ), self::agent_name( $agent_id ) )
+			: __( 'Assignation retirée', 'cod-tracker-crm' );
+		if ( '' !== $reason ) {
+			$note .= ' — ' . $reason;
+		}
+
 		CODCRM_Events::add( $order->get_id(), [
 			'type'     => 'assignment',
-			'note'     => $agent_id
-				? sprintf( __( 'Assignée à %s', 'cod-tracker-crm' ), self::agent_name( $agent_id ) )
-				: __( 'Assignation retirée', 'cod-tracker-crm' ),
+			'outcome'  => '' !== $outcome ? $outcome : ( 'auto' === $by ? 'auto' : 'manual' ),
+			'note'     => $note,
 			'actor_id' => $actor_id,
 			'source'   => $source,
 			'payload'  => [ 'from' => $old, 'to' => $agent_id ],
@@ -101,38 +112,5 @@ class CODCRM_Agents {
 
 		do_action( 'codcrm_order_assigned', $order, $agent_id, $old );
 		return true;
-	}
-
-	/** Round-robin à la synchro du colis (option codcrm_auto_assign = yes). */
-	public static function auto_assign_on_sync( $order ): void {
-		if ( 'yes' !== get_option( 'codcrm_auto_assign', 'no' ) || ! $order instanceof WC_Order ) {
-			return;
-		}
-		if ( self::agent_of( $order ) ) {
-			return; // déjà assignée.
-		}
-		$next = self::next_round_robin();
-		if ( $next ) {
-			self::assign( $order, $next, 0, 'system' );
-		}
-	}
-
-	/** Prochain agent actif (curseur circulaire stocké en option). */
-	public static function next_round_robin(): int {
-		$ids = self::active_agent_ids();
-		if ( ! $ids ) {
-			return 0;
-		}
-		sort( $ids );
-		$last = (int) get_option( 'codcrm_rr_cursor', 0 );
-		$next = $ids[0];
-		foreach ( $ids as $id ) {
-			if ( $id > $last ) {
-				$next = $id;
-				break;
-			}
-		}
-		update_option( 'codcrm_rr_cursor', $next, false );
-		return $next;
 	}
 }

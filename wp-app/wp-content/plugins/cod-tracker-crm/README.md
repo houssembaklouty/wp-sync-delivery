@@ -22,9 +22,30 @@ Suivi des colis / commandes COD pour WooCommerce, branché sur **MultiCarrier Sy
    ```
    Ne jamais lancer deux `backfill` en même temps (un verrou l'empêche).
 
-## Réglages (Suivi COD → Réglages)
-Assignation automatique à tour de rôle, agents actifs, seuil de tentatives, jours avant « colis bloqué »,
-passerelle SMS (URL, GET/POST, form/JSON, `{to}` `{message}` `{sender}` `{api_key}`).
+## Réglages (Suivi COD → Réglages) — un onglet par fonction
+Chaque onglet a son formulaire : enregistrer un onglet ne modifie jamais les autres.
+
+| Onglet | Contenu |
+|---|---|
+| Général | seuil de tentatives, colis bloqué après N jours, enlèvement en attente après N jours |
+| Répartition & agents | mode (automatique / manuel), méthode (équitable / pourcentage), réattribution automatique, agents : actif, part %, horaires de travail |
+| Règles d'attribution | règles « conditions → membres » (produit, catégorie, gouvernorat, transporteur, montant) |
+| SMS | passerelle HTTP générique, envois automatiques, test |
+| WhatsApp | modèles de messages (jusqu'à 5) |
+
+## Répartition automatique des commandes
+Attribution **à la création de la commande** (checkout classique, blocs, formulaire COD, commandes admin/REST).
+1. Les **règles** actives sont évaluées par priorité croissante ; la première qui correspond attribue la commande à ses
+   membres **en service** (répartis équitablement). Conditions distinctes = ET ; valeurs d'une même condition = OU.
+   Si aucun membre de la règle n'est en service, la commande **attend** (elle n'échappe pas à sa règle).
+2. Sans règle correspondante : méthode globale parmi les agents actifs en service — **équitable** (le moins chargé
+   aujourd'hui) ou **par pourcentage** (part de chacun).
+3. **Horaires** : plages par jour (ex. 08:00–12:00 et 13:00–18:00), heure du site ; aucun horaire = toujours en service.
+4. Commandes **en attente** d'un agent : reprises toutes les 5 minutes dès qu'un agent concerné prend son service.
+5. **Réattribution** : si l'agent n'a ni confirmé la commande ni tracé un contact dans le délai (30 min par défaut),
+   elle passe à un autre agent en service (jamais le même, 2 fois maximum). Les attributions manuelles du propriétaire
+   ne sont jamais réattribuées.
+Toutes les décisions (règle, méthode, attente, réattribution) apparaissent dans la timeline de la commande.
 
 ## Import d'un relevé transporteur
 CSV avec en-têtes : un n° de suivi (« code », « code barre »…), un « montant » ; facultatifs : « frais », « relevé ».

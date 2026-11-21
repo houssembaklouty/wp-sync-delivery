@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       COD Tracker CRM
  * Description:       Suivi des colis / commandes COD : timeline complète, tentatives de livraison, agents de suivi, KPIs et rapprochement cash. Se synchronise avec MultiCarrier Sync TN.
- * Version:           1.0.1
+ * Version:           1.1.0
  * Requires PHP:      7.4
  * Requires at least: 6.0
  * Text Domain:       cod-tracker-crm
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CODCRM_VERSION', '1.0.1' );
+define( 'CODCRM_VERSION', '1.1.0' );
 define( 'CODCRM_FILE', __FILE__ );
 define( 'CODCRM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CODCRM_URL', plugin_dir_url( __FILE__ ) );
@@ -27,6 +27,7 @@ add_action( 'before_woocommerce_init', static function () {
 
 require_once CODCRM_DIR . 'includes/class-installer.php';
 require_once CODCRM_DIR . 'includes/class-agents.php';
+require_once CODCRM_DIR . 'includes/class-dispatcher.php';
 require_once CODCRM_DIR . 'includes/class-tasks.php';
 require_once CODCRM_DIR . 'includes/class-contacts.php';
 require_once CODCRM_DIR . 'includes/class-sms-gateway.php';
@@ -40,6 +41,7 @@ require_once CODCRM_DIR . 'includes/class-event-collector.php';
 require_once CODCRM_DIR . 'admin/class-timeline.php';
 require_once CODCRM_DIR . 'admin/class-assignment-ui.php';
 require_once CODCRM_DIR . 'admin/class-work-queue.php';
+require_once CODCRM_DIR . 'admin/class-settings.php';
 require_once CODCRM_DIR . 'admin/class-scanner.php';
 require_once CODCRM_DIR . 'admin/class-dashboard.php';
 require_once CODCRM_DIR . 'admin/class-cash-page.php';
@@ -48,6 +50,7 @@ require_once CODCRM_DIR . 'includes/class-cli.php';
 register_activation_hook( __FILE__, [ 'CODCRM_Installer', 'activate' ] );
 register_deactivation_hook( __FILE__, static function () {
 	wp_clear_scheduled_hook( 'codcrm_daily' );
+	wp_clear_scheduled_hook( 'codcrm_dispatch_tick' );
 } );
 
 add_action( 'plugins_loaded', static function () {
@@ -70,11 +73,13 @@ add_action( 'plugins_loaded', static function () {
 	CODCRM_Event_Collector::init();
 	CODCRM_Timeline::init();
 	CODCRM_Agents::init();
+	CODCRM_Dispatcher::init();
 	CODCRM_Tasks::init();
 	CODCRM_Contacts::init();
 	CODCRM_SMS_Gateway::init();
 	CODCRM_Assignment_UI::init();
 	CODCRM_Work_Queue::init();
+	CODCRM_Settings::init();
 	CODCRM_Scanner::init();
 	CODCRM_KPIs::init();
 	CODCRM_Dashboard::init();

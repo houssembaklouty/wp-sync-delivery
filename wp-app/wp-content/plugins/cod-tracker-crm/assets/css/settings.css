@@ -1,0 +1,31 @@
+.codcrm-settings .codcrm-tab { background: #fff; border: 1px solid #c3c4c7; border-top: 0; padding: 4px 20px 20px; max-width: 1100px; }
+.codcrm-settings h2 { margin-top: 24px; }
+.codcrm-pill { display: inline-block; padding: 1px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; }
+
+.codcrm-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.codcrm-choice { display: block; border: 1px solid #dcdcde; border-radius: 6px; padding: 10px 12px; cursor: pointer; }
+.codcrm-choice:has(input:checked) { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; background: #f0f6fc; }
+.codcrm-choice span { display: block; color: #646970; font-size: 12px; margin-top: 4px; }
+
+.codcrm-agent { border: 1px solid #dcdcde; border-radius: 6px; padding: 10px 14px; margin: 10px 0; }
+.codcrm-agent-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.codcrm-weight { margin-left: auto; }
+.codcrm-schedule { margin-top: 8px; border-collapse: collapse; }
+.codcrm-schedule th { text-align: left; font-weight: 600; padding: 3px 12px 3px 0; width: 90px; }
+.codcrm-schedule td { padding: 3px 14px 3px 0; white-space: nowrap; }
+.codcrm-agent-tools { margin: 8px 0 0; }
+.codcrm-total-w.codcrm-total-bad .codcrm-total-v { color: #b32d2e; }
+.codcrm-total-w:not(.codcrm-total-bad) .codcrm-total-warn { display: none; }
+
+.codcrm-box { border: 1px solid #dcdcde; border-radius: 6px; padding: 4px 16px 12px; margin: 14px 0; }
+.codcrm-cond { display: grid; grid-template-columns: 220px 1fr 28px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed #dcdcde; }
+.codcrm-cond > [class^="codcrm-w-"] { grid-column: 2; grid-row: 1; }
+.codcrm-cond-del { grid-column: 3; grid-row: 1; color: #b32d2e; font-size: 16px; }
+.codcrm-member { display: inline-block; margin: 4px 18px 4px 0; }
+.codcrm-rule-actions a { white-space: nowrap; }
+.codcrm-rule-actions .codcrm-del { color: #b32d2e; }
+@media (max-width: 782px) {
+    .codcrm-cond { grid-template-columns: 1fr 28px; }
+    .codcrm-cond > [class^="codcrm-w-"] { grid-column: 1; grid-row: 2; }
+    .codcrm-cond-del { grid-column: 2; }
+}
