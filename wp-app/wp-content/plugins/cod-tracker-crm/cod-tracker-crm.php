@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       COD Tracker CRM
  * Description:       Suivi des colis / commandes COD : timeline complète, tentatives de livraison, agents de suivi, KPIs et rapprochement cash. Se synchronise avec MultiCarrier Sync TN.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires PHP:      7.4
  * Requires at least: 6.0
  * Text Domain:       cod-tracker-crm
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CODCRM_VERSION', '0.1.0' );
+define( 'CODCRM_VERSION', '0.2.0' );
 define( 'CODCRM_FILE', __FILE__ );
 define( 'CODCRM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CODCRM_URL', plugin_dir_url( __FILE__ ) );
@@ -26,12 +26,17 @@ add_action( 'before_woocommerce_init', static function () {
 } );
 
 require_once CODCRM_DIR . 'includes/class-installer.php';
+require_once CODCRM_DIR . 'includes/class-agents.php';
+require_once CODCRM_DIR . 'includes/class-tasks.php';
+require_once CODCRM_DIR . 'includes/class-contacts.php';
 require_once CODCRM_DIR . 'includes/class-stages.php';
 require_once CODCRM_DIR . 'includes/class-stage-mapper.php';
 require_once CODCRM_DIR . 'includes/class-events.php';
 require_once CODCRM_DIR . 'includes/class-attempts.php';
 require_once CODCRM_DIR . 'includes/class-event-collector.php';
 require_once CODCRM_DIR . 'admin/class-timeline.php';
+require_once CODCRM_DIR . 'admin/class-assignment-ui.php';
+require_once CODCRM_DIR . 'admin/class-work-queue.php';
 require_once CODCRM_DIR . 'includes/class-cli.php';
 
 register_activation_hook( __FILE__, [ 'CODCRM_Installer', 'activate' ] );
@@ -55,4 +60,9 @@ add_action( 'plugins_loaded', static function () {
 
 	CODCRM_Event_Collector::init();
 	CODCRM_Timeline::init();
+	CODCRM_Agents::init();
+	CODCRM_Tasks::init();
+	CODCRM_Contacts::init();
+	CODCRM_Assignment_UI::init();
+	CODCRM_Work_Queue::init();
 }, 20 );

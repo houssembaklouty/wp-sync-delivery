@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class CODCRM_Installer {
 
-	const DB_VERSION = '1';
+	const DB_VERSION = '2';
 
 	public static function activate(): void {
 		self::create_tables();
@@ -21,6 +21,11 @@ class CODCRM_Installer {
 	public static function table_events(): string {
 		global $wpdb;
 		return $wpdb->prefix . 'codcrm_events';
+	}
+
+	public static function table_tasks(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'codcrm_tasks';
 	}
 
 	private static function create_tables(): void {
@@ -56,8 +61,31 @@ class CODCRM_Installer {
 			KEY stage      (stage)
 		) {$charset};";
 
+		$tasks = self::table_tasks();
+
+		// Rappels / relances des agents. kind : callback | attempt_followup |
+		// stuck_parcel | cash_dispute ; status : open | done | cancelled.
+		$sql_tasks = "CREATE TABLE {$tasks} (
+			id          BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			order_id    BIGINT(20) UNSIGNED NOT NULL,
+			agent_id    BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+			kind        VARCHAR(30)         NOT NULL DEFAULT 'callback',
+			status      VARCHAR(12)         NOT NULL DEFAULT 'open',
+			due_at      DATETIME            NOT NULL,
+			note        VARCHAR(255)        NOT NULL DEFAULT '',
+			created_by  BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+			created_at  DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			done_at     DATETIME            DEFAULT NULL,
+			PRIMARY KEY (id),
+			KEY agent_status_due (agent_id, status, due_at),
+			KEY order_status (order_id, status)
+		) {$charset};";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
+		dbDelta( $sql_tasks );
+
+		CODCRM_Agents::install_roles();
 
 		update_option( 'codcrm_db_version', self::DB_VERSION, false );
 	}
