@@ -115,6 +115,7 @@ class CODCRM_Dashboard {
 			[ __( 'Enlevés par le transporteur', 'cod-tracker-crm' ), (string) $o['picked'], __( 'base de tous les taux', 'cod-tracker-crm' ), '#1f3a7a' ],
 			[ __( 'Non enlevés', 'cod-tracker-crm' ), (string) $o['not_picked'], sprintf( _n( '%d depuis plus de %d j', '%d depuis plus de %d j', count( $k['pickup'] ), 'cod-tracker-crm' ), count( $k['pickup'] ), CODCRM_KPIs::pickup_days() ), '#e67e22' ],
 			[ __( 'En transit', 'cod-tracker-crm' ), (string) $o['open'], __( 'enlevés, pas encore clôturés', 'cod-tracker-crm' ), '#0b2a3a' ],
+			[ __( 'Retours non reçus', 'cod-tracker-crm' ), (string) CODCRM_Returns::count_missing(), sprintf( /* translators: %d jours */ __( 'retour annoncé il y a plus de %d j', 'cod-tracker-crm' ), CODCRM_Returns::days() ), '#c0392b' ],
 			[ __( 'Livrés', 'cod-tracker-crm' ), (string) $o['delivered'], '', '#00a651' ],
 			[ __( 'Retournés', 'cod-tracker-crm' ), (string) $o['returned'], '', '#c0392b' ],
 			[ __( 'Taux de livraison', 'cod-tracker-crm' ), self::pct( $o['delivery_rate'] ), $on_basis, '#00a651' ],
@@ -165,6 +166,9 @@ class CODCRM_Dashboard {
 		}
 		echo '</tr></tbody></table>';
 
+		// Retours définitifs annoncés mais jamais revenus à la boutique (colis potentiellement perdus).
+		self::render_missing_returns();
+
 		// Colis non enlevés par la société de livraison.
 		printf( '<h2>%s</h2>', esc_html( sprintf( /* translators: %d jours */ __( 'En attente d\'enlèvement depuis plus de %d jours', 'cod-tracker-crm' ), CODCRM_KPIs::pickup_days() ) ) );
 		if ( ! $k['pickup'] ) {
@@ -214,6 +218,38 @@ class CODCRM_Dashboard {
 		}
 
 		echo '</div>';
+	}
+
+	/** Section « Retours non reçus » avec bouton « Marquer reçu ». */
+	private static function render_missing_returns(): void {
+		$rows = CODCRM_Returns::missing( 200 );
+		echo '<h2 id="codcrm-returns">' . esc_html( sprintf( /* translators: %d jours */ __( 'Retours non reçus (plus de %d jours après le retour annoncé)', 'cod-tracker-crm' ), CODCRM_Returns::days() ) ) . '</h2>';
+		if ( isset( $_GET['return_marked'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			echo '<div class="notice notice-success inline"><p>' . esc_html( absint( $_GET['return_marked'] ) ? __( 'Retour marqué comme reçu (stock réintégré si applicable).', 'cod-tracker-crm' ) : __( 'Retour déjà reçu ou introuvable.', 'cod-tracker-crm' ) ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification
+		}
+		if ( ! $rows ) {
+			echo '<p>' . esc_html__( 'Aucun colis retour manquant. 🎉', 'cod-tracker-crm' ) . '</p>';
+			return;
+		}
+		echo '<p class="description">' . esc_html__( 'Le transporteur a déclaré ces colis retournés, mais ils n\'ont pas été scannés « Retour reçu ». Réclamez-les au transporteur ; si un colis est bien rentré sans scan, marquez-le reçu.', 'cod-tracker-crm' ) . '</p>';
+		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Commande', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Transporteur', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Retour annoncé le', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Depuis', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Agent', 'cod-tracker-crm' ) . '</th><th></th></tr></thead><tbody>';
+		foreach ( array_slice( $rows, 0, 100 ) as $r ) {
+			$order = wc_get_order( $r['id'] );
+			echo '<tr>';
+			printf( '<td><a href="%s">#%d</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>',
+				esc_url( $order ? $order->get_edit_order_url() : '#' ), (int) $r['id'], esc_html( $r['carrier'] ),
+				esc_html( mysql2date( 'd/m/Y', $r['started'] ) ),
+				esc_html( sprintf( _n( '%d jour', '%d jours', $r['days'], 'cod-tracker-crm' ), $r['days'] ) ),
+				esc_html( CODCRM_Agents::agent_name( (int) $r['agent'] ) ?: '—' )
+			);
+			echo '<td><form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="codcrm_return_received" /><input type="hidden" name="order_id" value="' . (int) $r['id'] . '" />';
+			wp_nonce_field( 'codcrm_return_' . $r['id'] );
+			echo '<button class="button button-small">' . esc_html__( 'Marquer reçu', 'cod-tracker-crm' ) . '</button></form></td></tr>';
+		}
+		echo '</tbody></table>';
+		if ( count( $rows ) > 100 ) {
+			echo '<p class="description">' . esc_html( sprintf( __( '+ %d autres (liste limitée à 100).', 'cod-tracker-crm' ), count( $rows ) - 100 ) ) . '</p>';
+		}
 	}
 
 	/** Tableau de groupe : colis, livrés, retours, taux (+ récupération après échec pour les agents). */

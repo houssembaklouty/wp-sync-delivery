@@ -137,6 +137,8 @@ class CODCRM_Settings {
 			esc_html__( 'Colis bloqué après', 'cod-tracker-crm' ), CODCRM_KPIs::stuck_days(), esc_html__( 'jours sans changement d\'étape (tableau de bord + tâche quotidienne).', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><input type="number" min="1" max="30" name="pickup_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Enlèvement en attente après', 'cod-tracker-crm' ), CODCRM_KPIs::pickup_days(), esc_html__( 'jours sans enlèvement par la société de livraison.', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><input type="number" min="1" max="60" name="return_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
+			esc_html__( 'Alerte retour non reçu après', 'cod-tracker-crm' ), CODCRM_Returns::days(), esc_html__( 'jours après le retour définitif annoncé par le transporteur, si le colis n\'a pas été scanné « Retour reçu » (colis potentiellement perdu).', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><input type="text" name="shop_phone" value="%s" class="regular-text" placeholder="71 000 000" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Téléphone de la boutique', 'cod-tracker-crm' ), esc_attr( (string) get_option( 'codcrm_shop_phone', '' ) ), esc_html__( 'Utilisé par le placeholder {telephone_boutique} dans les messages.', 'cod-tracker-crm' ) );
 		echo '</table>';
@@ -554,6 +556,8 @@ class CODCRM_Settings {
 				update_option( 'codcrm_attempts_threshold', max( 1, min( 10, absint( $_POST['threshold'] ?? 3 ) ) ) );
 				update_option( 'codcrm_stuck_days', max( 1, min( 30, absint( $_POST['stuck_days'] ?? 3 ) ) ) );
 				update_option( 'codcrm_pickup_days', max( 1, min( 30, absint( $_POST['pickup_days'] ?? 2 ) ) ) );
+				update_option( 'codcrm_return_days', max( 1, min( 60, absint( $_POST['return_days'] ?? 5 ) ) ) );
+				delete_transient( CODCRM_Returns::CACHE_COUNT );
 				update_option( 'codcrm_shop_phone', mb_substr( sanitize_text_field( wp_unslash( $_POST['shop_phone'] ?? '' ) ), 0, 40 ) );
 				break;
 

@@ -7,7 +7,7 @@ Suivi des colis / commandes COD pour WooCommerce, branché sur **MultiCarrier Sy
 | Timeline | metabox « Suivi COD » d'une commande | statuts, états transporteur datés, contacts, tâches, assignations, cash |
 | Tentatives | automatique | tournées / échecs de livraison, risque de retour au seuil (défaut 3) |
 | Agents | Suivi COD → Mes suivis | rôle « Agent suivi COD », file de travail, appel / WhatsApp / SMS tracés, rappels |
-| Scanner | Suivi COD → Scanner | « Emballée » et « Remis au transporteur » par code-barres / QR (caméra ou douchette) |
+| Scanner | Suivi COD → Scanner | « Emballée » et « Retour reçu » par code-barres / QR (caméra ou douchette) |
 | SMS | Suivi COD → Réglages | passerelle HTTP générique, envois manuels et automatiques (désactivés par défaut) |
 | KPIs | Suivi COD → Tableau de bord | taux de livraison / retour, délais, colis bloqués, activité des agents |
 | Cash | Suivi COD → Cash COD | attendu / encaissé / reversé, import du relevé transporteur (CSV), litiges, export |
@@ -33,6 +33,23 @@ Chaque onglet a son formulaire : enregistrer un onglet ne modifie jamais les aut
 | SMS | passerelle HTTP générique, envois automatiques (déclencheurs), test |
 | Messages | bibliothèque de modèles FR / AR pour WhatsApp et SMS, par situation |
 | Couleurs | couleur des badges de statut (étapes du colis, statuts du cash) |
+
+## Colis retournés : réception, stock et colis perdus
+Le scan d'enlèvement se fait à l'agence du transporteur (la boutique n'en a pas la visibilité) : le scanner propose donc
+**« ↩ Retour reçu »** quand un colis retourné revient à la boutique. Le scan est vérifié avant validation :
+retour déclaré par le transporteur → prêt ; retour pas encore déclaré → accepté avec avertissement (le colis est bien là) ;
+colis livré au client, déjà reçu, sans code-barres ou inconnu → refusé. À la validation : le colis est marqué reçu, les
+**articles sont remis en stock** (uniquement les produits qui gèrent leur stock et seulement les quantités réellement
+déduites : jamais de double remise en stock), la timeline et une note de commande le tracent, la ligne cash passe à
+« Retourné ». Le statut WooCommerce ne change pas (aucun email client).
+
+**Détection des colis perdus** : si N jours (Réglages → Général, défaut 5) après un retour **définitif** annoncé par le
+transporteur (Retour expéditeur / définitif / payé, ou statut « Retournée ») le colis n'a pas été scanné « Retour reçu » :
+une tâche « Retour non reçu » est créée pour l'agent assigné (dédoublonnée), un **email récapitulatif quotidien** part
+vers l'administrateur (une seule fois par jour, liste de 50 colis maximum), une **carte, une liste et une notice** apparaissent
+dans le tableau de bord / l'administration, avec un bouton « Marquer reçu » pour un colis rentré sans scan. Seuls les
+retours annoncés après l'activation de la fonction sont surveillés (l'historique n'est pas signalé). Filtre
+`codcrm_returns_missing` pour ajuster la liste.
 
 ## Couleurs des statuts
 Même logique que MultiCarrier Sync : une couleur par défaut par statut, personnalisable (sélecteur de couleur, aperçu en

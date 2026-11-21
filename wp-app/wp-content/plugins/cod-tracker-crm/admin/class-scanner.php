@@ -13,7 +13,7 @@ class CODCRM_Scanner {
 	const PAGE = 'codcrm-scanner';
 
 	const MODE_PACK   = 'pack';
-	const MODE_PICKUP = 'pickup';
+	const MODE_RETURN = 'return';
 
 	const MAX_BATCH = 200;
 
@@ -76,7 +76,7 @@ class CODCRM_Scanner {
 
 			<div class="codcrm-scan-modes">
 				<label><input type="radio" name="codcrm_mode" value="pack" checked /> 📦 <?php esc_html_e( 'Emballée', 'cod-tracker-crm' ); ?></label>
-				<label><input type="radio" name="codcrm_mode" value="pickup" /> 🚚 <?php esc_html_e( 'Remis au transporteur', 'cod-tracker-crm' ); ?></label>
+				<label><input type="radio" name="codcrm_mode" value="return" /> ↩ <?php esc_html_e( 'Retour reçu', 'cod-tracker-crm' ); ?></label>
 			</div>
 
 			<div class="codcrm-scan-input">
@@ -163,17 +163,18 @@ class CODCRM_Scanner {
 			return [ 'ok' => false, 'warn' => false, 'msg' => sprintf( /* translators: %s statut */ __( 'Statut « %s » : seules les commandes « Synchronisée » peuvent être emballées.', 'cod-tracker-crm' ), wc_get_order_status_name( $status ) ) ];
 		}
 
-		// Remis au transporteur.
-		if ( '1' === (string) $order->get_meta( '_codcrm_picked_up' ) ) {
-			return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Déjà remise au transporteur.', 'cod-tracker-crm' ) ];
+		// Retour reçu : le colis retourné est revenu physiquement à la boutique.
+		if ( CODCRM_Returns::is_received( $order ) ) {
+			return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Retour déjà reçu.', 'cod-tracker-crm' ) ];
 		}
-		if ( 'wcmcs-packed' === $status ) {
-			return [ 'ok' => true, 'warn' => false, 'msg' => __( 'Prêt à remettre au transporteur.', 'cod-tracker-crm' ) ];
+		if ( CODCRM_Returns::is_delivered( $order ) ) {
+			return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Colis livré au client : ce n\'est pas un retour.', 'cod-tracker-crm' ) ];
 		}
-		if ( 'wcmcs-synced' === $status ) {
-			return [ 'ok' => true, 'warn' => true, 'msg' => __( '⚠ Pas encore marquée « Emballée » — remise enregistrée quand même.', 'cod-tracker-crm' ) ];
+		if ( CODCRM_Returns::is_in_return( $order ) ) {
+			return [ 'ok' => true, 'warn' => false, 'msg' => __( 'Retour déclaré par le transporteur — prêt à réceptionner (remise en stock).', 'cod-tracker-crm' ) ];
 		}
-		return [ 'ok' => false, 'warn' => false, 'msg' => sprintf( __( 'Statut « %s » : colis non remis.', 'cod-tracker-crm' ), wc_get_order_status_name( $status ) ) ];
+		// Le colis est physiquement là : on l'accepte, mais on le signale.
+		return [ 'ok' => true, 'warn' => true, 'msg' => __( '⚠ Retour pas encore déclaré par le transporteur — réception enregistrée quand même.', 'cod-tracker-crm' ) ];
 	}
 
 	// ── AJAX ───────────────────────────────────────────────────
@@ -187,7 +188,7 @@ class CODCRM_Scanner {
 
 	private static function mode_from_request(): string {
 		$mode = sanitize_key( wp_unslash( $_POST['mode'] ?? '' ) );
-		if ( ! in_array( $mode, [ self::MODE_PACK, self::MODE_PICKUP ], true ) ) {
+		if ( ! in_array( $mode, [ self::MODE_PACK, self::MODE_RETURN ], true ) ) {
 			wp_send_json_error( [ 'message' => __( 'Mode invalide.', 'cod-tracker-crm' ) ] );
 		}
 		return $mode;
@@ -244,16 +245,13 @@ class CODCRM_Scanner {
 					sprintf( /* translators: %s utilisateur */ __( '[COD] Emballée par scan — %s.', 'cod-tracker-crm' ), $user->display_name )
 				);
 			} else {
-				$order->update_meta_data( '_codcrm_picked_up', '1' );
-				$order->save_meta_data();
-				CODCRM_Events::add( $order->get_id(), [
-					'type'     => 'scan',
-					'stage'    => CODCRM_Stages::ENLEVES,
-					'note'     => __( 'Remis au transporteur (scan)', 'cod-tracker-crm' ),
-					'actor_id' => $user->ID,
-					'source'   => 'scan',
-				] );
-				$order->add_order_note( sprintf( __( '[COD] Remise au transporteur par scan — %s.', 'cod-tracker-crm' ), $user->display_name ) );
+				$res = CODCRM_Returns::receive( $order, (int) $user->ID, 'scan' );
+				if ( ! $res['ok'] ) {
+					$results[ $id ] = [ 'status' => 'REFUSED', 'msg' => $res['msg'] ];
+					continue;
+				}
+				$results[ $id ] = [ 'status' => 'DONE', 'msg' => $res['restocked'] ? sprintf( _n( 'Reçu — %d article remis en stock', 'Reçu — %d articles remis en stock', $res['restocked'], 'cod-tracker-crm' ), $res['restocked'] ) : __( 'Reçu', 'cod-tracker-crm' ) ];
+				continue;
 			}
 
 			$results[ $id ] = [ 'status' => 'DONE', 'msg' => __( 'Fait', 'cod-tracker-crm' ) ];
