@@ -353,6 +353,12 @@ class CODCRM_Work_Queue {
 			esc_html__( 'Nombre d\'échecs de livraison avant « risque de retour » (défaut 3).', 'cod-tracker-crm' )
 		);
 
+		printf( '<tr><th>%s</th><td><input type="number" min="1" max="30" name="stuck_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
+			esc_html__( 'Colis bloqué après', 'cod-tracker-crm' ),
+			CODCRM_KPIs::stuck_days(),
+			esc_html__( 'jours sans changement d\'étape (tableau de bord + tâche quotidienne).', 'cod-tracker-crm' )
+		);
+
 		echo '</table>';
 
 		self::render_sms_settings();
@@ -420,6 +426,8 @@ class CODCRM_Work_Queue {
 		update_option( 'codcrm_auto_assign', isset( $_POST['auto_assign'] ) ? 'yes' : 'no' );
 		update_option( 'codcrm_active_agents', array_map( 'absint', (array) wp_unslash( $_POST['agents'] ?? [] ) ) );
 		update_option( 'codcrm_attempts_threshold', max( 1, min( 10, absint( $_POST['threshold'] ?? 3 ) ) ) );
+
+		update_option( 'codcrm_stuck_days', max( 1, min( 30, absint( $_POST['stuck_days'] ?? 3 ) ) ) );
 
 		// Passerelle SMS.
 		update_option( 'codcrm_sms_enabled', isset( $_POST['sms_enabled'] ) ? 'yes' : 'no' );

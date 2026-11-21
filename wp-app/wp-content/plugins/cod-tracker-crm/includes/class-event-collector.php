@@ -131,10 +131,11 @@ class CODCRM_Event_Collector {
 
 		// Étape courante = dernière étape transporteur connue du journal.
 		$old_stage = (string) $order->get_meta( self::META_STAGE );
-		$seq       = CODCRM_Events::carrier_stage_sequence( $order->get_id() );
-		$new_stage = $seq ? (string) end( $seq ) : '';
+		$last      = CODCRM_Events::last_carrier_event( $order->get_id() );
+		$new_stage = $last ? (string) $last->stage : '';
 		if ( $new_stage ) {
-			self::set_current_stage( $order, $new_stage );
+			// « Depuis » = date réelle de l'événement transporteur (pas l'heure du traitement).
+			self::set_current_stage( $order, $new_stage, (string) $last->occurred_at );
 		}
 
 		CODCRM_Attempts::refresh( $order );
@@ -151,12 +152,15 @@ class CODCRM_Event_Collector {
 		}
 	}
 
-	private static function set_current_stage( WC_Order $order, string $stage ): void {
+	public static function set_current_stage( WC_Order $order, string $stage, string $since = '' ): void {
 		if ( $order->get_meta( self::META_STAGE ) === $stage ) {
 			return;
 		}
-		$order->update_meta_data( self::META_STAGE, $stage );
-		$order->update_meta_data( self::META_STAGE_SINCE, current_time( 'mysql' ) );
+		// delete + add : garantit UNE seule ligne de meta par clé (pas de doublon).
+		foreach ( [ self::META_STAGE => $stage, self::META_STAGE_SINCE => '' !== $since ? $since : current_time( 'mysql' ) ] as $k => $v ) {
+			$order->delete_meta_data( $k );
+			$order->add_meta_data( $k, $v, true );
+		}
 		$order->save_meta_data();
 	}
 }

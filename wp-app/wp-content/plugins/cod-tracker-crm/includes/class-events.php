@@ -51,6 +51,14 @@ class CODCRM_Events {
 		return (int) $wpdb->insert_id;
 	}
 
+	/** Dernier événement transporteur d'une commande (étape + date réelle) ou null. */
+	public static function last_carrier_event( int $order_id ): ?object {
+		global $wpdb;
+		$table = CODCRM_Installer::table_events();
+		$row   = $wpdb->get_row( $wpdb->prepare( "SELECT stage, occurred_at FROM {$table} WHERE order_id = %d AND type = 'carrier_state' AND stage <> '' ORDER BY occurred_at DESC, id DESC LIMIT 1", $order_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		return $row ?: null;
+	}
+
 	public static function exists( int $order_id, string $dedupe_key ): bool {
 		global $wpdb;
 		$table = CODCRM_Installer::table_events();

@@ -30,6 +30,16 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 		 * @param array $assoc_args Options.
 		 */
 		public function backfill( $args, $assoc_args ) {
+			// Verrou : deux backfills simultanés créent des lignes de meta en double.
+			$lock = (int) get_option( 'codcrm_backfill_lock', 0 );
+			if ( $lock && time() - $lock < 3 * HOUR_IN_SECONDS && ! isset( $assoc_args['force'] ) ) {
+				WP_CLI::error( 'Un backfill est déjà en cours (verrou). Utilisez --force si c\'est une erreur.' );
+			}
+			update_option( 'codcrm_backfill_lock', time(), false );
+			register_shutdown_function( static function () {
+				delete_option( 'codcrm_backfill_lock' );
+			} );
+
 			$limit   = isset( $assoc_args['limit'] ) ? max( 1, (int) $assoc_args['limit'] ) : -1;
 			$refresh = isset( $assoc_args['refresh'] );
 			$sleep   = isset( $assoc_args['sleep'] ) ? max( 0, (int) $assoc_args['sleep'] ) : 300;
@@ -92,6 +102,63 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			}
 
 			WP_CLI::success( sprintf( '%d commande(s) traitée(s), %d événement(s) de base créé(s).', $done, $new ) );
+		}
+
+		/**
+		 * Répare les données : doublons de meta, étapes recalculées avec les règles actuelles.
+		 *
+		 * ## EXAMPLES
+		 *
+		 *     wp codcrm repair
+		 *
+		 * @param array $args       Arguments positionnels.
+		 * @param array $assoc_args Options.
+		 */
+		public function repair( $args, $assoc_args ) {
+			global $wpdb;
+
+			// 1. Doublons de meta _codcrm_* : on garde la ligne la plus récente.
+			$tables = [ [ $wpdb->prefix . 'wc_orders_meta', 'order_id', 'id' ], [ $wpdb->postmeta, 'post_id', 'meta_id' ] ];
+			$removed = 0;
+			foreach ( $tables as [ $table, $col, $pk ] ) {
+				if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
+					continue;
+				}
+				$removed += (int) $wpdb->query(
+					"DELETE m FROM {$table} m JOIN {$table} n ON n.{$col} = m.{$col} AND n.meta_key = m.meta_key AND n.{$pk} > m.{$pk} WHERE m.meta_key LIKE '\\_codcrm\\_%'" // phpcs:ignore WordPress.DB.PreparedSQL
+				);
+			}
+			WP_CLI::log( sprintf( '%d ligne(s) de meta en double supprimée(s).', $removed ) );
+
+			// 2. Étapes recalculées depuis le libellé transporteur (règles actuelles).
+			$events = CODCRM_Installer::table_events();
+			$rows   = $wpdb->get_results( "SELECT DISTINCT carrier_state, stage FROM {$events} WHERE type = 'carrier_state'" ); // phpcs:ignore WordPress.DB.PreparedSQL
+			$fixed  = 0;
+			foreach ( $rows as $r ) {
+				$new = CODCRM_Stage_Mapper::from_carrier_state( (string) $r->carrier_state ) ?: CODCRM_Stages::INCONNU;
+				if ( $new !== $r->stage ) {
+					$fixed += (int) $wpdb->query( $wpdb->prepare( "UPDATE {$events} SET stage = %s WHERE type = 'carrier_state' AND carrier_state = %s", $new, $r->carrier_state ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+				}
+			}
+			WP_CLI::log( sprintf( '%d événement(s) reclassé(s).', $fixed ) );
+
+			// 3. Étape courante + tentatives recalculées pour chaque commande suivie.
+			$ids = $wpdb->get_col( "SELECT DISTINCT order_id FROM {$events} WHERE type = 'carrier_state'" ); // phpcs:ignore WordPress.DB.PreparedSQL
+			foreach ( $ids as $id ) {
+				$order = wc_get_order( (int) $id );
+				if ( ! $order ) {
+					continue;
+				}
+				$last = CODCRM_Events::last_carrier_event( (int) $id );
+				if ( $last ) {
+					// Force la réécriture (étape + « depuis » = date réelle de l'événement).
+					$order->delete_meta_data( CODCRM_Event_Collector::META_STAGE );
+					$order->save_meta_data();
+					CODCRM_Event_Collector::set_current_stage( $order, (string) $last->stage, (string) $last->occurred_at );
+				}
+				CODCRM_Attempts::refresh( $order );
+			}
+			WP_CLI::success( sprintf( '%d commande(s) recalculée(s).', count( $ids ) ) );
 		}
 	}
 
