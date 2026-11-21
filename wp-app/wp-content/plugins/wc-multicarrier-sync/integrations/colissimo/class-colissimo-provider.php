@@ -670,8 +670,50 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
         return [
             'state_code'  => '',
             'state_label' => $state,
-            'raw'         => [ 'source' => 'tracking.php', 'etat' => $state, 'mis_a_jour' => $updated ],
+            'raw'         => [
+                'source'     => 'tracking.php',
+                'etat'       => $state,
+                'mis_a_jour' => $updated,
+                'history'    => $this->parse_public_history( $html ),
+            ],
         ];
+    }
+
+    /**
+     * Frise « Historique du Colis » de tracking.php → liste datée.
+     *
+     * @return array<int,array{state:string,at:string,note:string}>  `at` = Y-m-d H:i (heure du site Colissimo).
+     */
+    private function parse_public_history( string $html ): array {
+        $pos = strpos( $html, 'Historique du Colis' );
+        if ( false === $pos ) {
+            return [];
+        }
+        $seg  = substr( $html, $pos );
+        $stop = strpos( $seg, 'Liens Rapides' );
+        if ( false !== $stop ) {
+            $seg = substr( $seg, 0, $stop );
+        }
+
+        $n = preg_match_all(
+            '#<div\s+style="font-weight:700; font-size:14px;[^"]*">\s*([^<]+?)\s*</div>\s*<div[^>]*>\s*(\d{2})/(\d{2})/(\d{4})\s*·\s*(\d{2}:\d{2})\s*</div>(?:\s*<div[^>]*>\s*([^<]*?)\s*</div>)?#su',
+            $seg,
+            $m,
+            PREG_SET_ORDER
+        );
+        if ( ! $n ) {
+            return [];
+        }
+
+        $out = [];
+        foreach ( $m as $row ) {
+            $out[] = [
+                'state' => html_entity_decode( trim( $row[1] ), ENT_QUOTES, 'UTF-8' ),
+                'at'    => sprintf( '%s-%s-%s %s', $row[4], $row[3], $row[2], $row[5] ),
+                'note'  => html_entity_decode( trim( (string) ( $row[6] ?? '' ) ), ENT_QUOTES, 'UTF-8' ),
+            ];
+        }
+        return $out;
     }
 
     private function tracking_via_rest( string $tracking_id ) {

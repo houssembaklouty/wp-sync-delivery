@@ -3,7 +3,7 @@
  * Plugin Name:       MultiCarrier Sync TN
  * Plugin URI:        https://baklouty.tn
  * Description:       Synchronisation manuelle multi-transporteurs pour WooCommerce. Supporte FirstDelivery, Colissimo et plus.
- * Version:           2.10.4
+ * Version:           2.10.5
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            Houssem Baklouti
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 // ─────────────────────────────────────────────
 //  Constants
 // ─────────────────────────────────────────────
-define( 'WCMCS_VERSION',     '2.10.4' );
+define( 'WCMCS_VERSION',     '2.10.5' );
 define( 'WCMCS_PLUGIN_FILE', __FILE__ );
 define( 'WCMCS_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WCMCS_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );

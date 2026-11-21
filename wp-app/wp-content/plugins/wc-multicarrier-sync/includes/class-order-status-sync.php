@@ -405,6 +405,14 @@ class WCMCS_Order_Status_Sync {
 
 		$state_key = '' !== $state_code ? $state_code : $state_label;
 
+		// Hook d'observation (CRM / journaux) : déclenché UNE fois par changement
+		// d'état transporteur, avant toute transition de statut WooCommerce.
+		// $status['raw']['history'] (optionnel) = étapes datées du transporteur.
+		$previous_state = (string) WCMCS_WC_Compat::get_order_meta( $order, self::META_LAST_STATE );
+		if ( $previous_state !== $state_key ) {
+			do_action( 'wcmcs_tracking_state_changed', $order, $slug, $previous_state, $state_key, $this->classify_state( $slug, $state_key ), $status );
+		}
+
 		// Statuts terminaux WC (Terminée = payée en ligne / clôturée,
 		// Annulée, Remboursée, Échouée) : jamais de transition — mémo de
 		// l'état transporteur seul (« Jamais de dégradation ») ; la

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.10.5
+
+- Nouveau : hook `wcmcs_tracking_state_changed( $order, $slug, $ancien_etat, $nouvel_etat, $categorie, $status )` — déclenché à chaque changement d'état transporteur (base du plugin COD Tracker CRM).
+- Colissimo : le suivi renvoie l'historique daté complet du colis (`raw['history']` : état, date, note) lu sur `tracking.php`.
+
 ## 2.10.4
 
 - Colissimo : **suivi via la page publique `colissimodelivery.tn/tracking.php`** (POST `code`, sans token) en source principale — l'API `etat.php` refuse le token d'ajout (« token invalide »). Ordre : page publique → `etat.php` (token de suivi) → SOAP legacy (si identifiants legacy). Désactivable via le filtre `wcmcs_colissimo_public_tracking`.
