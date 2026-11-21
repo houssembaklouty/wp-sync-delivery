@@ -48,15 +48,18 @@ jobs:
             exit 1
           fi
 
+      # NB : le nom DOIT matcher le regex PUC de class-updater.php
+      # (^wc-multicarrier-sync-[0-9.]+\.zip$, REQUIRE_RELEASE_ASSETS), sinon
+      # les sites ne voient jamais la mise à jour.
       - name: Build du zip installable
         run: |
           cd wp-app/wp-content/plugins
-          zip -rq "$RUNNER_TEMP/wc-multicarrier-sync.zip" wc-multicarrier-sync \
+          zip -rq "$RUNNER_TEMP/wc-multicarrier-sync-${{ steps.version.outputs.version }}.zip" wc-multicarrier-sync \
             -x "*/.git/*" "*/node_modules/*" "*.DS_Store" "*/.phpunit.result.cache"
           cd "$RUNNER_TEMP"
-          unzip -l wc-multicarrier-sync.zip | grep -q "wc-multicarrier-sync/wc-multicarrier-sync.php" \
+          unzip -l "wc-multicarrier-sync-${{ steps.version.outputs.version }}.zip" | grep -q "wc-multicarrier-sync/wc-multicarrier-sync.php" \
             || { echo "Structure du zip invalide"; exit 1; }
-          echo "Zip prêt :"; unzip -l wc-multicarrier-sync.zip | tail -1
+          echo "Zip prêt :"; unzip -l "wc-multicarrier-sync-${{ steps.version.outputs.version }}.zip" | tail -1
 
       - name: Vérifier le secret DIST_REPO_TOKEN
         run: |
@@ -84,6 +87,6 @@ jobs:
             --notes "Mise à jour automatique — build du $(date '+%Y-%m-%d %H:%M') UTC.
           Notes de version : voir CHANGELOG.md du repo source." \
             --prerelease=false
-          gh release upload "$TAG" "$RUNNER_TEMP/wc-multicarrier-sync.zip" --repo "$DIST" --clobber
-          echo "✅ Release $TAG publiée sur $DIST avec wc-multicarrier-sync.zip"
+          gh release upload "$TAG" "$RUNNER_TEMP/wc-multicarrier-sync-${{ steps.version.outputs.version }}.zip" --repo "$DIST" --clobber
+          echo "✅ Release $TAG publiée sur $DIST avec wc-multicarrier-sync-$VERSION.zip"
           echo "Les sites prod détecteront la mise à jour au prochain check (≤ 12 h)."
