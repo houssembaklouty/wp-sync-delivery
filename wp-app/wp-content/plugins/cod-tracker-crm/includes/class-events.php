@@ -51,6 +51,12 @@ class CODCRM_Events {
 		return (int) $wpdb->insert_id;
 	}
 
+	public static function exists( int $order_id, string $dedupe_key ): bool {
+		global $wpdb;
+		$table = CODCRM_Installer::table_events();
+		return (bool) $wpdb->get_var( $wpdb->prepare( "SELECT 1 FROM {$table} WHERE order_id = %d AND dedupe_key = %s LIMIT 1", $order_id, substr( $dedupe_key, 0, 64 ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
 	/**
 	 * Événements d'une commande, du plus ancien au plus récent.
 	 *

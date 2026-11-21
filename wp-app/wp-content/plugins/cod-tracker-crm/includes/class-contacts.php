@@ -13,6 +13,17 @@ class CODCRM_Contacts {
 		add_action( 'wp_ajax_codcrm_complete_task', [ __CLASS__, 'ajax_complete_task' ] );
 	}
 
+	/** Remplace {client} {commande} {suivi} {transporteur} {montant} dans un modèle. */
+	public static function render_template( WC_Order $order, string $template ): string {
+		return strtr( $template, [
+			'{client}'       => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+			'{commande}'     => $order->get_order_number(),
+			'{suivi}'        => (string) $order->get_meta( '_wcmcs_tracking_id' ),
+			'{transporteur}' => (string) $order->get_meta( '_wcmcs_carrier_slug' ),
+			'{montant}'      => wc_format_decimal( $order->get_total(), 2 ),
+		] );
+	}
+
 	/** @return array<string,string> résultat d'appel => libellé */
 	public static function call_outcomes(): array {
 		return [

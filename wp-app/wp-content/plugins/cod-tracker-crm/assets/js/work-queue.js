@@ -76,6 +76,42 @@
             });
     });
 
+    // SMS manuel : choix d'un modèle, message modifiable, envoi tracé.
+    function openSmsModal(orderId) {
+        var opts = '';
+        $.each(codcrm.smsTpl || [], function (i, t) { opts += '<option value="' + i + '">' + esc(t.label) + '</option>'; });
+        var $m = $(
+            '<div class="codcrm-overlay"><div class="codcrm-modal">'
+            + '<h2>' + esc(i18n.sms_title) + ' — #' + esc(orderId) + '</h2>'
+            + '<p><label>' + esc(i18n.sms_tpl) + '<br><select class="codcrm-tpl">' + opts + '</select></label></p>'
+            + '<p><label>' + esc(i18n.sms_text) + '<br><textarea class="codcrm-smstext" rows="4" maxlength="480"></textarea></label></p>'
+            + '<p class="codcrm-err" style="color:#b32d2e"></p>'
+            + '<p><button type="button" class="button button-primary codcrm-send">' + esc(i18n.sms_send) + '</button> '
+            + '<button type="button" class="button codcrm-cancel">' + esc(i18n.cancel) + '</button></p>'
+            + '</div></div>'
+        );
+        $('body').append($m);
+        function fill() { var t = (codcrm.smsTpl || [])[$m.find('.codcrm-tpl').val()]; $m.find('.codcrm-smstext').val(t ? t.text : ''); }
+        fill();
+        $m.on('change', '.codcrm-tpl', fill);
+        $m.on('click', '.codcrm-cancel', function () { $m.remove(); });
+        $m.on('click', '.codcrm-send', function () {
+            var $b = $(this).prop('disabled', true);
+            post({ action: 'codcrm_send_sms', order_id: orderId, text: $m.find('.codcrm-smstext').val() })
+                .done(function (r) {
+                    if (r.success) { location.reload(); return; }
+                    $m.find('.codcrm-err').text((r.data && r.data.message) || i18n.error);
+                    $b.prop('disabled', false);
+                })
+                .fail(function () { $m.find('.codcrm-err').text(i18n.error); $b.prop('disabled', false); });
+        });
+    }
+
+    $(document).on('click', '.codcrm-sms', function (e) {
+        e.preventDefault();
+        openSmsModal($(this).data('order'));
+    });
+
     $(document).on('click', '.codcrm-done', function (e) {
         e.preventDefault();
         post({ action: 'codcrm_complete_task', task_id: $(this).data('task') }).done(function () {

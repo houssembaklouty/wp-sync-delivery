@@ -46,6 +46,7 @@ class CODCRM_Work_Queue {
 			'ajax'     => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'codcrm' ),
 			'outcomes' => CODCRM_Contacts::call_outcomes(),
+			'smsTpl'   => CODCRM_SMS_Gateway::is_configured() ? self::sms_template_options() : [],
 			'i18n'     => [
 				'call_title'  => __( 'Résultat de l\'appel', 'cod-tracker-crm' ),
 				'outcome'     => __( 'Résultat', 'cod-tracker-crm' ),
@@ -53,10 +54,23 @@ class CODCRM_Work_Queue {
 				'callback_at' => __( 'Rappeler le', 'cod-tracker-crm' ),
 				'note'        => __( 'Commentaire', 'cod-tracker-crm' ),
 				'save'        => __( 'Enregistrer', 'cod-tracker-crm' ),
+				'sms_title'   => __( 'Envoyer un SMS', 'cod-tracker-crm' ),
+				'sms_send'    => __( 'Envoyer', 'cod-tracker-crm' ),
+				'sms_text'    => __( 'Message (modifiable)', 'cod-tracker-crm' ),
+				'sms_tpl'     => __( 'Modèle', 'cod-tracker-crm' ),
 				'cancel'      => __( 'Annuler', 'cod-tracker-crm' ),
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
 			],
 		] );
+	}
+
+	/** Modèles SMS proposés à l'agent (bruts, avec placeholders ; rendus côté serveur à l'envoi). */
+	private static function sms_template_options(): array {
+		$out = [];
+		foreach ( CODCRM_SMS_Gateway::triggers() as $k => $label ) {
+			$out[] = [ 'label' => $label, 'text' => CODCRM_SMS_Gateway::template( $k ) ];
+		}
+		return $out;
 	}
 
 	/** Statuts d'étape sélectionnables dans le filtre. */
@@ -142,13 +156,7 @@ class CODCRM_Work_Queue {
 	}
 
 	private static function wa_url( WC_Order $order, string $phone8, string $template ): string {
-		$text = strtr( $template, [
-			'{client}'       => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
-			'{commande}'     => $order->get_order_number(),
-			'{suivi}'        => (string) $order->get_meta( '_wcmcs_tracking_id' ),
-			'{transporteur}' => (string) $order->get_meta( '_wcmcs_carrier_slug' ),
-			'{montant}'      => wc_format_decimal( $order->get_total(), 2 ),
-		] );
+		$text = CODCRM_Contacts::render_template( $order, $template );
 		return 'https://wa.me/216' . $phone8 . '?text=' . rawurlencode( $text );
 	}
 
@@ -294,6 +302,9 @@ class CODCRM_Work_Queue {
 		echo '<td class="codcrm-actions">';
 		if ( $phone8 ) {
 			printf( '<a class="button codcrm-call" href="tel:+216%s" data-order="%d">📞</a> ', esc_attr( $phone8 ), (int) $id );
+			if ( CODCRM_SMS_Gateway::is_configured() ) {
+				printf( '<a class="button codcrm-sms" href="#" data-order="%d" title="SMS">✉ SMS</a> ', (int) $id );
+			}
 			foreach ( $templates as $t ) {
 				printf( '<a class="button codcrm-wa" href="#" data-order="%d" data-url="%s" title="WhatsApp %s">💬 %s</a> ', (int) $id, esc_url( self::wa_url( $order, $phone8, (string) $t['text'] ) ), esc_attr( $t['label'] ), esc_html( $t['label'] ) );
 			}
@@ -343,8 +354,61 @@ class CODCRM_Work_Queue {
 		);
 
 		echo '</table>';
+
+		self::render_sms_settings();
+
 		submit_button();
-		echo '</form></div>';
+		echo '</form>';
+
+		// Test d'envoi (formulaire séparé).
+		if ( CODCRM_SMS_Gateway::is_configured() ) {
+			echo '<h2>' . esc_html__( 'Tester la passerelle', 'cod-tracker-crm' ) . '</h2>';
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+			echo '<input type="hidden" name="action" value="codcrm_sms_test" />';
+			wp_nonce_field( 'codcrm_sms_test' );
+			echo '<input type="text" name="test_phone" placeholder="55123456" /> ';
+			submit_button( __( 'Envoyer un SMS test', 'cod-tracker-crm' ), 'secondary', 'submit', false );
+			echo '</form>';
+		}
+		echo '</div>';
+	}
+
+	private static function render_sms_settings(): void {
+		$o = static function ( string $k, $d = '' ) { return get_option( $k, $d ); };
+
+		echo '<h2>' . esc_html__( 'Passerelle SMS', 'cod-tracker-crm' ) . '</h2>';
+		echo '<p class="description">' . esc_html__( 'Compatible avec tout fournisseur offrant une API HTTP. Placeholders : {to} {message} {sender} {api_key}.', 'cod-tracker-crm' ) . '</p>';
+		if ( isset( $_GET['sms_test'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$r = sanitize_text_field( wp_unslash( $_GET['sms_test'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			printf( '<div class="notice %s"><p>%s</p></div>', 'ok' === $r ? 'notice-success' : 'notice-error', esc_html( 'ok' === $r ? __( 'SMS test envoyé.', 'cod-tracker-crm' ) : $r ) );
+		}
+
+		echo '<table class="form-table">';
+		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="sms_enabled" value="yes"%s /> %s</label></td></tr>', esc_html__( 'Activer', 'cod-tracker-crm' ), checked( 'yes', $o( 'codcrm_sms_enabled', 'no' ), false ), esc_html__( 'Autoriser l\'envoi de SMS', 'cod-tracker-crm' ) );
+		printf( '<tr><th>URL</th><td><input type="url" class="large-text" name="sms_url" value="%s" placeholder="https://api.fournisseur.tn/sms/send" /></td></tr>', esc_attr( (string) $o( 'codcrm_sms_url' ) ) );
+		printf( '<tr><th>%s</th><td><select name="sms_method"><option value="POST"%s>POST</option><option value="GET"%s>GET</option></select> <select name="sms_format"><option value="form"%s>form-urlencoded</option><option value="json"%s>JSON</option></select></td></tr>',
+			esc_html__( 'Méthode / format', 'cod-tracker-crm' ),
+			selected( 'POST', $o( 'codcrm_sms_method', 'POST' ), false ), selected( 'GET', $o( 'codcrm_sms_method', 'POST' ), false ),
+			selected( 'form', $o( 'codcrm_sms_format', 'form' ), false ), selected( 'json', $o( 'codcrm_sms_format', 'form' ), false )
+		);
+		printf( '<tr><th>%s</th><td><textarea name="sms_params" rows="5" class="large-text code" placeholder="to={to}&#10;text={message}&#10;from={sender}">%s</textarea><p class="description">%s</p></td></tr>', esc_html__( 'Paramètres', 'cod-tracker-crm' ), esc_textarea( (string) $o( 'codcrm_sms_params' ) ), esc_html__( 'Un par ligne : clé=valeur.', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><textarea name="sms_headers" rows="2" class="large-text code" placeholder="Authorization: Bearer {api_key}">%s</textarea></td></tr>', esc_html__( 'En-têtes', 'cod-tracker-crm' ), esc_textarea( (string) $o( 'codcrm_sms_headers' ) ) );
+		printf( '<tr><th>%s</th><td><input type="password" name="sms_api_key" value="" autocomplete="new-password" class="regular-text" placeholder="%s" /></td></tr>', esc_html__( 'Clé API / token', 'cod-tracker-crm' ), '' !== (string) $o( 'codcrm_sms_api_key' ) ? esc_attr__( '•••••• (laisser vide pour conserver)', 'cod-tracker-crm' ) : '' );
+		printf( '<tr><th>%s</th><td><input type="text" name="sms_sender" value="%s" class="regular-text" /></td></tr>', esc_html__( 'Expéditeur', 'cod-tracker-crm' ), esc_attr( (string) $o( 'codcrm_sms_sender' ) ) );
+		printf( '<tr><th>%s</th><td><select name="sms_phone"><option value="216"%s>216XXXXXXXX</option><option value="+216"%s>+216XXXXXXXX</option><option value="local"%s>XXXXXXXX</option></select></td></tr>',
+			esc_html__( 'Format du numéro {to}', 'cod-tracker-crm' ),
+			selected( '216', $o( 'codcrm_sms_phone', '216' ), false ), selected( '+216', $o( 'codcrm_sms_phone', '216' ), false ), selected( 'local', $o( 'codcrm_sms_phone', '216' ), false )
+		);
+		printf( '<tr><th>%s</th><td><input type="text" name="sms_success" value="%s" class="regular-text" /><p class="description">%s</p></td></tr>', esc_html__( 'Texte de succès', 'cod-tracker-crm' ), esc_attr( (string) $o( 'codcrm_sms_success' ) ), esc_html__( 'Texte à retrouver dans la réponse du fournisseur. Vide = HTTP 2xx suffit.', 'cod-tracker-crm' ) );
+
+		echo '<tr><th>' . esc_html__( 'Envois automatiques', 'cod-tracker-crm' ) . '</th><td>';
+		$auto = (array) $o( 'codcrm_sms_auto', [] );
+		foreach ( CODCRM_SMS_Gateway::triggers() as $k => $label ) {
+			printf( '<p><label><input type="checkbox" name="sms_auto[]" value="%1$s"%2$s /> <strong>%3$s</strong></label><br><textarea name="sms_tpl[%1$s]" rows="2" class="large-text">%4$s</textarea></p>',
+				esc_attr( $k ), checked( in_array( $k, $auto, true ), true, false ), esc_html( $label ), esc_textarea( CODCRM_SMS_Gateway::template( $k ) ) );
+		}
+		echo '<p class="description">' . esc_html__( 'Désactivés par défaut. Un seul SMS par déclencheur et par tournée. Placeholders : {client} {commande} {suivi} {transporteur} {montant}.', 'cod-tracker-crm' ) . '</p>';
+		echo '</td></tr></table>';
 	}
 
 	public static function save_settings(): void {
@@ -356,6 +420,29 @@ class CODCRM_Work_Queue {
 		update_option( 'codcrm_auto_assign', isset( $_POST['auto_assign'] ) ? 'yes' : 'no' );
 		update_option( 'codcrm_active_agents', array_map( 'absint', (array) wp_unslash( $_POST['agents'] ?? [] ) ) );
 		update_option( 'codcrm_attempts_threshold', max( 1, min( 10, absint( $_POST['threshold'] ?? 3 ) ) ) );
+
+		// Passerelle SMS.
+		update_option( 'codcrm_sms_enabled', isset( $_POST['sms_enabled'] ) ? 'yes' : 'no' );
+		update_option( 'codcrm_sms_url', esc_url_raw( trim( wp_unslash( $_POST['sms_url'] ?? '' ) ) ) );
+		update_option( 'codcrm_sms_method', 'GET' === ( $_POST['sms_method'] ?? '' ) ? 'GET' : 'POST' );
+		update_option( 'codcrm_sms_format', 'json' === ( $_POST['sms_format'] ?? '' ) ? 'json' : 'form' );
+		update_option( 'codcrm_sms_params', sanitize_textarea_field( wp_unslash( $_POST['sms_params'] ?? '' ) ) );
+		update_option( 'codcrm_sms_headers', sanitize_textarea_field( wp_unslash( $_POST['sms_headers'] ?? '' ) ) );
+		update_option( 'codcrm_sms_sender', sanitize_text_field( wp_unslash( $_POST['sms_sender'] ?? '' ) ) );
+		update_option( 'codcrm_sms_success', sanitize_text_field( wp_unslash( $_POST['sms_success'] ?? '' ) ) );
+		$phone_fmt = sanitize_text_field( wp_unslash( $_POST['sms_phone'] ?? '216' ) );
+		update_option( 'codcrm_sms_phone', in_array( $phone_fmt, [ '216', '+216', 'local' ], true ) ? $phone_fmt : '216' );
+		$key = trim( (string) wp_unslash( $_POST['sms_api_key'] ?? '' ) );
+		if ( '' !== $key ) { // vide = on conserve la clé existante.
+			update_option( 'codcrm_sms_api_key', $key, false );
+		}
+		$valid_triggers = array_keys( CODCRM_SMS_Gateway::triggers() );
+		update_option( 'codcrm_sms_auto', array_values( array_intersect( $valid_triggers, array_map( 'sanitize_key', (array) wp_unslash( $_POST['sms_auto'] ?? [] ) ) ) ) );
+		$tpl = [];
+		foreach ( $valid_triggers as $k ) {
+			$tpl[ $k ] = sanitize_textarea_field( wp_unslash( $_POST['sms_tpl'][ $k ] ?? '' ) );
+		}
+		update_option( 'codcrm_sms_templates', $tpl );
 
 		wp_safe_redirect( add_query_arg( [ 'page' => self::PAGE_SETTINGS, 'saved' => 1 ], admin_url( 'admin.php' ) ) );
 		exit;

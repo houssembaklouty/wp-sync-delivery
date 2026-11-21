@@ -85,14 +85,17 @@ class CODCRM_Event_Collector {
 		if ( ! $order instanceof WC_Order ) {
 			return;
 		}
-		self::record_carrier_state( $order, (string) $slug, (string) $new, is_array( $status ) ? $status : [] );
+		self::record_carrier_state( $order, (string) $slug, (string) $new, is_array( $status ) ? $status : [], true );
 	}
 
 	/**
 	 * Enregistre l'état transporteur (+ historique daté s'il est fourni).
 	 * Réutilisé par le backfill.
+	 *
+	 * @param bool $live True pour un vrai changement d'état détecté maintenant ;
+	 *                   false pour un import (backfill) : aucune notification client.
 	 */
-	public static function record_carrier_state( WC_Order $order, string $slug, string $state, array $status ): void {
+	public static function record_carrier_state( WC_Order $order, string $slug, string $state, array $status, bool $live = false ): void {
 		$history = isset( $status['raw']['history'] ) && is_array( $status['raw']['history'] ) ? $status['raw']['history'] : [];
 
 		if ( $history ) {
@@ -127,12 +130,25 @@ class CODCRM_Event_Collector {
 		}
 
 		// Étape courante = dernière étape transporteur connue du journal.
-		$seq = CODCRM_Events::carrier_stage_sequence( $order->get_id() );
-		if ( $seq ) {
-			self::set_current_stage( $order, (string) end( $seq ) );
+		$old_stage = (string) $order->get_meta( self::META_STAGE );
+		$seq       = CODCRM_Events::carrier_stage_sequence( $order->get_id() );
+		$new_stage = $seq ? (string) end( $seq ) : '';
+		if ( $new_stage ) {
+			self::set_current_stage( $order, $new_stage );
 		}
 
 		CODCRM_Attempts::refresh( $order );
+
+		if ( $live && $new_stage && $new_stage !== $old_stage ) {
+			/**
+			 * L'étape transporteur d'une commande vient de changer (suivi en direct).
+			 *
+			 * @param WC_Order $order     Commande.
+			 * @param string   $old_stage Ancienne étape.
+			 * @param string   $new_stage Nouvelle étape.
+			 */
+			do_action( 'codcrm_stage_changed', $order, $old_stage, $new_stage );
+		}
 	}
 
 	private static function set_current_stage( WC_Order $order, string $stage ): void {
