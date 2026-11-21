@@ -120,7 +120,7 @@ class CODCRM_Cash_Page {
 		foreach ( $list['rows'] as $r ) {
 			$st    = CODCRM_Cash::statuses()[ $r->status ] ?? [ $r->status, '#777' ];
 			$order = wc_get_order( (int) $r->order_id );
-			printf( '<tr><th class="check-column"><input type="checkbox" class="codcrm-cb" name="ids[]" value="%d" /></th><td><a href="%s">#%d</a></td><td><code>%s</code><br><small>%s</small></td><td>%s</td><td>%s</td><td>%s</td><td><span class="codcrm-pill" style="background:%s">%s</span></td><td>%s</td><td>%s</td></tr>',
+			printf( '<tr><th class="check-column"><input type="checkbox" class="codcrm-cb" name="ids[]" value="%d" /></th><td><a href="%s">#%d</a></td><td><code>%s</code><br><small>%s</small></td><td>%s</td><td>%s</td><td>%s</td><td><span class="codcrm-pill" style="%s">%s</span></td><td>%s</td><td>%s</td></tr>',
 				(int) $r->order_id,
 				esc_url( $order ? $order->get_edit_order_url() : '#' ),
 				(int) $r->order_id,
@@ -129,7 +129,7 @@ class CODCRM_Cash_Page {
 				esc_html( CODCRM_Cash::money( $r->expected ) ),
 				esc_html( CODCRM_Cash::money( $r->collected ) ),
 				esc_html( $r->fee > 0 ? CODCRM_Cash::money( $r->fee ) : '—' ),
-				esc_attr( $st[1] ),
+				esc_attr( CODCRM_Stages::badge_style( $st[1] ) ),
 				esc_html( $st[0] ),
 				esc_html( $r->statement_ref ?: '—' ),
 				esc_html( $r->note )

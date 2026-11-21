@@ -32,6 +32,16 @@ Chaque onglet a son formulaire : enregistrer un onglet ne modifie jamais les aut
 | Règles d'attribution | règles « conditions → membres » (produit, catégorie, gouvernorat, transporteur, montant) |
 | SMS | passerelle HTTP générique, envois automatiques (déclencheurs), test |
 | Messages | bibliothèque de modèles FR / AR pour WhatsApp et SMS, par situation |
+| Couleurs | couleur des badges de statut (étapes du colis, statuts du cash) |
+
+## Couleurs des statuts
+Même logique que MultiCarrier Sync : une couleur par défaut par statut, personnalisable (sélecteur de couleur, aperçu en
+direct, bouton ↺ par ligne et « Tout remettre par défaut »), texte noir ou blanc choisi automatiquement selon le
+contraste. Ordre de priorité : **couleur choisie dans Réglages → Couleurs** > **couleur du statut équivalent dans
+MultiCarrier Sync** (Confirmée, Colis créé, Emballée, Livré, Retour définitif… : le badge est identique à celui de la
+liste des commandes et suit les personnalisations faites côté MultiCarrier Sync) > couleur par défaut du CRM.
+Choisir la couleur d'origine supprime la personnalisation. S'applique à la timeline, « Mes suivis », au tableau de bord
+et à la page Cash.
 
 ## Messages clients (WhatsApp et SMS, français et arabe)
 Bouton **✉ Message** dans « Mes suivis » et sur la fiche commande : une seule fenêtre avec le canal (WhatsApp / SMS),

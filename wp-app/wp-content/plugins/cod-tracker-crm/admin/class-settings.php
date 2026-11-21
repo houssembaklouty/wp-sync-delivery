@@ -33,6 +33,7 @@ class CODCRM_Settings {
 			'rules'      => __( 'Règles d\'attribution', 'cod-tracker-crm' ),
 			'sms'        => __( 'SMS', 'cod-tracker-crm' ),
 			'messages'   => __( 'Messages', 'cod-tracker-crm' ),
+			'colors'     => __( 'Couleurs', 'cod-tracker-crm' ),
 		];
 	}
 
@@ -89,6 +90,9 @@ class CODCRM_Settings {
 				break;
 			case 'messages':
 				self::tab_messages();
+				break;
+			case 'colors':
+				self::tab_colors();
 				break;
 			default:
 				self::tab_general();
@@ -443,6 +447,46 @@ class CODCRM_Settings {
 		echo '</td></tr></table>';
 	}
 
+	/** Ligne d'un tableau de couleurs : aperçu, sélecteur, remise à zéro. */
+	private static function color_row( string $name, string $label, string $current, string $default, string $note = '' ): void {
+		printf(
+			'<tr><td><strong>%1$s</strong>%2$s</td><td><span class="codcrm-color-chip" style="%3$s">%1$s</span></td><td><input type="color" class="codcrm-color" name="%4$s" value="%5$s" data-default="%6$s" /> <code class="codcrm-color-hex">%5$s</code></td><td><button type="button" class="button codcrm-color-reset" data-default="%6$s" title="%7$s">↺</button></td></tr>',
+			esc_html( $label ),
+			'' !== $note ? '<br><small class="description">' . esc_html( $note ) . '</small>' : '',
+			esc_attr( CODCRM_Stages::badge_style( $current ) ),
+			esc_attr( $name ),
+			esc_attr( $current ),
+			esc_attr( $default ),
+			esc_attr__( 'Remettre la couleur par défaut', 'cod-tracker-crm' )
+		);
+	}
+
+	private static function tab_colors(): void {
+		self::form_open( 'colors' );
+		echo '<p>' . esc_html__( 'Couleur des badges de statut dans le CRM (timeline, Mes suivis, tableau de bord, Cash). Les étapes qui existent aussi dans MultiCarrier Sync (Confirmée, Emballée, Colis créé, Livré, Retour définitif…) reprennent sa couleur et la suivent si vous la changez là-bas ; choisissez une couleur ici pour la remplacer. La couleur du texte (noir ou blanc) s\'adapte automatiquement.', 'cod-tracker-crm' ) . '</p>';
+
+		echo '<h2>' . esc_html__( 'Étapes du colis', 'cod-tracker-crm' ) . '</h2>';
+		echo '<table class="widefat striped codcrm-colors"><thead><tr><th>' . esc_html__( 'Étape', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Aperçu', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Couleur', 'cod-tracker-crm' ) . '</th><th></th></tr></thead><tbody>';
+		foreach ( CODCRM_Stages::all() as $code => $def ) {
+			$note = ( CODCRM_Stages::follows_mcs( $code ) && '' === trim( (string) get_option( CODCRM_Stages::OPT_COLOR . $code, '' ) ) )
+				? __( 'suit la couleur de MultiCarrier Sync', 'cod-tracker-crm' )
+				: '';
+			self::color_row( 'colors[stage][' . $code . ']', $def['label'], CODCRM_Stages::color( $code ), CODCRM_Stages::default_color( $code ), $note );
+		}
+		echo '</tbody></table>';
+
+		echo '<h2>' . esc_html__( 'Statuts du cash COD', 'cod-tracker-crm' ) . '</h2>';
+		echo '<table class="widefat striped codcrm-colors"><thead><tr><th>' . esc_html__( 'Statut', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Aperçu', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Couleur', 'cod-tracker-crm' ) . '</th><th></th></tr></thead><tbody>';
+		$defaults = CODCRM_Cash::default_statuses();
+		foreach ( CODCRM_Cash::statuses() as $k => $def ) {
+			self::color_row( 'colors[cash][' . $k . ']', $def[0], $def[1], $defaults[ $k ][1] );
+		}
+		echo '</tbody></table>';
+
+		echo '<p><button type="button" class="button codcrm-color-reset-all">↺ ' . esc_html__( 'Tout remettre par défaut', 'cod-tracker-crm' ) . '</button> <span class="description">' . esc_html__( '(effectif après « Enregistrer »)', 'cod-tracker-crm' ) . '</span></p>';
+		self::form_close();
+	}
+
 	private static function tab_messages(): void {
 		$ctxs = CODCRM_Templates::contexts();
 		$ctx  = sanitize_key( wp_unslash( $_GET['ctx'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -544,6 +588,10 @@ class CODCRM_Settings {
 			update_option( 'codcrm_sms_auto', array_values( array_intersect( $valid_triggers, array_map( 'sanitize_key', (array) wp_unslash( $_POST['sms_auto'] ?? [] ) ) ) ) );
 				break;
 
+			case 'colors':
+				self::save_colors( (array) wp_unslash( $_POST['colors'] ?? [] ) );
+				break;
+
 			case 'messages':
 				$ctx = sanitize_key( wp_unslash( $_POST['ctx'] ?? '' ) );
 				if ( isset( CODCRM_Templates::contexts()[ $ctx ] ) ) {
@@ -563,6 +611,30 @@ class CODCRM_Settings {
 
 		wp_safe_redirect( self::url( array_merge( [ 'tab' => $tab, 'saved' => 1 ], $extra ) ) );
 		exit;
+	}
+
+	/**
+	 * Enregistre les couleurs personnalisées. Une couleur identique au défaut (ou invalide)
+	 * supprime la personnalisation : l'étape suit alors MultiCarrier Sync / le défaut du CRM.
+	 */
+	public static function save_colors( array $posted ): void {
+		$groups = [
+			'stage' => [ array_keys( CODCRM_Stages::all() ), CODCRM_Stages::OPT_COLOR, [ 'CODCRM_Stages', 'default_color' ] ],
+			'cash'  => [ array_keys( CODCRM_Cash::default_statuses() ), CODCRM_Cash::OPT_COLOR, static function ( $k ) { return CODCRM_Cash::default_statuses()[ $k ][1]; } ],
+		];
+		foreach ( $groups as $g => [ $keys, $prefix, $default_fn ] ) {
+			foreach ( $keys as $key ) {
+				if ( ! isset( $posted[ $g ][ $key ] ) ) {
+					continue;
+				}
+				$hex = sanitize_hex_color( trim( (string) $posted[ $g ][ $key ] ) );
+				if ( ! $hex || strtolower( $hex ) === strtolower( (string) call_user_func( $default_fn, $key ) ) ) {
+					delete_option( $prefix . $key );
+				} else {
+					update_option( $prefix . $key, $hex, false );
+				}
+			}
+		}
 	}
 
 	/**

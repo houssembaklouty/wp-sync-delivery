@@ -97,9 +97,61 @@ class CODCRM_Stages {
 		return $all[ $stage ]['label'] ?? $stage;
 	}
 
-	public static function color( string $stage ): string {
+	/** Préfixe des options de couleur personnalisée (une par étape). */
+	const OPT_COLOR = 'codcrm_color_';
+
+	/**
+	 * Étapes qui équivalent à un statut de commande de MultiCarrier Sync : leur couleur
+	 * suit celle du statut (même badge dans la liste des commandes et dans le CRM,
+	 * y compris quand le client a personnalisé la couleur côté MultiCarrier Sync).
+	 */
+	const MCS_STATUS = [
+		self::COMMANDE         => 'processing',
+		self::CONFIRMEE        => 'wcmcs-confirmed',
+		self::SYNCHRONISEE     => 'wcmcs-synced',
+		self::EMBALLEE         => 'wcmcs-packed',
+		self::LIVRES           => 'wcmcs-delivered',
+		self::LIVRES_PAYES     => 'wcmcs-delivered',
+		self::RETOUR_DEFINITIF => 'wcmcs-returned',
+	];
+
+	/** Couleur par défaut : celle de MultiCarrier Sync si l'étape y est liée, sinon celle du CRM. */
+	public static function default_color( string $stage ): string {
+		$key = self::MCS_STATUS[ $stage ] ?? '';
+		if ( '' !== $key && class_exists( 'WCMCS_Order_Statuses' ) ) {
+			$c = (string) WCMCS_Order_Statuses::status_color( $key );
+			if ( '' !== $c ) {
+				return $c;
+			}
+		}
 		$all = self::all();
 		return $all[ $stage ]['color'] ?? '#6c757d';
+	}
+
+	/** Couleur d'une étape : réglage personnalisé > couleur MultiCarrier Sync > défaut du CRM. */
+	public static function color( string $stage ): string {
+		$custom = sanitize_hex_color( trim( (string) get_option( self::OPT_COLOR . $stage, '' ) ) );
+		return $custom ?: self::default_color( $stage );
+	}
+
+	/** Étape liée à la couleur d'un statut MultiCarrier Sync (et ce plugin est actif) ? */
+	public static function follows_mcs( string $stage ): bool {
+		return isset( self::MCS_STATUS[ $stage ] ) && class_exists( 'WCMCS_Order_Statuses' );
+	}
+
+	/** Texte lisible (noir / blanc) sur un fond hex : contraste YIQ, comme MultiCarrier Sync. */
+	public static function text_color( string $hex ): string {
+		$h = ltrim( $hex, '#' );
+		if ( ! preg_match( '/^[0-9a-fA-F]{6}$/', $h ) ) {
+			return '#1e1e1e';
+		}
+		$yiq = ( 299 * hexdec( substr( $h, 0, 2 ) ) + 587 * hexdec( substr( $h, 2, 2 ) ) + 114 * hexdec( substr( $h, 4, 2 ) ) ) / 1000;
+		return $yiq >= 150 ? '#1e1e1e' : '#ffffff';
+	}
+
+	/** Style en ligne d'un badge : fond + texte auto-contrasté. */
+	public static function badge_style( string $hex ): string {
+		return 'background:' . $hex . ';color:' . self::text_color( $hex );
 	}
 
 	public static function icon( string $stage ): string {

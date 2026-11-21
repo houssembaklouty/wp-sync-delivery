@@ -196,10 +196,10 @@ class CODCRM_Dashboard {
 			echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Commande', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Étape', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Depuis', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Transporteur', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Agent', 'cod-tracker-crm' ) . '</th></tr></thead><tbody>';
 			foreach ( array_slice( $k['stuck'], 0, 50 ) as $r ) {
 				$order = wc_get_order( $r['id'] );
-				printf( '<tr><td><a href="%s">#%d</a></td><td><span class="codcrm-pill" style="background:%s">%s</span></td><td>%s</td><td>%s</td><td>%s</td></tr>',
+				printf( '<tr><td><a href="%s">#%d</a></td><td><span class="codcrm-pill" style="%s">%s</span></td><td>%s</td><td>%s</td><td>%s</td></tr>',
 					esc_url( $order ? $order->get_edit_order_url() : '#' ),
 					(int) $r['id'],
-					esc_attr( CODCRM_Stages::color( $r['stage'] ) ),
+					esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $r['stage'] ) ) ),
 					esc_html( CODCRM_Stages::label( $r['stage'] ) ),
 					esc_html( sprintf( _n( '%d jour', '%d jours', $r['days'], 'cod-tracker-crm' ), $r['days'] ) ),
 					esc_html( $r['carrier'] ),

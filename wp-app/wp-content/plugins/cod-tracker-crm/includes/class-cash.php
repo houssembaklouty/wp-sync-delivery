@@ -19,7 +19,22 @@ class CODCRM_Cash {
 		add_action( 'codcrm_stage_changed', [ __CLASS__, 'on_stage_changed' ], 20, 3 );
 	}
 
+	/** Préfixe des options de couleur personnalisée (un statut cash = une option). */
+	const OPT_COLOR = 'codcrm_color_cash_';
+
+	/** Statuts avec leur couleur effective (personnalisée si définie, sinon défaut). */
 	public static function statuses(): array {
+		$out = self::default_statuses();
+		foreach ( $out as $k => $def ) {
+			$custom = sanitize_hex_color( trim( (string) get_option( self::OPT_COLOR . $k, '' ) ) );
+			if ( $custom ) {
+				$out[ $k ][1] = $custom;
+			}
+		}
+		return $out;
+	}
+
+	public static function default_statuses(): array {
 		return [
 			self::PENDING   => [ __( 'En cours', 'cod-tracker-crm' ), '#e67e22' ],
 			self::COLLECTED => [ __( 'À reverser', 'cod-tracker-crm' ), '#2271b1' ],

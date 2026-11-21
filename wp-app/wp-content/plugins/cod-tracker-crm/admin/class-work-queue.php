@@ -275,7 +275,7 @@ class CODCRM_Work_Queue {
 		);
 
 		printf( '<td>%s</td>', $stage
-			? '<span class="codcrm-pill" style="background:' . esc_attr( CODCRM_Stages::color( $stage ) ) . '">' . esc_html( CODCRM_Stages::label( $stage ) ) . '</span>'
+			? '<span class="codcrm-pill" style="' . esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $stage ) ) ) . '">' . esc_html( CODCRM_Stages::label( $stage ) ) . '</span>'
 			: '—' );
 
 		printf( '<td>%d / %d%s</td>', (int) $order->get_meta( CODCRM_Attempts::META_ATTEMPTS ), CODCRM_Attempts::threshold(), $risk ? ' <span class="codcrm-pill" style="background:#c0392b">⚠</span>' : '' );

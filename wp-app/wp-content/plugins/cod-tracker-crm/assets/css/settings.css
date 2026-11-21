@@ -42,3 +42,10 @@
 
 /* Navigation sans rechargement */
 .codcrm-settings.codcrm-loading .codcrm-tab { opacity: .45; pointer-events: none; transition: opacity .15s; }
+
+/* Onglet Couleurs */
+.codcrm-colors { max-width: 760px; }
+.codcrm-colors td { vertical-align: middle; }
+.codcrm-color-chip { display: inline-block; padding: 2px 11px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.codcrm-colors input[type=color] { width: 46px; height: 28px; padding: 0; border: 1px solid #c3c4c7; border-radius: 4px; cursor: pointer; }
+.codcrm-color-hex { font-size: 11px; color: #646970; }

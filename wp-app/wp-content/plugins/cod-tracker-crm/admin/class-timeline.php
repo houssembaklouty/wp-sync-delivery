@@ -63,7 +63,7 @@ class CODCRM_Timeline {
 
 		echo '<div class="codcrm-head">';
 		if ( $stage ) {
-			printf( '<span class="codcrm-pill" style="background:%s">%s</span>', esc_attr( CODCRM_Stages::color( $stage ) ), esc_html( CODCRM_Stages::label( $stage ) ) );
+			printf( '<span class="codcrm-pill" style="%s">%s</span>', esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $stage ) ) ), esc_html( CODCRM_Stages::label( $stage ) ) );
 		}
 		printf( '<span>%s <strong>%d</strong> · %s <strong>%d / %d</strong></span>',
 			esc_html__( 'Tournées :', 'cod-tracker-crm' ), $attempts,

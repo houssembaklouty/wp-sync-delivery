@@ -89,6 +89,27 @@
         $(this).closest('.codcrm-tpl-box').find('input[type=checkbox]').prop('checked', false);
     });
 
+    // ── Onglet Couleurs : aperçu en direct, remise à zéro ──────
+    function yiqText(hex) {
+        var h = (hex || '').replace('#', '');
+        if (!/^[0-9a-fA-F]{6}$/.test(h)) { return '#1e1e1e'; }
+        var y = (299 * parseInt(h.substr(0, 2), 16) + 587 * parseInt(h.substr(2, 2), 16) + 114 * parseInt(h.substr(4, 2), 16)) / 1000;
+        return y >= 150 ? '#1e1e1e' : '#ffffff';
+    }
+    function paintColor($input) {
+        var hex = $input.val(), $row = $input.closest('tr');
+        $row.find('.codcrm-color-chip').css({ background: hex, color: yiqText(hex) });
+        $row.find('.codcrm-color-hex').text(hex);
+    }
+    $(document).on('input change', '.codcrm-color', function () { paintColor($(this)); });
+    $(document).on('click', '.codcrm-color-reset', function () {
+        var $i = $(this).closest('tr').find('.codcrm-color');
+        $i.val($(this).data('default')); paintColor($i);
+    });
+    $(document).on('click', '.codcrm-color-reset-all', function () {
+        $('.codcrm-color').each(function () { $(this).val($(this).data('default')); paintColor($(this)); });
+    });
+
     // ── Initialisation d'un onglet (au chargement ET après chaque navigation) ──
     function initTab() {
         refreshTotal();
