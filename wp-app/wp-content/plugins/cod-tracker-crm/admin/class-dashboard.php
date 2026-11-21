@@ -25,7 +25,7 @@ class CODCRM_Dashboard {
 	}
 
 	public static function assets( string $hook ): void {
-		if ( false === strpos( $hook, self::PAGE ) ) {
+		if ( false === strpos( $hook, self::PAGE ) && false === strpos( $hook, CODCRM_Cash_Page::PAGE ) ) {
 			return;
 		}
 		wp_enqueue_style( 'codcrm-dashboard', CODCRM_URL . 'assets/css/dashboard.css?v=' . CODCRM_VERSION . '-' . (int) @filemtime( CODCRM_DIR . 'assets/css/dashboard.css' ), [], null );

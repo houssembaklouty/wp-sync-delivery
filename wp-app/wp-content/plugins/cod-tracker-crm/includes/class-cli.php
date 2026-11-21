@@ -158,7 +158,26 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 				}
 				CODCRM_Attempts::refresh( $order );
 			}
-			WP_CLI::success( sprintf( '%d commande(s) recalculée(s).', count( $ids ) ) );
+			WP_CLI::log( sprintf( '%d commande(s) recalculée(s).', count( $ids ) ) );
+
+			// 4. Cash COD : ligne par colis synchronisé + statut déduit de l'étape transporteur.
+			$made = 0;
+			$sync = $wpdb->get_col( "SELECT DISTINCT order_id FROM {$events} WHERE type IN ('carrier_state','carrier_sync')" ); // phpcs:ignore WordPress.DB.PreparedSQL
+			foreach ( $sync as $id ) {
+				$order = wc_get_order( (int) $id );
+				if ( ! $order ) {
+					continue;
+				}
+				$had = CODCRM_Cash::get( (int) $id );
+				if ( CODCRM_Cash::ensure( $order ) && ! $had ) {
+					$made++;
+				}
+				$last = CODCRM_Events::last_carrier_event( (int) $id );
+				if ( $last ) {
+					CODCRM_Cash::apply_stage( $order, (string) $last->stage, (string) $last->occurred_at );
+				}
+			}
+			WP_CLI::success( sprintf( 'Cash : %d ligne(s) créée(s).', $made ) );
 		}
 	}
 

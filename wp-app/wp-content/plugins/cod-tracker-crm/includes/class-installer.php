@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class CODCRM_Installer {
 
-	const DB_VERSION = '2';
+	const DB_VERSION = '3';
 
 	public static function activate(): void {
 		self::create_tables();
@@ -21,6 +21,11 @@ class CODCRM_Installer {
 	public static function table_events(): string {
 		global $wpdb;
 		return $wpdb->prefix . 'codcrm_events';
+	}
+
+	public static function table_cash(): string {
+		global $wpdb;
+		return $wpdb->prefix . 'codcrm_cash';
 	}
 
 	public static function table_tasks(): string {
@@ -81,9 +86,34 @@ class CODCRM_Installer {
 			KEY order_status (order_id, status)
 		) {$charset};";
 
+		$cash = self::table_cash();
+
+		// Rapprochement du cash COD (montants en DT, 3 décimales).
+		// status : pending | collected | paid_out | disputed | returned | cancelled.
+		$sql_cash = "CREATE TABLE {$cash} (
+			id            BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			order_id      BIGINT(20) UNSIGNED NOT NULL,
+			carrier_slug  VARCHAR(40)         NOT NULL DEFAULT '',
+			tracking      VARCHAR(64)         NOT NULL DEFAULT '',
+			expected      DECIMAL(12,3)       NOT NULL DEFAULT 0,
+			collected     DECIMAL(12,3)       DEFAULT NULL,
+			fee           DECIMAL(12,3)       NOT NULL DEFAULT 0,
+			status        VARCHAR(12)         NOT NULL DEFAULT 'pending',
+			statement_ref VARCHAR(80)         NOT NULL DEFAULT '',
+			note          VARCHAR(255)        NOT NULL DEFAULT '',
+			collected_at  DATETIME            DEFAULT NULL,
+			paid_at       DATETIME            DEFAULT NULL,
+			created_at    DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			UNIQUE KEY order_id (order_id),
+			KEY tracking (tracking),
+			KEY status_carrier (status, carrier_slug)
+		) {$charset};";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 		dbDelta( $sql_tasks );
+		dbDelta( $sql_cash );
 
 		CODCRM_Agents::install_roles();
 
