@@ -1,0 +1,11 @@
+.codcrm-scan-modes { margin: 12px 0; display: flex; gap: 20px; font-size: 15px; }
+.codcrm-scan-input { display: flex; gap: 8px; max-width: 640px; }
+.codcrm-scan-input input[type=text] { flex: 1; font-size: 18px; padding: 8px 12px; }
+#codcrm-reader { max-width: 420px; margin: 12px 0; }
+.codcrm-scan-summary { font-size: 14px; margin: 12px 0 6px; }
+.codcrm-flash { color: #b32d2e; font-weight: 600; }
+#codcrm-list { max-width: 900px; }
+#codcrm-list tr.codcrm-ok td { background: #edfaef; }
+#codcrm-list tr.codcrm-warn td { background: #fcf9e8; }
+#codcrm-list tr.codcrm-ko td { background: #fcf0f1; }
+#codcrm-list tr.codcrm-done td { background: #e7f5ff; color: #0a4b78; }
