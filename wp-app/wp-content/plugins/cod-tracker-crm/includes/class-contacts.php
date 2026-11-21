@@ -15,13 +15,18 @@ class CODCRM_Contacts {
 
 	/** Remplace {client} {commande} {suivi} {transporteur} {montant} dans un modèle. */
 	public static function render_template( WC_Order $order, string $template ): string {
-		return strtr( $template, [
-			'{client}'       => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
-			'{commande}'     => $order->get_order_number(),
-			'{suivi}'        => (string) $order->get_meta( '_wcmcs_tracking_id' ),
-			'{transporteur}' => (string) $order->get_meta( '_wcmcs_carrier_slug' ),
-			'{montant}'      => wc_format_decimal( $order->get_total(), 2 ),
+		$text = strtr( $template, [
+			'{client}'             => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+			'{commande}'           => $order->get_order_number(),
+			'{suivi}'              => (string) $order->get_meta( '_wcmcs_tracking_id' ),
+			'{transporteur}'       => (string) $order->get_meta( '_wcmcs_carrier_slug' ),
+			'{montant}'            => wc_format_decimal( $order->get_total(), 2 ),
+			'{boutique}'           => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+			'{telephone_boutique}' => (string) get_option( 'codcrm_shop_phone', '' ),
+			'{date}'               => wp_date( 'd/m/Y' ),
 		] );
+		// Un placeholder vide (ex. téléphone de la boutique non renseigné) ne laisse ni espace ni ligne vide en trop.
+		return trim( (string) preg_replace( [ '/[ \t]+\n/', '/ {2,}/' ], [ "\n", ' ' ], $text ) );
 	}
 
 	/** @return array<string,string> résultat d'appel => libellé */
@@ -81,6 +86,17 @@ class CODCRM_Contacts {
 
 		$note = mb_substr( sanitize_textarea_field( wp_unslash( $_POST['note'] ?? '' ) ), 0, 255 );
 
+		// Message envoyé depuis la bibliothèque de modèles : on garde la situation et la langue.
+		$msg_ctx  = sanitize_key( wp_unslash( $_POST['context'] ?? '' ) );
+		$msg_lang = sanitize_key( wp_unslash( $_POST['lang'] ?? '' ) );
+		$payload  = null;
+		if ( isset( CODCRM_Templates::contexts()[ $msg_ctx ] ) && in_array( $msg_lang, CODCRM_Templates::LANGS, true ) ) {
+			$payload = [ 'context' => $msg_ctx, 'lang' => $msg_lang ];
+			if ( '' === $note ) {
+				$note = sprintf( '%s (%s)', CODCRM_Templates::context_label( $msg_ctx ), strtoupper( $msg_lang ) );
+			}
+		}
+
 		// Heure de rappel (champ datetime-local, heure du site).
 		$callback_at = '';
 		if ( 'reporte' === $outcome ) {
@@ -102,6 +118,7 @@ class CODCRM_Contacts {
 			'note'     => $note,
 			'actor_id' => $user_id,
 			'source'   => 'agent',
+			'payload'  => $payload,
 		] );
 
 		$order->update_meta_data( self::META_LAST_CONTACT, $now );

@@ -48,20 +48,14 @@ class CODCRM_SMS_Gateway {
 		];
 	}
 
-	public static function default_templates(): array {
-		return [
-			self::TRIGGER_OUT_FOR_DELIVERY => 'Bonjour {client}, votre commande #{commande} ({montant} DT) est en cours de livraison. Merci de rester joignable.',
-			self::TRIGGER_ATTEMPT_FAILED   => 'Bonjour {client}, le livreur n\'a pas pu vous joindre pour la commande #{commande} ({montant} DT). Merci de répondre à son appel.',
-			self::TRIGGER_RESCHEDULED      => 'Bonjour {client}, la livraison de votre commande #{commande} est reportée. Nous vous recontacterons.',
+	/** Contexte de la bibliothèque de modèles utilisé par un déclencheur automatique. */
+	public static function trigger_context( string $trigger ): string {
+		$map = [
+			self::TRIGGER_OUT_FOR_DELIVERY => 'out_for_delivery',
+			self::TRIGGER_ATTEMPT_FAILED   => 'attempt_failed',
+			self::TRIGGER_RESCHEDULED      => 'rescheduled',
 		];
-	}
-
-	public static function template( string $trigger ): string {
-		$saved = get_option( 'codcrm_sms_templates', [] );
-		if ( is_array( $saved ) && ! empty( $saved[ $trigger ] ) ) {
-			return (string) $saved[ $trigger ];
-		}
-		return self::default_templates()[ $trigger ] ?? '';
+		return (string) apply_filters( 'codcrm_sms_trigger_context', $map[ $trigger ] ?? '', $trigger );
 	}
 
 	public static function auto_enabled( string $trigger ): bool {
@@ -171,7 +165,7 @@ class CODCRM_SMS_Gateway {
 	}
 
 	/** Envoi lié à une commande : trace l'événement et le dernier contact. */
-	public static function send_for_order( WC_Order $order, string $message, string $source, int $actor_id = 0, string $dedupe_key = '' ): array {
+	public static function send_for_order( WC_Order $order, string $message, string $source, int $actor_id = 0, string $dedupe_key = '', array $meta = [] ): array {
 		$res = self::send( $order->get_billing_phone(), $message );
 
 		CODCRM_Events::add( $order->get_id(), [
@@ -182,6 +176,7 @@ class CODCRM_SMS_Gateway {
 			'actor_id'   => $actor_id,
 			'source'     => $source,
 			'dedupe_key' => '' !== $dedupe_key ? $dedupe_key : null,
+			'payload'    => $meta ?: null,
 		] );
 
 		if ( $res['ok'] ) {
@@ -225,7 +220,14 @@ class CODCRM_SMS_Gateway {
 			return;
 		}
 
-		self::send_for_order( $order, CODCRM_Contacts::render_template( $order, self::template( $trigger ) ), 'sms', 0, $key );
+		// Le modèle suit la langue du client (arabe / français) ; texte éditable dans Réglages → Messages.
+		$ctx  = self::trigger_context( $trigger );
+		$lang = CODCRM_Templates::detect_lang( $order );
+		$text = CODCRM_Templates::message( $order, $ctx, $lang, 'sms' );
+		if ( '' === $text ) {
+			return;
+		}
+		self::send_for_order( $order, $text, 'sms', 0, $key, [ 'context' => $ctx, 'lang' => $lang, 'auto' => true ] );
 	}
 
 	// ── Manuel (AJAX) + test ───────────────────────────────────
@@ -242,7 +244,14 @@ class CODCRM_SMS_Gateway {
 		}
 
 		$text = mb_substr( sanitize_textarea_field( wp_unslash( $_POST['text'] ?? '' ) ), 0, 480 );
-		$res  = self::send_for_order( $order, CODCRM_Contacts::render_template( $order, $text ), 'agent', get_current_user_id() );
+
+		$msg_ctx  = sanitize_key( wp_unslash( $_POST['context'] ?? '' ) );
+		$msg_lang = sanitize_key( wp_unslash( $_POST['lang'] ?? '' ) );
+		$meta     = isset( CODCRM_Templates::contexts()[ $msg_ctx ] ) && in_array( $msg_lang, CODCRM_Templates::LANGS, true )
+			? [ 'context' => $msg_ctx, 'lang' => $msg_lang ]
+			: [];
+
+		$res = self::send_for_order( $order, CODCRM_Contacts::render_template( $order, $text ), 'agent', get_current_user_id(), '', $meta );
 
 		if ( $res['ok'] ) {
 			wp_send_json_success( [ 'message' => $res['message'] ] );

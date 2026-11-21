@@ -32,7 +32,7 @@ class CODCRM_Settings {
 			'repartition' => __( 'Répartition & agents', 'cod-tracker-crm' ),
 			'rules'      => __( 'Règles d\'attribution', 'cod-tracker-crm' ),
 			'sms'        => __( 'SMS', 'cod-tracker-crm' ),
-			'whatsapp'   => __( 'WhatsApp', 'cod-tracker-crm' ),
+			'messages'   => __( 'Messages', 'cod-tracker-crm' ),
 		];
 	}
 
@@ -88,8 +88,8 @@ class CODCRM_Settings {
 			case 'sms':
 				self::tab_sms();
 				break;
-			case 'whatsapp':
-				self::tab_whatsapp();
+			case 'messages':
+				self::tab_messages();
 				break;
 			default:
 				self::tab_general();
@@ -134,6 +134,8 @@ class CODCRM_Settings {
 			esc_html__( 'Colis bloqué après', 'cod-tracker-crm' ), CODCRM_KPIs::stuck_days(), esc_html__( 'jours sans changement d\'étape (tableau de bord + tâche quotidienne).', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><input type="number" min="1" max="30" name="pickup_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Enlèvement en attente après', 'cod-tracker-crm' ), CODCRM_KPIs::pickup_days(), esc_html__( 'jours sans enlèvement par la société de livraison.', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><input type="text" name="shop_phone" value="%s" class="regular-text" placeholder="71 000 000" /> <span class="description">%s</span></td></tr>',
+			esc_html__( 'Téléphone de la boutique', 'cod-tracker-crm' ), esc_attr( (string) get_option( 'codcrm_shop_phone', '' ) ), esc_html__( 'Utilisé par le placeholder {telephone_boutique} dans les messages.', 'cod-tracker-crm' ) );
 		echo '</table>';
 		self::form_close();
 	}
@@ -434,26 +436,58 @@ class CODCRM_Settings {
 		echo '<tr><th>' . esc_html__( 'Envois automatiques', 'cod-tracker-crm' ) . '</th><td>';
 		$auto = (array) $o( 'codcrm_sms_auto', [] );
 		foreach ( CODCRM_SMS_Gateway::triggers() as $k => $label ) {
-			printf( '<p><label><input type="checkbox" name="sms_auto[]" value="%1$s"%2$s /> <strong>%3$s</strong></label><br><textarea name="sms_tpl[%1$s]" rows="2" class="large-text">%4$s</textarea></p>',
-				esc_attr( $k ), checked( in_array( $k, $auto, true ), true, false ), esc_html( $label ), esc_textarea( CODCRM_SMS_Gateway::template( $k ) ) );
+			printf( '<p><label><input type="checkbox" name="sms_auto[]" value="%1$s"%2$s /> <strong>%3$s</strong></label> <a href="%4$s">%5$s</a></p>',
+				esc_attr( $k ), checked( in_array( $k, $auto, true ), true, false ), esc_html( $label ),
+				esc_url( self::url( [ 'tab' => 'messages', 'ctx' => CODCRM_SMS_Gateway::trigger_context( $k ) ] ) ), esc_html__( 'modifier les textes FR / AR', 'cod-tracker-crm' ) );
 		}
-		echo '<p class="description">' . esc_html__( 'Désactivés par défaut. Un seul SMS par déclencheur et par tournée. Placeholders : {client} {commande} {suivi} {transporteur} {montant}.', 'cod-tracker-crm' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Désactivés par défaut. Un seul SMS par déclencheur et par tournée ; la langue (français / arabe) suit le nom et l\'adresse du client.', 'cod-tracker-crm' ) . '</p>';
 		echo '</td></tr></table>';
 	}
 
-	private static function tab_whatsapp(): void {
-		self::form_open( 'whatsapp' );
-		echo '<p>' . esc_html__( 'Modèles proposés à l\'agent dans « Mes suivis » (un bouton par modèle). Placeholders : {client} {commande} {suivi} {transporteur} {montant}. Laissez le libellé vide pour supprimer un modèle.', 'cod-tracker-crm' ) . '</p>';
-		$tpls = array_values( CODCRM_Work_Queue::wa_templates() );
-		echo '<table class="form-table">';
-		for ( $i = 0; $i < 5; $i++ ) {
-			printf( '<tr><th><input type="text" name="wa[%1$d][label]" value="%2$s" placeholder="%3$s" class="small-text" style="width:80px" /></th><td><textarea name="wa[%1$d][text]" rows="3" class="large-text">%4$s</textarea></td></tr>',
-				$i, esc_attr( $tpls[ $i ]['label'] ?? '' ), esc_attr__( 'Libellé', 'cod-tracker-crm' ), esc_textarea( $tpls[ $i ]['text'] ?? '' ) );
+	private static function tab_messages(): void {
+		$ctxs = CODCRM_Templates::contexts();
+		$ctx  = sanitize_key( wp_unslash( $_GET['ctx'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! isset( $ctxs[ $ctx ] ) ) {
+			$ctx = array_key_first( $ctxs );
 		}
-		echo '</table>';
+
+		echo '<p>' . esc_html__( 'Bibliothèque de messages envoyés par les agents (bouton « Message ») et par les SMS automatiques : une situation, deux langues, deux canaux. Chaque texte est modifiable ; « Rétablir » revient au texte d\'origine.', 'cod-tracker-crm' ) . '</p>';
+
+		echo '<div class="codcrm-ctx-list">';
+		foreach ( $ctxs as $k => $label ) {
+			$custom = false;
+			foreach ( CODCRM_Templates::LANGS as $l ) {
+				foreach ( CODCRM_Templates::CHANNELS as $c ) {
+					$custom = $custom || CODCRM_Templates::is_overridden( $k, $l, $c );
+				}
+			}
+			printf( '<a class="codcrm-ctx%s" href="%s">%s%s</a>', $k === $ctx ? ' is-active' : '', esc_url( self::url( [ 'tab' => 'messages', 'ctx' => $k ] ) ), esc_html( $label ), $custom ? ' <span title="' . esc_attr__( 'Texte personnalisé', 'cod-tracker-crm' ) . '">✎</span>' : '' );
+		}
+		echo '</div>';
+
+		self::form_open( 'messages' );
+		printf( '<input type="hidden" name="ctx" value="%s" /><h2>%s</h2>', esc_attr( $ctx ), esc_html( $ctxs[ $ctx ] ) );
+		echo '<p class="description">' . esc_html( sprintf( __( 'Placeholders : %s', 'cod-tracker-crm' ), implode( ' ', CODCRM_Templates::PLACEHOLDERS ) ) ) . '</p>';
+
+		$labels = [ 'fr' => 'Français', 'ar' => 'العربية' ];
+		$chan   = [ 'whatsapp' => 'WhatsApp', 'sms' => 'SMS' ];
+		echo '<div class="codcrm-tpl-grid">';
+		foreach ( CODCRM_Templates::LANGS as $lang ) {
+			foreach ( CODCRM_Templates::CHANNELS as $ch ) {
+				$over = CODCRM_Templates::is_overridden( $ctx, $lang, $ch );
+				printf(
+					'<div class="codcrm-tpl-box"><h3>%1$s — %2$s%3$s</h3><textarea name="tpl[%4$s][%5$s]" rows="%6$d" class="large-text codcrm-tpl-text" data-ch="%5$s" maxlength="%7$d"%8$s>%9$s</textarea><div class="codcrm-tpl-foot"><span class="codcrm-tpl-count"></span> <label><input type="checkbox" name="reset[%4$s][%5$s]" value="1"%10$s /> %11$s</label></div></div>',
+					esc_html( $chan[ $ch ] ), esc_html( $labels[ $lang ] ), $over ? ' <span class="codcrm-pill" style="background:#2271b1">' . esc_html__( 'personnalisé', 'cod-tracker-crm' ) . '</span>' : '',
+					esc_attr( $lang ), esc_attr( $ch ), 'sms' === $ch ? 4 : 7, (int) CODCRM_Templates::MAX_LEN[ $ch ],
+					'ar' === $lang ? ' dir="rtl" lang="ar"' : '',
+					esc_textarea( CODCRM_Templates::get( $ctx, $lang, $ch ) ),
+					$over ? '' : ' disabled', esc_html__( 'Rétablir le texte par défaut', 'cod-tracker-crm' )
+				);
+			}
+		}
+		echo '</div>';
 		self::form_close();
 	}
-
 	// ── Enregistrement ─────────────────────────────────────────
 
 	private static function guard( string $nonce ): void {
@@ -477,6 +511,7 @@ class CODCRM_Settings {
 				update_option( 'codcrm_attempts_threshold', max( 1, min( 10, absint( $_POST['threshold'] ?? 3 ) ) ) );
 				update_option( 'codcrm_stuck_days', max( 1, min( 30, absint( $_POST['stuck_days'] ?? 3 ) ) ) );
 				update_option( 'codcrm_pickup_days', max( 1, min( 30, absint( $_POST['pickup_days'] ?? 2 ) ) ) );
+				update_option( 'codcrm_shop_phone', mb_substr( sanitize_text_field( wp_unslash( $_POST['shop_phone'] ?? '' ) ), 0, 40 ) );
 				break;
 
 			case 'repartition':
@@ -508,23 +543,22 @@ class CODCRM_Settings {
 			}
 			$valid_triggers = array_keys( CODCRM_SMS_Gateway::triggers() );
 			update_option( 'codcrm_sms_auto', array_values( array_intersect( $valid_triggers, array_map( 'sanitize_key', (array) wp_unslash( $_POST['sms_auto'] ?? [] ) ) ) ) );
-			$tpl = [];
-			foreach ( $valid_triggers as $k ) {
-				$tpl[ $k ] = sanitize_textarea_field( wp_unslash( $_POST['sms_tpl'][ $k ] ?? '' ) );
-			}
-			update_option( 'codcrm_sms_templates', $tpl );
 				break;
 
-			case 'whatsapp':
-				$tpl = [];
-				foreach ( (array) wp_unslash( $_POST['wa'] ?? [] ) as $row ) {
-					$label = sanitize_text_field( (string) ( $row['label'] ?? '' ) );
-					$text  = sanitize_textarea_field( (string) ( $row['text'] ?? '' ) );
-					if ( '' !== $label && '' !== $text ) {
-						$tpl[] = [ 'label' => mb_substr( $label, 0, 20 ), 'text' => mb_substr( $text, 0, 1000 ) ];
+			case 'messages':
+				$ctx = sanitize_key( wp_unslash( $_POST['ctx'] ?? '' ) );
+				if ( isset( CODCRM_Templates::contexts()[ $ctx ] ) ) {
+					foreach ( CODCRM_Templates::LANGS as $lang ) {
+						foreach ( CODCRM_Templates::CHANNELS as $ch ) {
+							if ( ! empty( $_POST['reset'][ $lang ][ $ch ] ) ) {
+								CODCRM_Templates::set( $ctx, $lang, $ch, '' ); // retour au texte par défaut.
+							} elseif ( isset( $_POST['tpl'][ $lang ][ $ch ] ) ) {
+								CODCRM_Templates::set( $ctx, $lang, $ch, sanitize_textarea_field( wp_unslash( $_POST['tpl'][ $lang ][ $ch ] ) ) );
+							}
+						}
 					}
+					$extra['ctx'] = $ctx;
 				}
-				update_option( 'codcrm_wa_templates', $tpl );
 				break;
 		}
 

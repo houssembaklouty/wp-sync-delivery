@@ -29,3 +29,13 @@
     .codcrm-cond > [class^="codcrm-w-"] { grid-column: 1; grid-row: 2; }
     .codcrm-cond-del { grid-column: 2; }
 }
+
+/* Onglet Messages */
+.codcrm-ctx-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
+.codcrm-ctx { display: inline-block; padding: 4px 11px; border: 1px solid #c3c4c7; border-radius: 14px; text-decoration: none; background: #f6f7f7; color: #2c3338; }
+.codcrm-ctx.is-active { background: #2271b1; border-color: #2271b1; color: #fff; }
+.codcrm-tpl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; }
+.codcrm-tpl-box { border: 1px solid #dcdcde; border-radius: 6px; padding: 4px 14px 12px; }
+.codcrm-tpl-box h3 { margin: 10px 0 6px; }
+.codcrm-tpl-foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: #646970; }
+.codcrm-tpl-count.is-long { color: #b32d2e; font-weight: 600; }

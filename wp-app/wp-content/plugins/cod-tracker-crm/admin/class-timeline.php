@@ -56,6 +56,9 @@ class CODCRM_Timeline {
 		} else {
 			echo esc_html( CODCRM_Agents::agent_name( $agent_id ) ?: '—' );
 		}
+		if ( CODCRM_Agents::can_handle( $order ) && CODCRM_Work_Queue::norm_phone( $order->get_billing_phone() ) ) {
+			printf( ' <a href="#" class="button button-small codcrm-msg" data-order="%d">✉ %s</a>', (int) $order->get_id(), esc_html__( 'Message', 'cod-tracker-crm' ) );
+		}
 		echo '</p>';
 
 		echo '<div class="codcrm-head">';

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       COD Tracker CRM
  * Description:       Suivi des colis / commandes COD : timeline complète, tentatives de livraison, agents de suivi, KPIs et rapprochement cash. Se synchronise avec MultiCarrier Sync TN.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires PHP:      7.4
  * Requires at least: 6.0
  * Text Domain:       cod-tracker-crm
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CODCRM_VERSION', '1.1.0' );
+define( 'CODCRM_VERSION', '1.2.0' );
 define( 'CODCRM_FILE', __FILE__ );
 define( 'CODCRM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CODCRM_URL', plugin_dir_url( __FILE__ ) );
@@ -30,6 +30,7 @@ require_once CODCRM_DIR . 'includes/class-agents.php';
 require_once CODCRM_DIR . 'includes/class-dispatcher.php';
 require_once CODCRM_DIR . 'includes/class-tasks.php';
 require_once CODCRM_DIR . 'includes/class-contacts.php';
+require_once CODCRM_DIR . 'includes/class-templates.php';
 require_once CODCRM_DIR . 'includes/class-sms-gateway.php';
 require_once CODCRM_DIR . 'includes/class-kpis.php';
 require_once CODCRM_DIR . 'includes/class-cash.php';
@@ -76,6 +77,7 @@ add_action( 'plugins_loaded', static function () {
 	CODCRM_Dispatcher::init();
 	CODCRM_Tasks::init();
 	CODCRM_Contacts::init();
+	CODCRM_Templates::init();
 	CODCRM_SMS_Gateway::init();
 	CODCRM_Assignment_UI::init();
 	CODCRM_Work_Queue::init();

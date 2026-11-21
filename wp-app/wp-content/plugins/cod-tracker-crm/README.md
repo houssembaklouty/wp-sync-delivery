@@ -30,8 +30,24 @@ Chaque onglet a son formulaire : enregistrer un onglet ne modifie jamais les aut
 | Général | seuil de tentatives, colis bloqué après N jours, enlèvement en attente après N jours |
 | Répartition & agents | mode (automatique / manuel), méthode (équitable / pourcentage), réattribution automatique, agents : actif, part %, horaires de travail |
 | Règles d'attribution | règles « conditions → membres » (produit, catégorie, gouvernorat, transporteur, montant) |
-| SMS | passerelle HTTP générique, envois automatiques, test |
-| WhatsApp | modèles de messages (jusqu'à 5) |
+| SMS | passerelle HTTP générique, envois automatiques (déclencheurs), test |
+| Messages | bibliothèque de modèles FR / AR pour WhatsApp et SMS, par situation |
+
+## Messages clients (WhatsApp et SMS, français et arabe)
+Bouton **✉ Message** dans « Mes suivis » et sur la fiche commande : une seule fenêtre avec le canal (WhatsApp / SMS),
+la langue (FR / AR) et la situation. La **langue** est proposée d'après le nom et l'adresse du client (arabe → AR) et le
+**modèle** d'après l'étape du colis (en livraison → « Livreur en route », reporté → « Livraison reportée », livré →
+« Merci », retourné → …) ; l'agent peut tout changer et modifier le texte avant l'envoi. Chaque envoi est tracé dans la
+timeline avec sa situation et sa langue.
+
+14 situations livrées en FR et AR, WhatsApp et SMS : confirmer la commande, vérifier adresse/téléphone, commande
+confirmée, colis expédié, livreur en route, livreur n'a pas pu vous joindre, livraison reportée, client injoignable,
+colis au dépôt, dernière tentative (risque de retour), livré (merci), colis retourné, retard d'enlèvement, message libre.
+Tous les textes sont modifiables dans **Réglages → Messages** (« Rétablir » = texte d'origine).
+Placeholders : `{client}` `{commande}` `{suivi}` `{transporteur}` `{montant}` `{boutique}` `{telephone_boutique}` `{date}`.
+Les SMS français sont écrits avec le jeu GSM-7 (1 SMS = 160 caractères) ; les SMS arabes sont brefs (UCS-2, 70 caractères
+par segment). Les SMS **automatiques** utilisent les mêmes textes, dans la langue du client ; chaque déclencheur pointe vers
+une situation (`CODCRM_SMS_Gateway::trigger_context()`), ce qui permet d'en ajouter d'autres plus tard.
 
 ## Répartition automatique des commandes
 Attribution **à la création de la commande** (checkout classique, blocs, formulaire COD, commandes admin/REST).

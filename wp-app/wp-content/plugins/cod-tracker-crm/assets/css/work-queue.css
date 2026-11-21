@@ -12,3 +12,11 @@
     .codcrm-table tr { display: block; margin-bottom: 10px; border: 1px solid #dcdcde; }
     .codcrm-table td { display: block; }
 }
+
+/* Fenêtre « Message » */
+.codcrm-modal-msg { width: 560px; }
+.codcrm-msg-row { margin: 0 0 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.codcrm-msg-count { display: block; text-align: right; font-size: 12px; color: #646970; margin-top: 4px; }
+.codcrm-msg-count.is-long { color: #b32d2e; font-weight: 600; }
+.codcrm-muted { color: #8c8f94; }
+.codcrm-modal-msg textarea { font-size: 14px; line-height: 1.5; }

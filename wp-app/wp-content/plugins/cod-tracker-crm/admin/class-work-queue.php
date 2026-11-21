@@ -35,7 +35,10 @@ class CODCRM_Work_Queue {
 	}
 
 	public static function assets( string $hook ): void {
-		if ( false === strpos( $hook, self::PAGE_QUEUE ) ) {
+		// Page « Mes suivis » + fiche commande (bouton « Message » de la metabox).
+		$screen    = get_current_screen();
+		$order_scr = $screen && in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true );
+		if ( false === strpos( $hook, self::PAGE_QUEUE ) && ! $order_scr ) {
 			return;
 		}
 		wp_enqueue_style( 'codcrm-queue', self::asset( 'assets/css/work-queue.css' ), [], null );
@@ -44,7 +47,6 @@ class CODCRM_Work_Queue {
 			'ajax'     => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'codcrm' ),
 			'outcomes' => CODCRM_Contacts::call_outcomes(),
-			'smsTpl'   => CODCRM_SMS_Gateway::is_configured() ? self::sms_template_options() : [],
 			'i18n'     => [
 				'call_title'  => __( 'Résultat de l\'appel', 'cod-tracker-crm' ),
 				'outcome'     => __( 'Résultat', 'cod-tracker-crm' ),
@@ -52,23 +54,22 @@ class CODCRM_Work_Queue {
 				'callback_at' => __( 'Rappeler le', 'cod-tracker-crm' ),
 				'note'        => __( 'Commentaire', 'cod-tracker-crm' ),
 				'save'        => __( 'Enregistrer', 'cod-tracker-crm' ),
-				'sms_title'   => __( 'Envoyer un SMS', 'cod-tracker-crm' ),
-				'sms_send'    => __( 'Envoyer', 'cod-tracker-crm' ),
-				'sms_text'    => __( 'Message (modifiable)', 'cod-tracker-crm' ),
-				'sms_tpl'     => __( 'Modèle', 'cod-tracker-crm' ),
+				'msg_title'   => __( 'Envoyer un message', 'cod-tracker-crm' ),
+				'msg_channel' => __( 'Canal', 'cod-tracker-crm' ),
+				'msg_lang'    => __( 'Langue', 'cod-tracker-crm' ),
+				'msg_context' => __( 'Situation / modèle', 'cod-tracker-crm' ),
+				'msg_text'    => __( 'Message (modifiable avant envoi)', 'cod-tracker-crm' ),
+				'msg_suggest' => __( 'Suggéré', 'cod-tracker-crm' ),
+				'msg_send_wa' => __( 'Ouvrir WhatsApp', 'cod-tracker-crm' ),
+				'msg_send_sms' => __( 'Envoyer le SMS', 'cod-tracker-crm' ),
+				'msg_no_sms'  => __( 'SMS indisponible : passerelle non configurée.', 'cod-tracker-crm' ),
+				'msg_chars'   => __( 'caractères', 'cod-tracker-crm' ),
+				'msg_parts'   => __( 'SMS', 'cod-tracker-crm' ),
+				'msg_loading' => __( 'Chargement…', 'cod-tracker-crm' ),
 				'cancel'      => __( 'Annuler', 'cod-tracker-crm' ),
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
 			],
 		] );
-	}
-
-	/** Modèles SMS proposés à l'agent (bruts, avec placeholders ; rendus côté serveur à l'envoi). */
-	private static function sms_template_options(): array {
-		$out = [];
-		foreach ( CODCRM_SMS_Gateway::triggers() as $k => $label ) {
-			$out[] = [ 'label' => $label, 'text' => CODCRM_SMS_Gateway::template( $k ) ];
-		}
-		return $out;
 	}
 
 	/** Statuts d'étape sélectionnables dans le filtre. */
@@ -153,23 +154,6 @@ class CODCRM_Work_Queue {
 		return 8 === strlen( (string) $d ) ? (string) $d : '';
 	}
 
-	/** Modèles WhatsApp (option) avec défauts FR + AR. @return array<int,array{label:string,text:string}> */
-	public static function wa_templates(): array {
-		$saved = get_option( 'codcrm_wa_templates' );
-		if ( is_array( $saved ) && $saved ) {
-			return $saved;
-		}
-		return [
-			[ 'label' => 'FR', 'text' => "Bonjour {client}, votre commande #{commande} ({montant} DT) est en cours de livraison avec {transporteur}. Pouvez-vous confirmer que vous serez disponible ? Merci !" ],
-			[ 'label' => 'AR', 'text' => "مرحبا {client}، طلبيتك رقم {commande} بقيمة {montant} د.ت في طريقها إليك مع {transporteur}. المرجو تأكيد توفرك لاستلامها. شكرا!" ],
-		];
-	}
-
-	private static function wa_url( WC_Order $order, string $phone8, string $template ): string {
-		$text = CODCRM_Contacts::render_template( $order, $template );
-		return 'https://wa.me/216' . $phone8 . '?text=' . rawurlencode( $text );
-	}
-
 	public static function render_queue(): void {
 		if ( ! current_user_can( CODCRM_Agents::CAP_WORK ) ) {
 			wp_die( esc_html__( 'Accès refusé.', 'cod-tracker-crm' ) );
@@ -183,7 +167,6 @@ class CODCRM_Work_Queue {
 		$total      = is_object( $res ) ? (int) $res->total : 0;
 		$pages      = is_object( $res ) ? (int) $res->max_num_pages : 1;
 		$tasks      = CODCRM_Tasks::next_open_for_orders( array_map( static function ( $o ) { return $o->get_id(); }, $orders ) );
-		$templates  = self::wa_templates();
 
 		$cur_stage = sanitize_text_field( wp_unslash( $_GET['stage'] ?? 'actif' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$cur_flt   = sanitize_key( wp_unslash( $_GET['flt'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -232,7 +215,7 @@ class CODCRM_Work_Queue {
 		}
 
 		foreach ( $orders as $order ) {
-			self::render_row( $order, $tasks[ $order->get_id() ] ?? null, $templates );
+			self::render_row( $order, $tasks[ $order->get_id() ] ?? null );
 		}
 		echo '</tbody></table>';
 
@@ -249,7 +232,7 @@ class CODCRM_Work_Queue {
 		echo '</div>';
 	}
 
-	private static function render_row( WC_Order $order, $task, array $templates ): void {
+	private static function render_row( WC_Order $order, $task ): void {
 		$id      = $order->get_id();
 		$phone   = $order->get_billing_phone();
 		$phone8  = self::norm_phone( $phone );
@@ -313,12 +296,8 @@ class CODCRM_Work_Queue {
 		echo '<td class="codcrm-actions">';
 		if ( $phone8 ) {
 			printf( '<a class="button codcrm-call" href="tel:+216%s" data-order="%d">📞</a> ', esc_attr( $phone8 ), (int) $id );
-			if ( CODCRM_SMS_Gateway::is_configured() ) {
-				printf( '<a class="button codcrm-sms" href="#" data-order="%d" title="SMS">✉ SMS</a> ', (int) $id );
-			}
-			foreach ( $templates as $t ) {
-				printf( '<a class="button codcrm-wa" href="#" data-order="%d" data-url="%s" title="WhatsApp %s">💬 %s</a> ', (int) $id, esc_url( self::wa_url( $order, $phone8, (string) $t['text'] ) ), esc_attr( $t['label'] ), esc_html( $t['label'] ) );
-			}
+			// WhatsApp et SMS, FR et AR : une seule fenêtre « Message » (modèle suggéré selon l'étape).
+			printf( '<a class="button codcrm-msg" href="#" data-order="%d">✉ %s</a> ', (int) $id, esc_html__( 'Message', 'cod-tracker-crm' ) );
 		} else {
 			echo '<em>' . esc_html__( 'Numéro invalide', 'cod-tracker-crm' ) . '</em>';
 		}

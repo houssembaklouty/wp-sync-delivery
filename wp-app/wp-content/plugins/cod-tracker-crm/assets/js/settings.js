@@ -72,4 +72,23 @@
     $(document).on('click', '.codcrm-del', function (e) {
         if (!window.confirm('Supprimer cette règle ?')) { e.preventDefault(); }
     });
+
+    // ── Onglet Messages : compteur de caractères / segments SMS ──
+    var GSM7 = /^[A-Za-z0-9 \r\n@£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ!"#¤%&'()*+,\-.\/:;<=>?¡ÄÖÑÜ§¿äöñüà^{}\\\[~\]|€]*$/;
+    function countTpl($ta) {
+        var t = $ta.val() || '', $c = $ta.closest('.codcrm-tpl-box').find('.codcrm-tpl-count');
+        if ($ta.data('ch') === 'sms') {
+            var gsm = GSM7.test(t), single = gsm ? 160 : 70, multi = gsm ? 153 : 67;
+            var parts = t.length <= single ? (t.length ? 1 : 0) : Math.ceil(t.length / multi);
+            $c.text(t.length + ' car. · ' + parts + ' SMS' + (gsm ? '' : ' (arabe / caractères spéciaux)')).toggleClass('is-long', parts > 2);
+        } else {
+            $c.text(t.length + ' car.');
+        }
+    }
+    $('.codcrm-tpl-text').each(function () { countTpl($(this)); });
+    $(document).on('input', '.codcrm-tpl-text', function () {
+        countTpl($(this));
+        // Toucher au texte décoche « rétablir » (sinon le texte saisi serait ignoré).
+        $(this).closest('.codcrm-tpl-box').find('input[type=checkbox]').prop('checked', false);
+    });
 })(jQuery);
