@@ -138,7 +138,7 @@ class CODCRM_Event_Collector {
 			self::set_current_stage( $order, $new_stage, (string) $last->occurred_at );
 		}
 
-		CODCRM_Attempts::refresh( $order );
+		CODCRM_Attempts::refresh( $order, $live );
 
 		if ( $live && $new_stage && $new_stage !== $old_stage ) {
 			/**

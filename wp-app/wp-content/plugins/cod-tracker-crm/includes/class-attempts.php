@@ -52,9 +52,10 @@ class CODCRM_Attempts {
 
 	/**
 	 * Recalcule et mémorise les compteurs d'une commande ; déclenche les
-	 * actions quand une nouvelle tentative échoue / le seuil est atteint.
+	 * actions quand une nouvelle tentative échoue / le seuil est atteint
+	 * (seulement si $notify = true : suivi en direct).
 	 */
-	public static function refresh( WC_Order $order ): array {
+	public static function refresh( WC_Order $order, bool $notify = false ): array {
 		$res = self::compute( CODCRM_Events::carrier_stage_sequence( $order->get_id() ) );
 
 		$old_failed = (int) $order->get_meta( self::META_FAILED );
@@ -67,7 +68,9 @@ class CODCRM_Attempts {
 			$order->update_meta_data( self::META_RISK, $at_risk ? '1' : '' );
 			$order->save_meta_data();
 
-			if ( $res['failed'] > $old_failed ) {
+			// Notifications (tâches, emails, SMS) uniquement pour un changement d'état
+			// détecté en direct — jamais pendant un backfill / une réparation.
+			if ( $notify && $res['failed'] > $old_failed ) {
 				/**
 				 * Une tentative de livraison vient d'échouer.
 				 *

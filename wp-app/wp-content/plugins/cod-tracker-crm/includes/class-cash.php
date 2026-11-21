@@ -141,6 +141,9 @@ class CODCRM_Cash {
 		}
 
 		$extra = [];
+		if ( '' !== $at ) {
+			$extra['occurred_at'] = $at;
+		}
 		if ( self::COLLECTED === $target ) {
 			$extra['collected_at'] = '' !== $at ? $at : current_time( 'mysql' );
 		}
@@ -162,6 +165,9 @@ class CODCRM_Cash {
 			return false;
 		}
 
+		$event_at = (string) ( $extra['occurred_at'] ?? '' );
+		unset( $extra['occurred_at'] );
+
 		$data    = [ 'status' => $status ];
 		$formats = [ '%s' ];
 		foreach ( [ 'collected' => '%f', 'fee' => '%f', 'statement_ref' => '%s', 'paid_at' => '%s', 'collected_at' => '%s' ] as $col => $fmt ) {
@@ -178,6 +184,7 @@ class CODCRM_Cash {
 
 		CODCRM_Events::add( $order_id, [
 			'type'     => 'cash',
+			'occurred_at' => '' !== $event_at ? $event_at : current_time( 'mysql' ),
 			'outcome'  => $status,
 			'note'     => sprintf( '%s → %s%s', self::statuses()[ $row->status ][0] ?? $row->status, self::statuses()[ $status ][0], '' !== $note ? ' — ' . $note : '' ),
 			'actor_id' => $actor_id,
