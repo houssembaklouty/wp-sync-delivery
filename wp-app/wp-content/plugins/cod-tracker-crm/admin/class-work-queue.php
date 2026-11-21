@@ -47,6 +47,7 @@ class CODCRM_Work_Queue {
 			'ajax'     => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'codcrm' ),
 			'outcomes' => CODCRM_Contacts::call_outcomes(),
+			'orderScreen' => $order_scr,
 			'i18n'     => [
 				'call_title'  => __( 'Résultat de l\'appel', 'cod-tracker-crm' ),
 				'outcome'     => __( 'Résultat', 'cod-tracker-crm' ),
@@ -66,6 +67,7 @@ class CODCRM_Work_Queue {
 				'msg_chars'   => __( 'caractères', 'cod-tracker-crm' ),
 				'msg_parts'   => __( 'SMS', 'cod-tracker-crm' ),
 				'msg_loading' => __( 'Chargement…', 'cod-tracker-crm' ),
+				'msg_sent'    => __( 'Message envoyé et tracé dans la chronologie (actualisez la page pour la voir).', 'cod-tracker-crm' ),
 				'cancel'      => __( 'Annuler', 'cod-tracker-crm' ),
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
 			],

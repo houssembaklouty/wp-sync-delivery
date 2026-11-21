@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class CODCRM_Installer {
 
-	const DB_VERSION = '3';
+	const DB_VERSION = '4';
 
 	public static function activate(): void {
 		self::create_tables();
@@ -117,6 +117,7 @@ class CODCRM_Installer {
 
 		CODCRM_Agents::install_roles();
 
-		update_option( 'codcrm_db_version', self::DB_VERSION, false );
+		// Autoload : lue à chaque requête par maybe_upgrade().
+		update_option( 'codcrm_db_version', self::DB_VERSION, true );
 	}
 }

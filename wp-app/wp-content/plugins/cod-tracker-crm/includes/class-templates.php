@@ -225,13 +225,19 @@ class CODCRM_Templates {
 		return isset( $o[ $ctx ][ $lang ][ $channel ] ) && '' !== trim( (string) $o[ $ctx ][ $lang ][ $channel ] );
 	}
 
+	public static function normalize_eol( string $s ): string {
+		return str_replace( [ "\r\n", "\r" ], "\n", $s );
+	}
+
 	/** Enregistre (ou supprime si identique au défaut / vide) une surcharge. */
 	public static function set( string $ctx, string $lang, string $channel, string $text ): void {
 		if ( ! isset( self::contexts()[ $ctx ] ) || ! in_array( $lang, self::LANGS, true ) || ! in_array( $channel, self::CHANNELS, true ) ) {
 			return;
 		}
 		$o    = self::overrides();
-		$text = trim( $text );
+		// Les navigateurs envoient les retours à la ligne des <textarea> en CRLF : sans
+		// normalisation, un texte inchangé ne serait jamais égal au défaut (\n).
+		$text = trim( self::normalize_eol( $text ) );
 		if ( '' === $text || $text === self::default_text( $ctx, $lang, $channel ) ) {
 			unset( $o[ $ctx ][ $lang ][ $channel ] );
 			if ( empty( $o[ $ctx ][ $lang ] ) ) {
@@ -269,7 +275,9 @@ class CODCRM_Templates {
 			return 'returned';
 		}
 		// Plusieurs échecs : prévenir avant le retour.
-		if ( $failed >= 1 && $failed >= CODCRM_Attempts::threshold() - 1 && ! CODCRM_Stages::is_terminal( $stage ) ) {
+		// Uniquement quand il reste exactement UNE tentative (échecs = seuil − 1) ; au-delà,
+		// le seuil est atteint et le colis part en retour.
+		if ( $failed >= 1 && CODCRM_Attempts::threshold() - 1 === $failed && ! CODCRM_Stages::is_terminal( $stage ) ) {
 			return 'return_warning';
 		}
 
@@ -318,7 +326,14 @@ class CODCRM_Templates {
 	// ── Migration des anciens modèles ──────────────────────────
 
 	public static function migrate(): void {
-		if ( get_option( 'codcrm_msg_migrated' ) ) {
+		// Drapeau en autoload (lu à chaque requête) : 2 = migré. Les sites migrés en 1.2.0
+		// (drapeau 1, non autoloadé) basculent simplement à 2, sans re-migrer.
+		$flag = (int) get_option( 'codcrm_msg_migrated', 0 );
+		if ( $flag >= 2 ) {
+			return;
+		}
+		if ( 1 === $flag ) {
+			update_option( 'codcrm_msg_migrated', 2, true );
 			return;
 		}
 		$o = self::overrides();
@@ -328,8 +343,9 @@ class CODCRM_Templates {
 		if ( is_array( $wa ) ) {
 			foreach ( $wa as $t ) {
 				$lang = 'AR' === strtoupper( (string) ( $t['label'] ?? '' ) ) ? 'ar' : ( 'FR' === strtoupper( (string) ( $t['label'] ?? '' ) ) ? 'fr' : '' );
-				if ( $lang && ! empty( $t['text'] ) && $t['text'] !== self::legacy_wa_default( $lang ) ) {
-					$o['out_for_delivery'][ $lang ]['whatsapp'] = (string) $t['text'];
+				$txt = trim( self::normalize_eol( (string) ( $t['text'] ?? '' ) ) );
+				if ( $lang && '' !== $txt && $txt !== self::legacy_wa_default( $lang ) ) {
+					$o['out_for_delivery'][ $lang ]['whatsapp'] = $txt;
 				}
 			}
 		}
@@ -337,13 +353,26 @@ class CODCRM_Templates {
 		$sms = get_option( 'codcrm_sms_templates' );
 		if ( is_array( $sms ) ) {
 			foreach ( [ 'out_for_delivery' => 'out_for_delivery', 'attempt_failed' => 'attempt_failed', 'rescheduled' => 'rescheduled' ] as $trigger => $ctx ) {
-				if ( ! empty( $sms[ $trigger ] ) ) {
-					$o[ $ctx ]['fr']['sms'] = (string) $sms[ $trigger ];
+				$old = trim( self::normalize_eol( (string) ( $sms[ $trigger ] ?? '' ) ) );
+				// L'ancien onglet SMS enregistrait toujours les 3 textes, pré-remplis avec
+				// les anciens défauts : ceux-là ne sont pas des personnalisations.
+				if ( '' !== $old && self::legacy_sms_default( $trigger ) !== $old ) {
+					$o[ $ctx ]['fr']['sms'] = $old;
 				}
 			}
 		}
 		update_option( self::OPTION, $o, false );
-		update_option( 'codcrm_msg_migrated', 1, false );
+		update_option( 'codcrm_msg_migrated', 2, true );
+	}
+
+	/** Anciens textes SMS par défaut (v1.1), non migrés s'ils n'ont pas été modifiés. */
+	private static function legacy_sms_default( string $trigger ): string {
+		$map = [
+			'out_for_delivery' => 'Bonjour {client}, votre commande #{commande} ({montant} DT) est en cours de livraison. Merci de rester joignable.',
+			'attempt_failed'   => 'Bonjour {client}, le livreur n\'a pas pu vous joindre pour la commande #{commande} ({montant} DT). Merci de répondre à son appel.',
+			'rescheduled'      => 'Bonjour {client}, la livraison de votre commande #{commande} est reportée. Nous vous recontacterons.',
+		];
+		return $map[ $trigger ] ?? '';
 	}
 
 	/** Anciens textes WhatsApp par défaut (non migrés : ils n'avaient pas été personnalisés). */

@@ -15,18 +15,21 @@ class CODCRM_Contacts {
 
 	/** Remplace {client} {commande} {suivi} {transporteur} {montant} dans un modèle. */
 	public static function render_template( WC_Order $order, string $template ): string {
-		$text = strtr( $template, [
+		$phone = (string) get_option( 'codcrm_shop_phone', '' );
+		if ( '' === $phone ) {
+			// Téléphone non renseigné : on retire le placeholder ET l'espace qui le précède.
+			$template = (string) preg_replace( '/[ \t]*\{telephone_boutique\}/u', '', $template );
+		}
+		return strtr( $template, [
 			'{client}'             => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
 			'{commande}'           => $order->get_order_number(),
 			'{suivi}'              => (string) $order->get_meta( '_wcmcs_tracking_id' ),
 			'{transporteur}'       => (string) $order->get_meta( '_wcmcs_carrier_slug' ),
 			'{montant}'            => wc_format_decimal( $order->get_total(), 2 ),
 			'{boutique}'           => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
-			'{telephone_boutique}' => (string) get_option( 'codcrm_shop_phone', '' ),
+			'{telephone_boutique}' => $phone,
 			'{date}'               => wp_date( 'd/m/Y' ),
 		] );
-		// Un placeholder vide (ex. téléphone de la boutique non renseigné) ne laisse ni espace ni ligne vide en trop.
-		return trim( (string) preg_replace( [ '/[ \t]+\n/', '/ {2,}/' ], [ "\n", ' ' ], $text ) );
 	}
 
 	/** @return array<string,string> résultat d'appel => libellé */

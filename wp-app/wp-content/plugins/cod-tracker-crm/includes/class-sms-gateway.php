@@ -243,7 +243,10 @@ class CODCRM_SMS_Gateway {
 			wp_send_json_error( [ 'message' => __( 'Commande introuvable ou non assignée à vous.', 'cod-tracker-crm' ) ], 403 );
 		}
 
-		$text = mb_substr( sanitize_textarea_field( wp_unslash( $_POST['text'] ?? '' ) ), 0, 480 );
+		$text = sanitize_textarea_field( wp_unslash( $_POST['text'] ?? '' ) );
+		if ( mb_strlen( $text ) > 480 ) {
+			wp_send_json_error( [ 'message' => sprintf( /* translators: %d longueur */ __( 'SMS trop long (%d caractères, 480 maximum). Raccourcissez le message.', 'cod-tracker-crm' ), mb_strlen( $text ) ) ] );
+		}
 
 		$msg_ctx  = sanitize_key( wp_unslash( $_POST['context'] ?? '' ) );
 		$msg_lang = sanitize_key( wp_unslash( $_POST['lang'] ?? '' ) );
@@ -251,7 +254,8 @@ class CODCRM_SMS_Gateway {
 			? [ 'context' => $msg_ctx, 'lang' => $msg_lang ]
 			: [];
 
-		$res = self::send_for_order( $order, CODCRM_Contacts::render_template( $order, $text ), 'agent', get_current_user_id(), '', $meta );
+		// Le texte a déjà été rendu dans l'aperçu : on envoie exactement ce que l'agent voit.
+		$res = self::send_for_order( $order, $text, 'agent', get_current_user_id(), '', $meta );
 
 		if ( $res['ok'] ) {
 			wp_send_json_success( [ 'message' => $res['message'] ] );

@@ -88,10 +88,25 @@
         $('body').append($m);
         $m.on('click', '.codcrm-cancel', function () { $m.remove(); });
 
-        var st = { channel: 'whatsapp', lang: 'fr', context: '', phone8: '', sms: false };
+        var st = { channel: 'whatsapp', lang: 'fr', context: '', phone8: '', sms: false, seq: 0 };
 
         function setSendLabel() {
             $m.find('.codcrm-send').text(st.channel === 'sms' ? i18n.msg_send_sms : i18n.msg_send_wa);
+            // Longueur maximale selon le canal (le serveur refuse un SMS > 480 sans le tronquer).
+            $m.find('.codcrm-msgtext').attr('maxlength', st.channel === 'sms' ? 480 : 1000);
+        }
+
+        // Après un envoi : « Mes suivis » se recharge ; la fiche commande NON (des modifications
+        // non enregistrées de la commande seraient perdues) → on ferme et on confirme.
+        function afterSend() {
+            if (codcrm.orderScreen) {
+                $m.remove();
+                var $box = $('#codcrm-timeline .inside');
+                $box.find('.codcrm-sent').remove();
+                $box.prepend('<div class="notice notice-success inline codcrm-sent"><p>' + esc(i18n.msg_sent) + '</p></div>');
+            } else {
+                location.reload();
+            }
         }
 
         function updateCount() {
@@ -105,9 +120,14 @@
         }
 
         function loadPreview() {
+            // Plusieurs changements rapides = plusieurs requêtes : seule la dernière compte,
+            // sinon une réponse lente remplirait le texte d'une autre situation / langue.
+            var seq = ++st.seq;
             var $ta = $m.find('.codcrm-msgtext').prop('disabled', true);
+            $m.find('.codcrm-send').prop('disabled', true);
             post({ action: 'codcrm_message_preview', order_id: orderId, context: st.context, lang: st.lang, channel: st.channel })
                 .done(function (r) {
+                    if (seq !== st.seq) { return; }
                     if (r.success) {
                         $ta.val(r.data.text).attr('dir', st.lang === 'ar' ? 'rtl' : 'ltr');
                         $m.find('.codcrm-err').text('');
@@ -115,8 +135,11 @@
                         $m.find('.codcrm-err').text((r.data && r.data.message) || i18n.error);
                     }
                 })
-                .fail(function () { $m.find('.codcrm-err').text(i18n.error); })
-                .always(function () { $ta.prop('disabled', false); updateCount(); $m.find('.codcrm-send').prop('disabled', false); });
+                .fail(function () { if (seq === st.seq) { $m.find('.codcrm-err').text(i18n.error); } })
+                .always(function () {
+                    if (seq !== st.seq) { return; }
+                    $ta.prop('disabled', false); updateCount(); $m.find('.codcrm-send').prop('disabled', false);
+                });
         }
 
         post({ action: 'codcrm_message_init', order_id: orderId }).done(function (r) {
@@ -169,15 +192,21 @@
                 var url = 'https://wa.me/216' + st.phone8 + '?text=' + encodeURIComponent(text);
                 post({ action: 'codcrm_log_contact', order_id: orderId, channel: 'whatsapp', context: st.context, lang: st.lang })
                     .always(function () {
-                        if (win) { win.location = url; } else { window.location = url; }
-                        location.reload();
+                        if (win) {
+                            win.location = url;
+                            afterSend();
+                        } else {
+                            // Fenêtre bloquée par le navigateur : on navigue ici-même (pas de rechargement
+                            // qui annulerait la navigation vers WhatsApp).
+                            window.location = url;
+                        }
                     });
                 return;
             }
 
             post({ action: 'codcrm_send_sms', order_id: orderId, text: text, context: st.context, lang: st.lang })
                 .done(function (r) {
-                    if (r.success) { location.reload(); return; }
+                    if (r.success) { afterSend(); return; }
                     $m.find('.codcrm-err').text((r.data && r.data.message) || i18n.error);
                     $b.prop('disabled', false);
                 })
