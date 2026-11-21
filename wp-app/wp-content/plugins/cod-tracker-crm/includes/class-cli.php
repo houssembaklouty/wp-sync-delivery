@@ -162,7 +162,15 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
 			// 4. Cash COD : ligne par colis synchronisé + statut déduit de l'étape transporteur.
 			$made = 0;
-			$sync = $wpdb->get_col( "SELECT DISTINCT order_id FROM {$events} WHERE type IN ('carrier_state','carrier_sync')" ); // phpcs:ignore WordPress.DB.PreparedSQL
+			// Tous les colis synchronisés, même sans état transporteur connu (suivi jamais réussi).
+			$sync = wc_get_orders( [
+				'limit'      => -1,
+				'return'     => 'ids',
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery
+					[ 'key' => '_wcmcs_sync_status', 'value' => 'synced' ],
+					[ 'key' => '_wcmcs_tracking_id', 'compare' => 'EXISTS' ],
+				],
+			] );
 			foreach ( $sync as $id ) {
 				$order = wc_get_order( (int) $id );
 				if ( ! $order ) {

@@ -44,6 +44,19 @@ class CODCRM_Stages {
 		self::RETOUR_DEPOT, self::RETOUR_INTER_AGENCE, self::RETOUR_EXPEDITEUR, self::RETOUR_DEFINITIF,
 	];
 
+	/**
+	 * Étapes (états du transporteur) qui prouvent que la société de livraison a
+	 * bien récupéré le colis. Tout état « RETOUR_* » le prouve aussi.
+	 */
+	const PICKED = [
+		self::ENLEVES, self::AU_DEPOT, self::TRANSFERT, self::EN_COURS_LIVRAISON, self::RENDEZ_VOUS,
+		self::NON_RECUS, self::EN_ANOMALIE, self::ECHANGE, self::LIVRES, self::LIVRES_PAYES,
+	];
+
+	public static function is_picked_stage( string $stage ): bool {
+		return in_array( $stage, self::PICKED, true ) || 0 === strpos( $stage, 'RETOUR_' );
+	}
+
 	const TERMINAL = [
 		self::LIVRES, self::LIVRES_PAYES, self::RETOUR_DEFINITIF, self::RETOUR_EXPEDITEUR,
 		self::RETOUR_PAYE, self::SUPPRIME, self::ANNULEE,

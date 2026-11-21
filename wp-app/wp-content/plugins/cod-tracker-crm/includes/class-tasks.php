@@ -10,6 +10,7 @@ class CODCRM_Tasks {
 	const KIND_FOLLOWUP  = 'attempt_followup';
 	const KIND_STUCK     = 'stuck_parcel';
 	const KIND_CASH      = 'cash_dispute';
+	const KIND_PICKUP    = 'pickup_pending';
 
 	public static function init(): void {
 		add_action( 'codcrm_attempt_failed', [ __CLASS__, 'on_attempt_failed' ], 10, 3 );
@@ -21,6 +22,7 @@ class CODCRM_Tasks {
 			self::KIND_FOLLOWUP => __( 'Relance après échec', 'cod-tracker-crm' ),
 			self::KIND_STUCK    => __( 'Colis bloqué', 'cod-tracker-crm' ),
 			self::KIND_CASH     => __( 'Litige cash', 'cod-tracker-crm' ),
+			self::KIND_PICKUP   => __( 'Enlèvement en attente', 'cod-tracker-crm' ),
 		];
 		return $map[ $kind ] ?? $kind;
 	}
@@ -35,7 +37,7 @@ class CODCRM_Tasks {
 		global $wpdb;
 		$table = CODCRM_Installer::table_tasks();
 
-		if ( in_array( $kind, [ self::KIND_FOLLOWUP, self::KIND_STUCK ], true ) ) {
+		if ( in_array( $kind, [ self::KIND_FOLLOWUP, self::KIND_STUCK, self::KIND_PICKUP ], true ) ) {
 			$exists = (int) $wpdb->get_var( $wpdb->prepare(
 				"SELECT COUNT(*) FROM {$table} WHERE order_id = %d AND kind = %s AND status = 'open'", // phpcs:ignore WordPress.DB.PreparedSQL
 				$order_id,

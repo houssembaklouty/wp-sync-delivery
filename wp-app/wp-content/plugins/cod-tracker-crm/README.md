@@ -32,6 +32,14 @@ Séparateur `,` `;` ou tabulation. L'aperçu classe chaque ligne (conforme / éc
 illisible) et **rien n'est modifié avant confirmation**. Conforme → « Reversé » ; écart ou colis non livré → « Litige »
 (+ tâche pour l'agent).
 
+## Définition des taux (tableau de bord)
+Les taux ne portent **que sur les colis enlevés** par la société de livraison (un état du transporteur l'atteste :
+enlevé, au dépôt, en livraison, livré, retour…). Taux de livraison = livrés ÷ (livrés + retournés). Les colis créés
+chez le transporteur mais jamais récupérés (« Non enlevés ») et les colis annulés / supprimés sont exclus ; les non
+enlevés ont leur propre carte, une liste d'alerte au-delà de N jours (défaut 2) et une tâche quotidienne
+« Enlèvement en attente » pour l'agent assigné. Le scan « Remis au transporteur » de la boutique ne compte pas comme
+enlèvement : seule la confirmation du transporteur fait foi.
+
 ## Limites connues
 - FirstDelivery ne fournit pas d'historique daté : délais, tournées et ancienneté des étapes ne sont mesurés
   qu'à partir des changements d'état suivis en direct.

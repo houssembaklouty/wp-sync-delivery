@@ -15,8 +15,8 @@ class CODCRM_KPIs {
 
 	/** Étapes « bloquées » si elles durent trop longtemps. */
 	const STUCK_STAGES = [
-		CODCRM_Stages::EN_ATTENTE, CODCRM_Stages::A_ENLEVER, CODCRM_Stages::ENLEVES, CODCRM_Stages::AU_DEPOT,
-		CODCRM_Stages::TRANSFERT, CODCRM_Stages::RENDEZ_VOUS, CODCRM_Stages::NON_RECUS, CODCRM_Stages::EN_ANOMALIE,
+		CODCRM_Stages::ENLEVES, CODCRM_Stages::AU_DEPOT, CODCRM_Stages::TRANSFERT,
+		CODCRM_Stages::RENDEZ_VOUS, CODCRM_Stages::NON_RECUS, CODCRM_Stages::EN_ANOMALIE,
 	];
 
 	public static function init(): void {
@@ -24,6 +24,11 @@ class CODCRM_KPIs {
 		if ( ! wp_next_scheduled( 'codcrm_daily' ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'codcrm_daily' );
 		}
+	}
+
+	/** Jours avant qu'un colis non enlevé par le transporteur soit signalé. */
+	public static function pickup_days(): int {
+		return max( 1, (int) apply_filters( 'codcrm_pickup_days', (int) get_option( 'codcrm_pickup_days', 2 ) ) );
 	}
 
 	public static function stuck_days(): int {
@@ -102,6 +107,7 @@ class CODCRM_KPIs {
 		foreach ( $raw as $r ) {
 			$rows[ (int) $r['id'] ] = [
 				'id'       => (int) $r['id'],
+				'created'  => (string) $r['created'],
 				'status'   => preg_replace( '/^wc-/', '', (string) $r['status'] ),
 				'carrier'  => (string) $r['carrier'],
 				'state'    => (string) $r['state'],
@@ -118,15 +124,18 @@ class CODCRM_KPIs {
 		$table = CODCRM_Installer::table_events();
 		foreach ( array_chunk( $ids, 500 ) as $chunk ) {
 			$ph  = implode( ',', array_fill( 0, count( $chunk ), '%d' ) );
+			$picked_in = "'" . implode( "','", CODCRM_Stages::PICKED ) . "'";
 			$ev  = $wpdb->get_results( $wpdb->prepare(
 				"SELECT order_id, MIN(occurred_at) AS first_at,
-					MIN(CASE WHEN stage IN ('LIVRES','LIVRES_PAYES') THEN occurred_at END) AS delivered_at
+					MIN(CASE WHEN stage IN ('LIVRES','LIVRES_PAYES') THEN occurred_at END) AS delivered_at,
+					MAX(CASE WHEN stage IN ({$picked_in}) OR stage LIKE 'RETOUR\\_%' THEN 1 ELSE 0 END) AS picked
 				 FROM {$table} WHERE type = 'carrier_state' AND order_id IN ({$ph}) GROUP BY order_id", // phpcs:ignore WordPress.DB.PreparedSQL
 				$chunk
 			), ARRAY_A );
 			foreach ( (array) $ev as $e ) {
 				$rows[ (int) $e['order_id'] ]['first_at']     = (string) $e['first_at'];
 				$rows[ (int) $e['order_id'] ]['delivered_at'] = (string) $e['delivered_at'];
+				$rows[ (int) $e['order_id'] ]['picked']       = (int) $e['picked'];
 			}
 		}
 
@@ -136,7 +145,10 @@ class CODCRM_KPIs {
 
 	// ── Classification ─────────────────────────────────────────
 
-	/** delivered | returned | cancelled | open */
+	/**
+	 * delivered | returned | cancelled | open (enlevé, en transit) | not_picked
+	 * (créé chez le transporteur mais jamais récupéré par la société de livraison).
+	 */
 	public static function outcome( array $r ): string {
 		$stage = $r['stage'];
 		if ( in_array( $stage, [ CODCRM_Stages::LIVRES, CODCRM_Stages::LIVRES_PAYES ], true ) || 'wcmcs-delivered' === $r['status'] ) {
@@ -148,7 +160,11 @@ class CODCRM_KPIs {
 		if ( in_array( $stage, [ CODCRM_Stages::SUPPRIME, CODCRM_Stages::ANNULEE ], true ) || 'cancelled' === $r['status'] ) {
 			return 'cancelled';
 		}
-		return 'open';
+		// Enlevé = un état du transporteur l'atteste (journal) ou son étape actuelle l'implique.
+		if ( ! empty( $r['picked'] ) || CODCRM_Stages::is_picked_stage( $stage ) ) {
+			return 'open';
+		}
+		return 'not_picked';
 	}
 
 	/** Filtres : carrier, agent ('all'|'none'|id), state. */
@@ -173,7 +189,7 @@ class CODCRM_KPIs {
 
 	/** Compteurs + taux d'un groupe de lignes. */
 	private static function tally( array $rows ): array {
-		$t = [ 'total' => 0, 'delivered' => 0, 'returned' => 0, 'open' => 0, 'cancelled' => 0, 'with_failed' => 0, 'recovered' => 0 ];
+		$t = [ 'total' => 0, 'delivered' => 0, 'returned' => 0, 'open' => 0, 'not_picked' => 0, 'cancelled' => 0, 'with_failed' => 0, 'recovered' => 0 ];
 		foreach ( $rows as $r ) {
 			$o = self::outcome( $r );
 			$t['total']++;
@@ -185,6 +201,9 @@ class CODCRM_KPIs {
 				}
 			}
 		}
+		// Enlevés = livrés + retournés + en transit. Les taux ne portent QUE sur les colis
+		// enlevés : un colis jamais récupéré par la société de livraison n'y entre pas.
+		$t['picked']        = $t['delivered'] + $t['returned'] + $t['open'];
 		$closed             = $t['delivered'] + $t['returned'];
 		$t['delivery_rate'] = $closed ? round( 100 * $t['delivered'] / $closed, 1 ) : null;
 		$t['return_rate']   = $closed ? round( 100 * $t['returned'] / $closed, 1 ) : null;
@@ -242,6 +261,20 @@ class CODCRM_KPIs {
 		}
 		usort( $stuck, static function ( $a, $b ) { return $b['days'] <=> $a['days']; } );
 
+		// Colis non enlevés depuis plus de N jours (créés chez le transporteur, jamais récupérés).
+		$pickup_limit = time() - self::pickup_days() * DAY_IN_SECONDS;
+		$pickup       = [];
+		foreach ( $rows as $r ) {
+			if ( 'not_picked' !== self::outcome( $r ) || '' === $r['created'] ) {
+				continue;
+			}
+			$ts = strtotime( $r['created'] . ' UTC' );
+			if ( $ts && $ts < $pickup_limit ) {
+				$pickup[] = $r + [ 'days' => (int) floor( ( time() - $ts ) / DAY_IN_SECONDS ) ];
+			}
+		}
+		usort( $pickup, static function ( $a, $b ) { return $b['days'] <=> $a['days']; } );
+
 		// Statut WooCommerce en retard sur la réalité transporteur.
 		$lagging = 0;
 		foreach ( $rows as $r ) {
@@ -260,6 +293,7 @@ class CODCRM_KPIs {
 			'by_state'     => self::group( $rows, 'state' ),
 			'by_agent'     => self::group( $rows, 'agent' ),
 			'stuck'        => $stuck,
+			'pickup'       => $pickup,
 			'lagging'      => $lagging,
 		];
 	}
@@ -308,6 +342,16 @@ class CODCRM_KPIs {
 				CODCRM_Tasks::KIND_STUCK,
 				current_time( 'mysql' ),
 				sprintf( /* translators: 1 étape 2 jours */ __( 'Bloqué « %1$s » depuis %2$d jours', 'cod-tracker-crm' ), CODCRM_Stages::label( $r['stage'] ), (int) $r['days'] )
+			);
+		}
+
+		foreach ( $data['pickup'] as $r ) {
+			CODCRM_Tasks::create(
+				(int) $r['id'],
+				(int) $r['agent'],
+				CODCRM_Tasks::KIND_PICKUP,
+				current_time( 'mysql' ),
+				sprintf( /* translators: %d jours */ __( 'Colis non enlevé par le transporteur depuis %d jours — relancer la société de livraison', 'cod-tracker-crm' ), (int) $r['days'] )
 			);
 		}
 	}

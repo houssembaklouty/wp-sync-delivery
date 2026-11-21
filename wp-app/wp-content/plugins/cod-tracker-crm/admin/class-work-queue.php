@@ -359,6 +359,12 @@ class CODCRM_Work_Queue {
 			esc_html__( 'jours sans changement d\'étape (tableau de bord + tâche quotidienne).', 'cod-tracker-crm' )
 		);
 
+		printf( '<tr><th>%s</th><td><input type="number" min="1" max="30" name="pickup_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
+			esc_html__( 'Enlèvement en attente après', 'cod-tracker-crm' ),
+			CODCRM_KPIs::pickup_days(),
+			esc_html__( 'jours sans enlèvement par la société de livraison (tableau de bord + tâche quotidienne).', 'cod-tracker-crm' )
+		);
+
 		echo '</table>';
 
 		self::render_sms_settings();
@@ -428,6 +434,7 @@ class CODCRM_Work_Queue {
 		update_option( 'codcrm_attempts_threshold', max( 1, min( 10, absint( $_POST['threshold'] ?? 3 ) ) ) );
 
 		update_option( 'codcrm_stuck_days', max( 1, min( 30, absint( $_POST['stuck_days'] ?? 3 ) ) ) );
+		update_option( 'codcrm_pickup_days', max( 1, min( 30, absint( $_POST['pickup_days'] ?? 2 ) ) ) );
 
 		// Passerelle SMS.
 		update_option( 'codcrm_sms_enabled', isset( $_POST['sms_enabled'] ) ? 'yes' : 'no' );
