@@ -29,6 +29,12 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
     /** API v1 — ajout de colis (token compte expéditeur). */
     const API_URL = 'https://colissimodelivery.tn/api/v1/post.php';
 
+    /** API v1 — suivi (POST form : token + code). Réponse JSON {status, status_message|etat}. */
+    const TRACKING_URL = 'https://colissimodelivery.tn/api/v1/etat.php';
+
+    /** Page publique « Suivre mon colis » (POST code, sans token) — source de suivi principale. */
+    const PUBLIC_TRACKING_URL = 'https://colissimodelivery.tn/tracking.php';
+
     /** Legacy SOAP — colis créés avant la migration uniquement. */
     const WSDL_URL     = 'http://delivery.colissimo.com.tn/wsColissimoGo/wsColissimoGo.asmx?wsdl';
     const ENDPOINT_URL = 'http://delivery.colissimo.com.tn/wsColissimoGo/wsColissimoGo.asmx';
@@ -102,8 +108,11 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
     /** @var string Options colis : échange (oui/non). */
     private string $echange;
 
-    /** @var string URL de suivi API v1 (optionnel, à ce jour non documentée). */
+    /** @var string URL de suivi API v1 (défaut : TRACKING_URL). */
     private string $tracking_url;
+
+    /** @var string Token de suivi (défaut : token d'ajout). */
+    private string $tracking_token;
 
     /** @var int Timeout HTTP. */
     private int $http_timeout;
@@ -139,6 +148,13 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
         $this->fragile      = ( 'oui' === (string) get_option( 'wcmcs_colissimo_fragile', 'non' ) ) ? 1 : 0;
         $this->echange      = ( 'oui' === (string) get_option( 'wcmcs_colissimo_echange', 'non' ) ) ? 'oui' : 'non';
         $this->tracking_url = trim( (string) get_option( 'wcmcs_colissimo_tracking_url', '' ) );
+        if ( '' === $this->tracking_url ) {
+            $this->tracking_url = self::TRACKING_URL;
+        }
+        $this->tracking_token = trim( (string) get_option( 'wcmcs_colissimo_tracking_token', '' ) );
+        if ( '' === $this->tracking_token ) {
+            $this->tracking_token = $this->token;
+        }
         $this->http_timeout = (int) apply_filters( 'wcmcs_colissimo_timeout', 30 );
     }
 
@@ -224,10 +240,16 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
             ],
             [
                 'id'          => 'wcmcs_colissimo_tracking_url',
-                'label'       => __( 'URL du suivi (optionnel — API v1)', 'wc-multicarrier-sync' ),
+                'label'       => __( 'URL du suivi (API v1)', 'wc-multicarrier-sync' ),
                 'type'        => 'text',
-                'placeholder' => 'https://colissimodelivery.tn/api/v1/…',
-                'description' => __( 'La doc API v1 publie les états mais ne documente pas l\'endpoint de suivi. Renseignez ici l\'URL fournie par le transporteur (code+token passés en query) ; sinon le suivi des nouveaux colis reste indisponible et l\'ancien SOAP sert de repli aux colis legacy.', 'wc-multicarrier-sync' ),
+                'placeholder' => self::TRACKING_URL,
+                'description' => __( 'Laisser vide pour utiliser l\'URL par défaut (etat.php — POST token + code).', 'wc-multicarrier-sync' ),
+            ],
+            [
+                'id'          => 'wcmcs_colissimo_tracking_token',
+                'label'       => __( 'Token de suivi (optionnel)', 'wc-multicarrier-sync' ),
+                'type'        => 'password',
+                'description' => __( 'Si Colissimo fournit un token distinct pour le suivi (colissimodelivery.tn/expediteur/api.php). Vide = token d\'ajout ci-dessus.', 'wc-multicarrier-sync' ),
             ],
         ];
 
@@ -561,28 +583,107 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
      * @return array|WP_Error  ['state_code' => '', 'state_label' => '…', 'raw' => …]
      */
     public function get_tracking_status( string $tracking_id ) {
-        if ( '' !== $this->tracking_url ) {
-            $rest = $this->tracking_via_rest( $tracking_id );
-            if ( ! is_wp_error( $rest ) ) {
-                return $rest;
+        // 1. Page publique tracking.php (sans token — fonctionne pour tous les colis v1).
+        $public = null;
+        if ( (bool) apply_filters( 'wcmcs_colissimo_public_tracking', true ) ) {
+            $public = $this->tracking_via_public_page( $tracking_id );
+            if ( ! is_wp_error( $public ) ) {
+                return $public;
             }
-            WCMCS_Logger::warning( 'Colissimo : suivi REST v1 en échec — repli SOAP legacy.' );
+            WCMCS_Logger::warning( 'Colissimo : suivi page publique en échec (' . $public->get_error_message() . ') — essai API etat.php.' );
         }
 
-        return $this->tracking_via_soap( $tracking_id );
+        // 2. API v1 etat.php (token de suivi).
+        $rest = $this->tracking_via_rest( $tracking_id );
+        if ( ! is_wp_error( $rest ) ) {
+            return $rest;
+        }
+
+        // Repli SOAP legacy uniquement si des identifiants legacy existent
+        // (le service legacy ne répond plus → 10 s de timeout par colis sinon).
+        if ( '' !== $this->utilisateur && '' !== $this->pass ) {
+            WCMCS_Logger::warning( 'Colissimo : suivi v1 en échec (' . $rest->get_error_message() . ') — repli SOAP legacy.' );
+            $soap = $this->tracking_via_soap( $tracking_id );
+            if ( ! is_wp_error( $soap ) ) {
+                return $soap;
+            }
+        }
+
+        // Erreur la plus parlante : celle de la page publique si elle a été tentée.
+        return $public instanceof WP_Error ? $public : $rest;
+    }
+
+    /**
+     * Suivi via la page publique colissimodelivery.tn/tracking.php (POST code).
+     * L'état courant est le bloc en tête (« En cours de livraison », suivi de
+     * « Mis à jour le JJ/MM/AAAA à HH:MM »).
+     */
+    private function tracking_via_public_page( string $tracking_id ) {
+        $code = preg_replace( '/\D/', '', $tracking_id );
+        if ( 12 !== strlen( (string) $code ) ) {
+            return new WP_Error( 'colissimo_public_code', __( 'Colissimo : code de suivi invalide (12 chiffres attendus).', 'wc-multicarrier-sync' ) );
+        }
+
+        $response = wp_remote_post( self::PUBLIC_TRACKING_URL, [
+            'timeout' => $this->http_timeout,
+            'body'    => [ 'code' => $code ],
+        ] );
+        if ( is_wp_error( $response ) ) {
+            return new WP_Error( 'colissimo_public_http', sprintf( __( 'Colissimo : erreur HTTP suivi — %s', 'wc-multicarrier-sync' ), $response->get_error_message() ) );
+        }
+        $status = (int) wp_remote_retrieve_response_code( $response );
+        $html   = (string) wp_remote_retrieve_body( $response );
+        if ( 200 !== $status || '' === $html ) {
+            return new WP_Error( 'colissimo_public_http', sprintf( __( 'Colissimo : page de suivi indisponible (HTTP %d).', 'wc-multicarrier-sync' ), $status ) );
+        }
+
+        // Colis inconnu : la page ne contient pas de fiche « Numéro de Suivi ».
+        if ( false === stripos( $html, 'Numéro de Suivi' ) || false === strpos( $html, $code ) ) {
+            return new WP_Error( 'colissimo_public_not_found', __( 'Colissimo : colis introuvable sur la page de suivi.', 'wc-multicarrier-sync' ) );
+        }
+
+        $state   = '';
+        $updated = '';
+        if ( preg_match( '#<div[^>]*>\s*([^<]{2,80}?)\s*</div>\s*<div[^>]*>\s*Mis à jour le\s*([^<]+?)\s*</div>#u', $html, $m ) ) {
+            $state   = html_entity_decode( trim( $m[1] ), ENT_QUOTES, 'UTF-8' );
+            $updated = trim( $m[2] );
+        } else {
+            // Filet : texte brut, ligne précédant « Mis à jour le ».
+            $text  = html_entity_decode( wp_strip_all_tags( preg_replace( '#<(script|style)[^>]*>.*?</\1>#is', '', $html ) ), ENT_QUOTES, 'UTF-8' );
+            $lines = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', $text ) ) ) );
+            foreach ( $lines as $k => $line ) {
+                if ( 0 === strpos( $line, 'Mis à jour le' ) && $k > 0 ) {
+                    $state   = $lines[ $k - 1 ];
+                    $updated = trim( substr( $line, strlen( 'Mis à jour le' ) ) );
+                    break;
+                }
+            }
+        }
+
+        $state = (string) apply_filters( 'wcmcs_colissimo_tracking_state', $state, [ 'source' => 'public' ], $tracking_id );
+        if ( '' === $state ) {
+            return new WP_Error( 'colissimo_public_parse', __( 'Colissimo : état introuvable dans la page de suivi.', 'wc-multicarrier-sync' ) );
+        }
+
+        WCMCS_Logger::debug( "Colissimo suivi public {$code} : {$state} ({$updated})" );
+
+        return [
+            'state_code'  => '',
+            'state_label' => $state,
+            'raw'         => [ 'source' => 'tracking.php', 'etat' => $state, 'mis_a_jour' => $updated ],
+        ];
     }
 
     private function tracking_via_rest( string $tracking_id ) {
-        $url = add_query_arg(
-            [
-                'token' => $this->token,
+        $url = (string) apply_filters( 'wcmcs_colissimo_tracking_request_url', $this->tracking_url, $tracking_id );
+
+        $response = wp_remote_post( $url, [
+            'timeout' => $this->http_timeout,
+            'body'    => [
+                'token' => $this->tracking_token,
                 'code'  => $tracking_id,
             ],
-            $this->tracking_url
-        );
-        $url = (string) apply_filters( 'wcmcs_colissimo_tracking_request_url', $url, $tracking_id );
-
-        $response = wp_remote_get( $url, [ 'timeout' => $this->http_timeout ] );
+        ] );
 
         if ( is_wp_error( $response ) ) {
             return new WP_Error( 'colissimo_tracking_http', sprintf( __( 'Colissimo : erreur HTTP suivi — %s', 'wc-multicarrier-sync' ), $response->get_error_message() ) );
@@ -590,10 +691,23 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
 
         $raw = wp_remote_retrieve_body( $response );
 
+        WCMCS_Logger::debug( 'Colissimo v1 suivi ' . $tracking_id . ' : ' . WCMCS_Logger::redact_body( $raw ) );
+
         $decoded = json_decode( $raw, true );
         $state   = '';
         if ( is_array( $decoded ) ) {
-            $state = (string) ( $decoded['etat'] ?? $decoded['status'] ?? $decoded['state'] ?? '' );
+            // Erreur API : {"status":0,"status_message":"Authentification échouée, token invalide."}
+            if ( isset( $decoded['status'] ) && is_numeric( $decoded['status'] ) && 0 === (int) $decoded['status'] ) {
+                return new WP_Error(
+                    'colissimo_tracking_api',
+                    sprintf( __( 'Colissimo : %s', 'wc-multicarrier-sync' ), (string) ( $decoded['status_message'] ?? __( 'erreur de suivi', 'wc-multicarrier-sync' ) ) ),
+                    [ 'raw' => $decoded ]
+                );
+            }
+            $state = (string) ( $decoded['etat'] ?? $decoded['state'] ?? $decoded['status_message'] ?? '' );
+            if ( '' === $state && isset( $decoded['status'] ) && ! is_numeric( $decoded['status'] ) ) {
+                $state = (string) $decoded['status'];
+            }
         } elseif ( '' !== trim( $raw ) ) {
             $state = trim( wp_strip_all_tags( $raw ) );
         }
@@ -601,7 +715,7 @@ class WCMCS_Colissimo_Provider implements WCMCS_ShippingProviderInterface {
         $state = (string) apply_filters( 'wcmcs_colissimo_tracking_state', $state, $decoded, $tracking_id );
 
         if ( '' === $state ) {
-            return new WP_Error( 'colissimo_tracking_empty', __( 'Colissimo : état de suivi vide dans la réponse.', 'wc-multicarrier-sync' ) );
+            return new WP_Error( 'colissimo_tracking_empty', __( 'Colissimo : réponse de suivi vide (code inconnu ou token de suivi invalide).', 'wc-multicarrier-sync' ) );
         }
 
         return [

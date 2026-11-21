@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.10.4
+
+- Colissimo : **suivi via la page publique `colissimodelivery.tn/tracking.php`** (POST `code`, sans token) en source principale — l'API `etat.php` refuse le token d'ajout (« token invalide »). Ordre : page publique → `etat.php` (token de suivi) → SOAP legacy (si identifiants legacy). Désactivable via le filtre `wcmcs_colissimo_public_tracking`.
+
+## 2.10.3
+
+- Colissimo : **suivi via l'API v1 `etat.php` par défaut** (`https://colissimodelivery.tn/api/v1/etat.php`, POST `token` + `code`) — plus besoin de renseigner l'URL. Nouveau champ optionnel « Token de suivi » (défaut : token d'ajout). Les erreurs API (`status: 0`) sont affichées telles quelles.
+- Correctif : plus de repli systématique vers l'ancien SOAP `delivery.colissimo.com.tn` (injoignable → « cURL error 28 » après 10 s par colis) ; repli uniquement si des identifiants legacy sont configurés.
+
+## 2.10.2
+
+- Correctif : modal « Vérifier les statuts » — « Aucun colis » quand le navigateur gardait l'ancien JS en cache (filtres par défaut si le paramètre `statuses` est absent).
+
+## 2.10.1
+
+- Nouveau : **pagination serveur** du modal « Vérifier les statuts des colis » — plus récents d'abord, 50/page (25/50/100), filtres de statut appliqués côté serveur ; « Lancer la vérification » traite la page courante. Correctif : seuls les 200 colis les plus anciens étaient listés.
+
 ## 2.10.0
 
 - Correctif (revue de code transporteurs, P0) : **redaction PII réparée** — `PII_KEYS` étendu à tous les namings des 11 providers (`tel` = téléphone principal Colissimo/Jetpack/Fiabilo/Navex, **`token` Fiabilo en clair**, `apiKey`/`ClientName`/`ClientPhone` INTIGO, `name`/`phone1`/`address`/`price` Shipper/Ciblex, `PersonName`/`EmailAddress`/`Line1` Aramex, `msg`/`commentaire`, `cp`…) + les 12 logs « response body » passent par `redact_body()` (JSON redacté, non-JSON **jamais** loggé — code HTTP + taille) + les `'raw'` de création non protégés (Fiabilo/FirstDelivery/Jetpack/Shipper) redactés avant stockage meta/DB.

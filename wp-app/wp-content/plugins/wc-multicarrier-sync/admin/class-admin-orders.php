@@ -542,9 +542,10 @@ class WCMCS_Admin_Orders {
             wp_send_json_error( [ 'message' => __( 'Permissions insuffisantes.', 'wc-multicarrier-sync' ) ] );
         }
 
-        $limit = absint( $_POST['limit'] ?? 200 );
-        if ( $limit < 1 || $limit > 500 ) {
-            $limit = 200;
+        $page     = max( 1, absint( $_POST['page'] ?? 1 ) );
+        $per_page = absint( $_POST['per_page'] ?? 50 );
+        if ( ! in_array( $per_page, [ 25, 50, 100 ], true ) ) {
+            $per_page = 50;
         }
 
         $sync = new WCMCS_Order_Status_Sync();
@@ -561,7 +562,26 @@ class WCMCS_Admin_Orders {
             'wc-wcmcs-returned',
         ];
 
-        $orders = $sync->get_scan_candidates( $limit, $statuses );
+        // Filtre de statuts choisi côté client, restreint à la liste autorisée.
+        // Paramètre absent (ancien JS en cache) → filtres par défaut (hors livrés/retournés/terminés).
+        // Présent mais vide ("") → aucun filtre coché → liste vide.
+        if ( isset( $_POST['statuses'] ) ) {
+            $raw       = wp_unslash( $_POST['statuses'] );
+            $requested = is_array( $raw ) ? $raw : array_filter( explode( ',', (string) $raw ) );
+        } else {
+            $requested = array_diff( $statuses, [ 'completed', 'wc-wcmcs-delivered', 'wc-wcmcs-returned' ] );
+        }
+        $requested = array_map( static function ( $s ) {
+            $s = sanitize_key( (string) $s );
+            return 0 === strpos( $s, 'wc-' ) ? $s : 'wc-' . $s;
+        }, $requested );
+        $allowed = array_map( static function ( $s ) {
+            return 0 === strpos( $s, 'wc-' ) ? $s : 'wc-' . $s;
+        }, $statuses );
+        $statuses = array_values( array_intersect( $allowed, $requested ) );
+
+        $result = $sync->get_scan_page( $page, $per_page, $statuses );
+        $orders = $result['orders'];
 
         $rows = [];
         foreach ( $orders as $order ) {
@@ -595,8 +615,11 @@ class WCMCS_Admin_Orders {
         }
 
         wp_send_json_success( [
-            'orders' => $rows,
-            'total'  => count( $rows ),
+            'orders'   => $rows,
+            'total'    => $result['total'],
+            'pages'    => $result['pages'],
+            'page'     => $page,
+            'per_page' => $per_page,
         ] );
     }
 
@@ -986,7 +1009,7 @@ class WCMCS_Admin_Orders {
         // CSS
         wp_enqueue_style(
             'wcmcs-admin',
-            WCMCS_PLUGIN_URL . 'assets/css/admin.css',
+            WCMCS_PLUGIN_URL . 'assets/css/admin.css?v=' . WCMCS_VERSION . '-' . (int) @filemtime( WCMCS_PLUGIN_DIR . 'assets/css/admin.css' ),
             [],
             WCMCS_VERSION
         );
@@ -994,7 +1017,7 @@ class WCMCS_Admin_Orders {
         // JS
         wp_enqueue_script(
             'wcmcs-admin',
-            WCMCS_PLUGIN_URL . 'assets/js/admin.js',
+            WCMCS_PLUGIN_URL . 'assets/js/admin.js?v=' . WCMCS_VERSION . '-' . (int) @filemtime( WCMCS_PLUGIN_DIR . 'assets/js/admin.js' ),
             [ 'jquery' ],
             WCMCS_VERSION,
             true
@@ -1037,6 +1060,12 @@ class WCMCS_Admin_Orders {
                 'scan_none_selected'   => __( 'Aucun colis sélectionné.', 'wc-multicarrier-sync' ),
                 'scan_rate_limited'    => __( 'API saturée — pause 3 s puis nouvel essai...', 'wc-multicarrier-sync' ),
                 'scan_filter_word'     => __( 'Filtrer', 'wc-multicarrier-sync' ),
+                'scan_page_word'       => __( 'Page', 'wc-multicarrier-sync' ),
+                'scan_of_word'         => __( 'sur', 'wc-multicarrier-sync' ),
+                'scan_per_page'        => __( 'par page', 'wc-multicarrier-sync' ),
+                'scan_prev'            => __( '‹ Précédent', 'wc-multicarrier-sync' ),
+                'scan_next'            => __( 'Suivant ›', 'wc-multicarrier-sync' ),
+                'scan_total_word'      => __( 'colis au total', 'wc-multicarrier-sync' ),
                 'scan_filters_word'    => __( 'Tout', 'wc-multicarrier-sync' ),
                 'scan_filternone_word' => __( 'Aucun', 'wc-multicarrier-sync' ),
                 'scan_visible_word'    => __( 'colis affichés', 'wc-multicarrier-sync' ),

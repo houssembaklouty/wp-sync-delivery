@@ -392,17 +392,19 @@
         var $btn = $(this);
         $btn.prop('disabled', true).text(wcmcsAdmin.i18n.checking || 'Vérification...');
 
+        var perPage = scanPerPage();
         $.post(wcmcsAdmin.ajaxUrl, {
-            action: 'wcmcs_status_scan_data',
-            limit:  200,
-            nonce:  wcmcsAdmin.nonce
+            action:   'wcmcs_status_scan_data',
+            page:     1,
+            per_page: perPage,
+            statuses: scanDefaultStatuses().join(','),
+            nonce:    wcmcsAdmin.nonce
         }, function (response) {
-            var data = response.success ? response.data : { orders: [] };
-            var orders = data.orders || [];
-            if (!orders.length) {
+            var data = response.success ? response.data : { orders: [], total: 0 };
+            if (!(data.orders || []).length) {
                 alert(wcmcsAdmin.i18n.scan_none || 'Aucun colis synchronisé à vérifier.');
             } else {
-                openScanModal(orders);
+                openScanModal(data);
             }
         }).fail(function () {
             alert(wcmcsAdmin.i18n.network_error || 'Erreur réseau.');
@@ -410,6 +412,33 @@
             $btn.prop('disabled', false).text(wcmcsAdmin.i18n.scan_btn || '📍 Vérifier tous les statuts');
         });
     });
+
+    var SCAN_PERPAGE_KEY = 'wcmcs-scan-perpage';
+
+    function scanPerPage() {
+        var v = 50;
+        try { v = parseInt(window.localStorage.getItem(SCAN_PERPAGE_KEY), 10) || 50; } catch (e) { /* noop */ }
+        return [25, 50, 100].indexOf(v) >= 0 ? v : 50;
+    }
+
+    function scanFilterDefs() {
+        var i = wcmcsAdmin.i18n;
+        return [
+            { key: 'wcmcs-synced',  label: i.f_synced,     on: true  },
+            { key: 'processing',    label: i.f_processing, on: true  },
+            { key: 'on-hold',       label: i.f_onhold,     on: true  },
+            { key: 'pending',       label: i.f_pending,    on: true  },
+            { key: 'wcmcs-confirmed', label: i.f_confirmed, on: true },
+            { key: 'wcmcs-packed',    label: i.f_packed,    on: true },
+            { key: 'completed',     label: i.f_completed,  on: false },
+            { key: 'wcmcs-delivered', label: i.f_delivered, on: false },
+            { key: 'wcmcs-returned',  label: i.f_returned,  on: false }
+        ];
+    }
+
+    function scanDefaultStatuses() {
+        return $.map(scanFilterDefs(), function (d) { return d.on ? d.key : null; });
+    }
 
     /** Couleur de badge d'un statut (map PHP statusColors, clés sans préfixe wc-). */
     function scanStatusColor(key) {
@@ -434,17 +463,7 @@
 
     function scanFilters() {
         var i = wcmcsAdmin.i18n;
-        var defs = [
-            { key: 'wcmcs-synced',  label: i.f_synced,     on: true  },
-            { key: 'processing',    label: i.f_processing, on: true  },
-            { key: 'on-hold',       label: i.f_onhold,     on: true  },
-            { key: 'pending',       label: i.f_pending,    on: true  },
-            { key: 'wcmcs-confirmed', label: i.f_confirmed, on: true },
-            { key: 'wcmcs-packed',    label: i.f_packed,    on: true },
-            { key: 'completed',     label: i.f_completed,  on: false },
-            { key: 'wcmcs-delivered', label: i.f_delivered, on: false },
-            { key: 'wcmcs-returned',  label: i.f_returned,  on: false }
-        ];
+        var defs = scanFilterDefs();
         var html = '<strong>' + escHtml(i.scan_filter_word || 'Filtrer') + ' :</strong> ';
         for (var k = 0; k < defs.length; k++) {
             var d = defs[k];
@@ -510,7 +529,7 @@
         } catch (e) { /* stockage indisponible : préférence non mémorisée. */ }
     }
 
-    function openScanModal(orders) {
+    function renderScanRows(orders) {
         var i = wcmcsAdmin.i18n;
         var rows = '';
         for (var k = 0; k < orders.length; k++) {
@@ -530,6 +549,26 @@
                 + '<td class="wcmcs-scan-result">—</td>'
                 + '</tr>';
         }
+        return rows;
+    }
+
+    function scanPagerHtml(cls) {
+        var i = wcmcsAdmin.i18n, pp = scanPerPage();
+        var opts = '';
+        $.each([25, 50, 100], function (n, v) {
+            opts += '<option value="' + v + '"' + (v === pp ? ' selected' : '') + '>' + v + '</option>';
+        });
+        return '<div class="wcmcs-scan-pager ' + cls + '">'
+            + '<button type="button" class="button wcmcs-scan-prev">' + escHtml(i.scan_prev || '‹ Précédent') + '</button>'
+            + '<span class="wcmcs-scan-pageinfo"></span>'
+            + '<button type="button" class="button wcmcs-scan-next">' + escHtml(i.scan_next || 'Suivant ›') + '</button>'
+            + '<select class="wcmcs-scan-perpage">' + opts + '</select> ' + escHtml(i.scan_per_page || 'par page')
+            + '<span class="wcmcs-scan-range"></span></div>';
+    }
+
+    function openScanModal(data) {
+        var i = wcmcsAdmin.i18n;
+        var rows = renderScanRows(data.orders || []);
 
         var $overlay = $(
             '<div class="wcmcs-bulk-overlay">'
@@ -546,6 +585,7 @@
             + '</div>'
             + '<div class="wcmcs-scan-body" style="max-height:55vh;overflow:auto;padding:12px 20px 16px">'
             + scanFilters()
+            + scanPagerHtml('wcmcs-scan-pager-top')
             + '<table class="widefat striped"><thead><tr>'
             + '<th style="width:26px"><input type="checkbox" id="wcmcs-scan-toggle-all" checked /></th>'
             + '<th>' + escHtml(i.scan_col_order) + '</th>'
@@ -555,6 +595,7 @@
             + '<th>' + escHtml(i.scan_col_state) + '</th>'
             + '<th>' + escHtml(i.scan_col_result) + '</th>'
             + '</tr></thead><tbody>' + rows + '</tbody></table>'
+            + scanPagerHtml('wcmcs-scan-pager-bottom')
             + '</div></div></div>'
         );
 
@@ -572,16 +613,33 @@
             applyScanFilters($overlay);
         });
 
+        $overlay.data({ page: data.page || 1, pages: data.pages || 1, total: data.total || 0, perPage: data.per_page || scanPerPage() });
+        updateScanPager($overlay);
         applyScanFilters($overlay);
         $overlay.on('change', 'input.wcmcs-scan-filtre', function () {
-            applyScanFilters($overlay);
+            if (scanRunning) { return; }
+            loadScanPage($overlay, 1);
+        });
+        $overlay.on('click', '.wcmcs-scan-prev', function () {
+            if (!scanRunning && $overlay.data('page') > 1) { loadScanPage($overlay, $overlay.data('page') - 1); }
+        });
+        $overlay.on('click', '.wcmcs-scan-next', function () {
+            if (!scanRunning && $overlay.data('page') < $overlay.data('pages')) { loadScanPage($overlay, $overlay.data('page') + 1); }
+        });
+        $overlay.on('change', '.wcmcs-scan-perpage', function () {
+            if (scanRunning) { return; }
+            try { window.localStorage.setItem(SCAN_PERPAGE_KEY, String($(this).val())); } catch (e) { /* noop */ }
+            $overlay.find('.wcmcs-scan-perpage').val($(this).val());
+            loadScanPage($overlay, 1);
         });
 
         $overlay.find('#wcmcs-scan-filters-toggle').on('click', function (e) {
             e.preventDefault();
             var $f = $overlay.find('input.wcmcs-scan-filtre');
             var allChecked = $f.length === $f.filter(':checked').length;
-            $f.prop('checked', !allChecked).trigger('change');
+            if (scanRunning) { return; }
+            $f.prop('checked', !allChecked);
+            loadScanPage($overlay, 1);
         });
 
         $overlay.on('change', '#wcmcs-scan-toggle-all', function () {
@@ -606,19 +664,54 @@
         });
     }
 
+    function updateScanPager($overlay) {
+        var i = wcmcsAdmin.i18n;
+        var page = $overlay.data('page') || 1, pages = Math.max(1, $overlay.data('pages') || 1);
+        var total = $overlay.data('total') || 0, pp = $overlay.data('perPage') || 50;
+        var from = total ? (page - 1) * pp + 1 : 0;
+        var to = Math.min(total, page * pp);
+        $overlay.find('.wcmcs-scan-pageinfo').text((i.scan_page_word || 'Page') + ' ' + page + ' ' + (i.scan_of_word || 'sur') + ' ' + pages);
+        $overlay.find('.wcmcs-scan-range').text(from + '–' + to + ' / ' + total + ' ' + (i.scan_total_word || 'colis au total'));
+        $overlay.find('.wcmcs-scan-prev').prop('disabled', page <= 1);
+        $overlay.find('.wcmcs-scan-next').prop('disabled', page >= pages);
+    }
+
+    function loadScanPage($overlay, page) {
+        var i = wcmcsAdmin.i18n;
+        var statuses = $overlay.find('input.wcmcs-scan-filtre:checked').map(function () { return $(this).val(); }).get();
+        var perPage = scanPerPage();
+        var $tbody = $overlay.find('tbody');
+        $tbody.html('<tr><td colspan="7"><em>' + escHtml(i.scan_loading || 'Chargement...') + '</em></td></tr>');
+        $overlay.find('.wcmcs-scan-pager button, .wcmcs-scan-perpage').prop('disabled', true);
+        $.post(wcmcsAdmin.ajaxUrl, {
+            action:   'wcmcs_status_scan_data',
+            page:     page,
+            per_page: perPage,
+            statuses: statuses.join(','),
+            nonce:    wcmcsAdmin.nonce
+        }, function (response) {
+            var d = response.success ? response.data : { orders: [], total: 0, pages: 1, page: 1 };
+            $tbody.html(renderScanRows(d.orders || []) || '<tr><td colspan="7">' + escHtml(i.scan_none || '') + '</td></tr>');
+            $overlay.data({ page: d.page || 1, pages: d.pages || 1, total: d.total || 0, perPage: d.per_page || perPage });
+            $overlay.find('.wcmcs-scan-summary').empty();
+            $overlay.find('#wcmcs-scan-close').hide();
+            $overlay.find('#wcmcs-scan-start').show().prop('disabled', false).text(i.scan_start);
+            $overlay.find('.wcmcs-scan-body').scrollTop(0);
+        }).fail(function () {
+            $tbody.empty();
+            alert(i.network_error || 'Erreur réseau.');
+        }).always(function () {
+            $overlay.find('.wcmcs-scan-perpage').prop('disabled', false);
+            updateScanPager($overlay);
+            applyScanFilters($overlay);
+        });
+    }
+
     /**
      * Filtre multi-statuts côté client : seule une valeur cochée fait apparaître
      * la ligne (les checkbox et le lancement ignorent les lignes masquées).
      */
     function applyScanFilters($overlay) {
-        var on = {};
-        $overlay.find('input.wcmcs-scan-filtre:checked').each(function () {
-            on[$(this).val()] = true;
-        });
-        $overlay.find('tbody tr').each(function () {
-            var show = !!on[$(this).data('status')];
-            $(this).toggle(show);
-        });
         var $visible = $overlay.find('input.wcmcs-scan-select:visible');
         $overlay.find('#wcmcs-scan-toggle-all').prop('checked',
             $visible.length > 0 && $visible.length === $visible.filter(':checked').length);
@@ -661,7 +754,7 @@
         scanRunning = true;
         var $start = $overlay.find('#wcmcs-scan-start');
         $start.prop('disabled', true).text(i18n.checking || 'Vérification...');
-        $overlay.find('#wcmcs-scan-toggle-all, input.wcmcs-scan-select, input.wcmcs-scan-filtre, #wcmcs-scan-filters-toggle').prop('disabled', true).css('pointer-events', 'none');
+        $overlay.find('#wcmcs-scan-toggle-all, input.wcmcs-scan-select, input.wcmcs-scan-filtre, #wcmcs-scan-filters-toggle, .wcmcs-scan-pager button, .wcmcs-scan-perpage').prop('disabled', true).css('pointer-events', 'none');
 
         var total = $selected.length;
         var done = 0;
@@ -682,6 +775,9 @@
             $start.prop('disabled', false).text(i18n.scan_start || 'Lancer la vérification');
             $overlay.find('#wcmcs-scan-toggle-all, input.wcmcs-scan-select, input.wcmcs-scan-filtre').prop('disabled', false);
             $overlay.find('#wcmcs-scan-filters-toggle').css('pointer-events', '');
+            $overlay.find('.wcmcs-scan-pager button, .wcmcs-scan-perpage').css('pointer-events', '');
+            $overlay.find('.wcmcs-scan-perpage').prop('disabled', false);
+            updateScanPager($overlay);
             applyScanFilters($overlay);
             $overlay.find('.wcmcs-scan-summary').html(
                 escHtml(done + ' ' + i18n.scan_checked_word) + ' · '

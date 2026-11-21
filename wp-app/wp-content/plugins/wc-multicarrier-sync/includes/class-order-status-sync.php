@@ -297,6 +297,50 @@ class WCMCS_Order_Status_Sync {
 		return is_array( $orders ) ? $orders : [];
 	}
 
+	/**
+	 * Page de colis synchronisés pour le scan manuel (plus récents d'abord).
+	 *
+	 * @param int   $page     Page (≥ 1).
+	 * @param int   $per_page Colis par page.
+	 * @param array $statuses Statuts WC (avec préfixe wc- ou non).
+	 * @return array{orders:array,total:int,pages:int}
+	 */
+	public function get_scan_page( int $page, int $per_page, array $statuses ): array {
+		$empty = [ 'orders' => [], 'total' => 0, 'pages' => 0 ];
+		if ( [] === $statuses ) {
+			return $empty;
+		}
+
+		$res = wc_get_orders( [
+			'status'     => $statuses,
+			'limit'      => max( 1, $per_page ),
+			'page'       => max( 1, $page ),
+			'paginate'   => true,
+			'orderby'    => 'ID',
+			'order'      => 'DESC',
+			'meta_query' => [
+				[
+					'key'   => WCMCS_Order_Meta::META_STATUS,
+					'value' => WCMCS_Order_Meta::STATUS_SYNCED,
+				],
+				[
+					'key'     => WCMCS_Order_Meta::META_TRACKING_ID,
+					'compare' => 'EXISTS',
+				],
+			],
+		] );
+
+		if ( ! is_object( $res ) || ! isset( $res->orders ) ) {
+			return $empty;
+		}
+
+		return [
+			'orders' => (array) $res->orders,
+			'total'  => (int) $res->total,
+			'pages'  => (int) $res->max_num_pages,
+		];
+	}
+
 	// ─────────────────────────────────────────────
 	//  Traitement d'un résultat de suivi
 	// ─────────────────────────────────────────────
