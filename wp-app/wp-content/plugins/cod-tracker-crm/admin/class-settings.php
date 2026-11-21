@@ -53,11 +53,10 @@ class CODCRM_Settings {
 			return CODCRM_URL . $rel . '?v=' . CODCRM_VERSION . '-' . (int) @filemtime( CODCRM_DIR . $rel );
 		};
 		wp_enqueue_style( 'codcrm-settings', $v( 'assets/css/settings.css' ), [], null );
-		if ( 'rules' === self::current_tab() ) {
-			// Sélecteurs WooCommerce (recherche de produits, select2).
-			wp_enqueue_script( 'wc-enhanced-select' );
-			wp_enqueue_style( 'woocommerce_admin_styles' );
-		}
+		// Sélecteurs WooCommerce (recherche de produits, select2) : chargés d'avance, car la
+		// navigation entre onglets se fait sans rechargement de la page.
+		wp_enqueue_script( 'wc-enhanced-select' );
+		wp_enqueue_style( 'woocommerce_admin_styles' );
 		wp_enqueue_script( 'codcrm-settings', $v( 'assets/js/settings.js' ), [ 'jquery' ], null, true );
 	}
 
