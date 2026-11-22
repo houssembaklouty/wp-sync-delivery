@@ -206,8 +206,17 @@ class CODCRM_Work_Queue {
 "; // phpcs:ignore WordPress.Security.EscapeOutput
 			echo $link( max( 1, $paged - 1 ), '‹', 'prev', $paged > 1 ) . "
 "; // phpcs:ignore WordPress.Security.EscapeOutput
-			echo '<span class="paging-input"><span class="tablenav-paging-text">' . esc_html( sprintf( /* translators: 1 page, 2 total */ __( '%1$s sur %2$s', 'cod-tracker-crm' ), number_format_i18n( $paged ), number_format_i18n( $pages ) ) ) . '</span></span>' . "
-";
+			// Champ « numéro de page » (Entrée pour aller à la page), comme les listes WordPress.
+			$hidden = '';
+			foreach ( (array) $_GET as $k => $v ) { // phpcs:ignore WordPress.Security.NonceVerification
+				if ( 'paged' !== $k && is_scalar( $v ) ) {
+					$hidden .= '<input type="hidden" name="' . esc_attr( (string) $k ) . '" value="' . esc_attr( (string) $v ) . '" />';
+				}
+			}
+			echo '<form method="get" class="paging-input" style="display:inline">' . $hidden // phpcs:ignore WordPress.Security.EscapeOutput
+				. '<label for="codcrm-page-' . esc_attr( $which ) . '" class="screen-reader-text">' . esc_html__( 'Page actuelle', 'cod-tracker-crm' ) . '</label>'
+				. '<input class="current-page" id="codcrm-page-' . esc_attr( $which ) . '" type="text" name="paged" value="' . (int) $paged . '" size="' . strlen( (string) $pages ) . '" inputmode="numeric" />'
+				. '<span class="tablenav-paging-text"> ' . esc_html__( 'sur', 'cod-tracker-crm' ) . ' <span class="total-pages">' . esc_html( number_format_i18n( $pages ) ) . '</span></span></form>';
 			echo $link( min( $pages, $paged + 1 ), '›', 'next', $paged < $pages ) . "
 "; // phpcs:ignore WordPress.Security.EscapeOutput
 			echo $link( $pages, '»', 'last', $paged < $pages ); // phpcs:ignore WordPress.Security.EscapeOutput
