@@ -133,9 +133,10 @@ class CODCRM_Work_Queue {
 		$args = [
 			'type'       => 'shop_order',
 			'status'     => array_keys( wc_get_order_statuses() ),
-			'limit'      => self::PER_PAGE,
-			'page'       => $paged,
-			'paginate'   => true,
+			// Pas de COUNT : sur une grosse boutique il coûtait ~50 s (jointures meta). On lit une
+			// ligne de plus pour savoir s'il existe une page suivante.
+			'limit'      => self::PER_PAGE + 1,
+			'offset'     => ( $paged - 1 ) * self::PER_PAGE,
 			'orderby'    => 'ID',
 			'order'      => 'DESC',
 			'meta_query' => $meta, // phpcs:ignore WordPress.DB.SlowDBQuery
@@ -165,9 +166,9 @@ class CODCRM_Work_Queue {
 		$is_manager = current_user_can( CODCRM_Agents::CAP_MANAGE );
 		[ $args ]   = self::build_query( $paged );
 		$res        = wc_get_orders( $args );
-		$orders     = is_object( $res ) ? (array) $res->orders : [];
-		$total      = is_object( $res ) ? (int) $res->total : 0;
-		$pages      = is_object( $res ) ? (int) $res->max_num_pages : 1;
+		$orders     = is_array( $res ) ? $res : [];
+		$has_more   = count( $orders ) > self::PER_PAGE;
+		$orders     = array_slice( $orders, 0, self::PER_PAGE );
 		$tasks      = CODCRM_Tasks::next_open_for_orders( array_map( static function ( $o ) { return $o->get_id(); }, $orders ) );
 
 		$cur_stage = sanitize_text_field( wp_unslash( $_GET['stage'] ?? 'actif' ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -204,7 +205,7 @@ class CODCRM_Work_Queue {
 			echo '</select> ';
 		}
 		echo '<button class="button">' . esc_html__( 'Filtrer', 'cod-tracker-crm' ) . '</button> ';
-		printf( '<span class="codcrm-count"><strong>%d</strong> %s</span></form>', $total, esc_html__( 'colis', 'cod-tracker-crm' ) );
+		printf( '<span class="codcrm-count">%s <strong>%d</strong></span></form>', esc_html__( 'Page', 'cod-tracker-crm' ), $paged );
 
 		echo '<table class="widefat striped codcrm-table"><thead><tr>';
 		foreach ( [ __( 'Commande', 'cod-tracker-crm' ), __( 'Client', 'cod-tracker-crm' ), __( 'Étape', 'cod-tracker-crm' ), __( 'Tentatives', 'cod-tracker-crm' ), __( 'Dernier contact', 'cod-tracker-crm' ), __( 'Prochaine tâche', 'cod-tracker-crm' ), __( 'Agent', 'cod-tracker-crm' ), __( 'Actions', 'cod-tracker-crm' ) ] as $h ) {
@@ -221,15 +222,15 @@ class CODCRM_Work_Queue {
 		}
 		echo '</tbody></table>';
 
-		if ( $pages > 1 ) {
-			echo '<div class="tablenav"><div class="tablenav-pages">' . wp_kses_post( (string) paginate_links( [
-				'base'      => add_query_arg( 'paged', '%#%' ),
-				'format'    => '',
-				'current'   => $paged,
-				'total'     => $pages,
-				'prev_text' => '‹',
-				'next_text' => '›',
-			] ) ) . '</div></div>';
+		if ( $paged > 1 || $has_more ) {
+			echo '<div class="tablenav"><div class="tablenav-pages">';
+			if ( $paged > 1 ) {
+				printf( '<a class="button" href="%s">‹ %s</a> ', esc_url( add_query_arg( 'paged', $paged - 1 ) ), esc_html__( 'Précédent', 'cod-tracker-crm' ) );
+			}
+			if ( $has_more ) {
+				printf( '<a class="button" href="%s">%s ›</a>', esc_url( add_query_arg( 'paged', $paged + 1 ) ), esc_html__( 'Suivant', 'cod-tracker-crm' ) );
+			}
+			echo '</div></div>';
 		}
 		echo '</div>';
 	}
