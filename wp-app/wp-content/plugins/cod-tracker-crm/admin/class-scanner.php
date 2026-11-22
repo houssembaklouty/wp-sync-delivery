@@ -167,14 +167,20 @@ class CODCRM_Scanner {
 		if ( CODCRM_Returns::is_received( $order ) ) {
 			return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Retour déjà reçu.', 'cod-tracker-crm' ) ];
 		}
-		if ( CODCRM_Returns::is_delivered( $order ) ) {
-			return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Colis livré au client : ce n\'est pas un retour.', 'cod-tracker-crm' ) ];
-		}
 		if ( CODCRM_Returns::is_in_return( $order ) ) {
 			return [ 'ok' => true, 'warn' => false, 'msg' => __( 'Retour déclaré par le transporteur — prêt à réceptionner (remise en stock).', 'cod-tracker-crm' ) ];
 		}
-		// Le colis est physiquement là : on l'accepte, mais on le signale.
-		return [ 'ok' => true, 'warn' => true, 'msg' => __( '⚠ Retour pas encore déclaré par le transporteur — réception enregistrée quand même.', 'cod-tracker-crm' ) ];
+		if ( CODCRM_Returns::is_delivered( $order ) ) {
+			return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Colis livré au client : ce n\'est pas un retour.', 'cod-tracker-crm' ) ];
+		}
+		if ( in_array( $status, [ 'cancelled', 'refunded', 'trash', 'failed' ], true ) ) {
+			return [ 'ok' => false, 'warn' => false, 'msg' => sprintf( /* translators: %s statut */ __( 'Statut « %s » : pas un colis retour.', 'cod-tracker-crm' ), wc_get_order_status_name( $status ) ) ];
+		}
+		// Enlevé par le transporteur mais retour pas encore déclaré : on l'accepte en le signalant.
+		if ( CODCRM_Stages::is_picked_stage( (string) $order->get_meta( CODCRM_Event_Collector::META_STAGE ) ) ) {
+			return [ 'ok' => true, 'warn' => true, 'msg' => __( '⚠ Retour pas encore déclaré par le transporteur — réception enregistrée quand même.', 'cod-tracker-crm' ) ];
+		}
+		return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Colis jamais enlevé par le transporteur : il ne peut pas être un retour.', 'cod-tracker-crm' ) ];
 	}
 
 	// ── AJAX ───────────────────────────────────────────────────

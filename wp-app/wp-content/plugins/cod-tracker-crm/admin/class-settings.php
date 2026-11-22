@@ -557,7 +557,7 @@ class CODCRM_Settings {
 				update_option( 'codcrm_stuck_days', max( 1, min( 30, absint( $_POST['stuck_days'] ?? 3 ) ) ) );
 				update_option( 'codcrm_pickup_days', max( 1, min( 30, absint( $_POST['pickup_days'] ?? 2 ) ) ) );
 				update_option( 'codcrm_return_days', max( 1, min( 60, absint( $_POST['return_days'] ?? 5 ) ) ) );
-				delete_transient( CODCRM_Returns::CACHE_COUNT );
+				CODCRM_Returns::recount();
 				update_option( 'codcrm_shop_phone', mb_substr( sanitize_text_field( wp_unslash( $_POST['shop_phone'] ?? '' ) ), 0, 40 ) );
 				break;
 

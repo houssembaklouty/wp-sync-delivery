@@ -14,17 +14,30 @@ class CODCRM_Returns {
 	/** États du transporteur qui annoncent un retour terminé (le colis doit revenir). */
 	const DEFINITIVE = [ CODCRM_Stages::RETOUR_EXPEDITEUR, CODCRM_Stages::RETOUR_DEFINITIF, CODCRM_Stages::RETOUR_PAYE ];
 
+	/** Activité d'expédition : si elle suit une réception, un nouveau cycle (réexpédition) a commencé. */
+	const FORWARD = [
+		CODCRM_Stages::EN_ATTENTE, CODCRM_Stages::A_ENLEVER, CODCRM_Stages::ENLEVES, CODCRM_Stages::AU_DEPOT,
+		CODCRM_Stages::TRANSFERT, CODCRM_Stages::EN_COURS_LIVRAISON, CODCRM_Stages::RENDEZ_VOUS, CODCRM_Stages::SYNCHRONISEE,
+	];
+
+	/** Compteur stocké (option) : recalculé par le cron, jamais pendant le rendu d'une page. */
 	const CACHE_COUNT = 'codcrm_returns_missing_count';
+	const OPT_NOTIFIED = 'codcrm_returns_notified';
+	const RECOUNT_HOOK = 'codcrm_returns_recount';
 
 	public static function init(): void {
 		add_action( 'codcrm_daily', [ __CLASS__, 'daily' ], 20 );
 		add_action( 'admin_notices', [ __CLASS__, 'admin_notice' ] );
+		add_action( self::RECOUNT_HOOK, [ __CLASS__, 'recount' ] );
 		add_action( 'admin_post_codcrm_return_received', [ __CLASS__, 'handle_mark_received' ] );
 
 		// Point de départ de la détection : les retours plus anciens que l'activation de
 		// la fonction ont déjà été traités à la main — on n'alerte pas sur l'historique.
 		if ( false === get_option( 'codcrm_returns_since' ) ) {
 			add_option( 'codcrm_returns_since', current_time( 'mysql' ), '', true );
+		}
+		if ( false === get_option( self::CACHE_COUNT ) ) {
+			self::schedule_recount();
 		}
 	}
 
@@ -36,8 +49,33 @@ class CODCRM_Returns {
 		return (string) get_option( 'codcrm_returns_since', current_time( 'mysql' ) );
 	}
 
+	/** Dernier événement du journal d'une commande : réception de retour / activité d'expédition. */
+	private static function cycle_marks( int $order_id ): array {
+		global $wpdb;
+		$t  = CODCRM_Installer::table_events();
+		$ph = implode( ',', array_fill( 0, count( self::FORWARD ), '%s' ) );
+		$r  = $wpdb->get_row( $wpdb->prepare(
+			"SELECT MAX(CASE WHEN type = 'scan' AND outcome = 'return_received' THEN occurred_at END) AS recv,
+			        MAX(CASE WHEN type IN ('carrier_state','status') AND stage IN ({$ph}) THEN occurred_at END) AS fwd
+			 FROM {$t} WHERE order_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL
+			array_merge( self::FORWARD, [ $order_id ] )
+		) );
+		return [ (string) ( $r->recv ?? '' ), (string) ( $r->fwd ?? '' ) ];
+	}
+
+	/**
+	 * Retour reçu pour le cycle en cours ? Une réception ne vaut que tant qu'aucune activité
+	 * d'expédition ne la suit (sinon le colis est reparti : un nouveau retour est possible).
+	 */
 	public static function is_received( WC_Order $o ): bool {
-		return '1' === (string) $o->get_meta( self::META_RECEIVED );
+		[ $recv, $fwd ] = self::cycle_marks( $o->get_id() );
+		if ( '' === $recv && '1' === (string) $o->get_meta( self::META_RECEIVED ) ) {
+			$recv = (string) $o->get_meta( self::META_RECEIVED_AT ); // marquage sans événement (ancien)
+			if ( '' === $recv ) {
+				return true;
+			}
+		}
+		return '' !== $recv && ( '' === $fwd || $recv > $fwd );
 	}
 
 	/** Le transporteur a annoncé un retour (n'importe quel état « Retour… ») ou statut Retournée ? */
@@ -46,8 +84,11 @@ class CODCRM_Returns {
 		return 0 === strpos( $stage, 'RETOUR_' ) || 'wcmcs-returned' === $o->get_status();
 	}
 
-	/** Livré au client (ne peut pas revenir comme retour). */
+	/** Livré au client. L'étape transporteur prime : un « Terminé » repassé en retour n'est pas livré. */
 	public static function is_delivered( WC_Order $o ): bool {
+		if ( self::is_in_return( $o ) ) {
+			return false;
+		}
 		$stage = (string) $o->get_meta( CODCRM_Event_Collector::META_STAGE );
 		return in_array( $stage, [ CODCRM_Stages::LIVRES, CODCRM_Stages::LIVRES_PAYES ], true )
 			|| in_array( $o->get_status(), [ 'wcmcs-delivered', 'completed' ], true );
@@ -60,6 +101,21 @@ class CODCRM_Returns {
 	 * @return array{ok:bool,restocked:int,msg:string}
 	 */
 	public static function receive( WC_Order $o, int $actor_id, string $source = 'scan' ): array {
+		$lock = 'codcrm_lock_return_' . $o->get_id();
+		if ( ! add_option( $lock, time(), '', false ) ) {
+			if ( (int) get_option( $lock ) > time() - 60 ) {
+				return [ 'ok' => false, 'restocked' => 0, 'msg' => __( 'Retour déjà en cours de traitement.', 'cod-tracker-crm' ) ];
+			}
+			update_option( $lock, time(), false ); // verrou périmé (processus interrompu)
+		}
+		try {
+			return self::do_receive( $o, $actor_id, $source );
+		} finally {
+			delete_option( $lock );
+		}
+	}
+
+	private static function do_receive( WC_Order $o, int $actor_id, string $source ): array {
 		if ( self::is_received( $o ) ) {
 			return [ 'ok' => false, 'restocked' => 0, 'msg' => __( 'Retour déjà reçu.', 'cod-tracker-crm' ) ];
 		}
@@ -107,7 +163,7 @@ class CODCRM_Returns {
 			CODCRM_Cash::set_status( $o->get_id(), CODCRM_Cash::RETURNED, $actor_id, __( 'Colis retour reçu', 'cod-tracker-crm' ) );
 		}
 
-		delete_transient( self::CACHE_COUNT );
+		self::schedule_recount();
 		do_action( 'codcrm_return_received', $o, $restocked, $source );
 
 		return [ 'ok' => true, 'restocked' => $restocked, 'msg' => $note ];
@@ -130,48 +186,77 @@ class CODCRM_Returns {
 
 	// ── Retours non reçus (colis potentiellement perdus) ───────
 
-	/** Date du premier retour définitif d'une commande ('' si aucun). */
+	/** Début du cycle de retour en cours : 1er retour définitif postérieur à la dernière expédition. */
 	public static function started_at( int $order_id ): string {
 		global $wpdb;
-		$t  = CODCRM_Installer::table_events();
-		$ph = implode( ',', array_fill( 0, count( self::DEFINITIVE ), '%s' ) );
+		$t   = CODCRM_Installer::table_events();
+		$ph  = implode( ',', array_fill( 0, count( self::DEFINITIVE ), '%s' ) );
+		[ , $fwd ] = self::cycle_marks( $order_id );
 		return (string) $wpdb->get_var( $wpdb->prepare(
-			"SELECT MIN(occurred_at) FROM {$t} WHERE order_id = %d AND type IN ('carrier_state','status') AND stage IN ({$ph})", // phpcs:ignore WordPress.DB.PreparedSQL
-			array_merge( [ $order_id ], self::DEFINITIVE )
+			"SELECT MIN(occurred_at) FROM {$t} WHERE order_id = %d AND type IN ('carrier_state','status') AND stage IN ({$ph}) AND occurred_at > %s", // phpcs:ignore WordPress.DB.PreparedSQL
+			array_merge( [ $order_id ], self::DEFINITIVE, [ '' === $fwd ? '0000-00-00 00:00:00' : $fwd ] )
 		) );
 	}
 
 	/**
 	 * Retours définitifs annoncés depuis plus de N jours et jamais reçus à la boutique.
+	 * Présélection en SQL (une requête) ; WooCommerce n'est sollicité que pour les candidats.
 	 *
+	 * @param array $filter Optionnel : carrier (slug), agent (id | 'none' | 'all'), state (billing_state).
 	 * @return array<int,array{id:int,started:string,days:int,carrier:string,agent:int}>
 	 */
-	public static function missing( int $limit = 200 ): array {
+	public static function missing( int $limit = 200, array $filter = [] ): array {
 		global $wpdb;
 		$t      = CODCRM_Installer::table_events();
-		$ph     = implode( ',', array_fill( 0, count( self::DEFINITIVE ), '%s' ) );
+		$def    = implode( ',', array_fill( 0, count( self::DEFINITIVE ), '%s' ) );
+		$fwd    = implode( ',', array_fill( 0, count( self::FORWARD ), '%s' ) );
 		$cutoff = wp_date( 'Y-m-d H:i:s', time() - self::days() * DAY_IN_SECONDS );
 
 		$rows = $wpdb->get_results( $wpdb->prepare(
-			"SELECT order_id, MIN(occurred_at) AS started FROM {$t}
-			 WHERE type IN ('carrier_state','status') AND stage IN ({$ph})
-			 GROUP BY order_id HAVING started <= %s AND started >= %s
-			 ORDER BY started ASC", // phpcs:ignore WordPress.DB.PreparedSQL
-			array_merge( self::DEFINITIVE, [ $cutoff, self::since() ] )
+			"SELECT order_id,
+			        MIN(CASE WHEN type IN ('carrier_state','status') AND stage IN ({$def}) THEN occurred_at END) AS first_def,
+			        MAX(CASE WHEN type IN ('carrier_state','status') AND stage IN ({$def}) THEN occurred_at END) AS last_def,
+			        MAX(CASE WHEN type = 'scan' AND outcome = 'return_received' THEN occurred_at END) AS recv,
+			        MAX(CASE WHEN type IN ('carrier_state','status') AND stage IN ({$fwd}) THEN occurred_at END) AS fwd
+			 FROM {$t} WHERE type IN ('carrier_state','status','scan')
+			 GROUP BY order_id
+			 HAVING first_def IS NOT NULL AND first_def <= %s AND last_def >= %s
+			    AND (fwd IS NULL OR last_def > fwd)
+			    AND (recv IS NULL OR (fwd IS NOT NULL AND recv <= fwd))
+			 ORDER BY first_def ASC
+			 LIMIT 2000", // phpcs:ignore WordPress.DB.PreparedSQL
+			array_merge( self::DEFINITIVE, self::DEFINITIVE, self::FORWARD, [ $cutoff, self::since() ] )
 		) );
 
-		$out = [];
+		$out   = [];
+		$since = self::since();
 		foreach ( (array) $rows as $r ) {
+			$started = self::started_at( (int) $r->order_id );
+			if ( '' === $started || $started > $cutoff || $started < $since ) {
+				continue;
+			}
 			$o = wc_get_order( (int) $r->order_id );
-			if ( ! $o || self::is_received( $o ) || self::is_delivered( $o ) || in_array( $o->get_status(), [ 'cancelled', 'refunded', 'trash' ], true ) ) {
+			if ( ! $o || self::is_delivered( $o ) || in_array( $o->get_status(), [ 'cancelled', 'refunded', 'trash' ], true ) ) {
+				continue;
+			}
+			$carrier = (string) $o->get_meta( '_wcmcs_carrier_slug' );
+			$agent   = CODCRM_Agents::agent_of( $o );
+			if ( ! empty( $filter['carrier'] ) && $filter['carrier'] !== $carrier ) {
+				continue;
+			}
+			$want = (string) ( $filter['agent'] ?? 'all' );
+			if ( 'none' === $want ? 0 !== $agent : ( ctype_digit( $want ) && (int) $want !== $agent ) ) {
+				continue;
+			}
+			if ( ! empty( $filter['state'] ) && $filter['state'] !== $o->get_billing_state() ) {
 				continue;
 			}
 			$out[] = [
 				'id'      => (int) $r->order_id,
-				'started' => (string) $r->started,
-				'days'    => (int) floor( ( time() - (int) strtotime( get_gmt_from_date( $r->started ) . ' UTC' ) ) / DAY_IN_SECONDS ),
-				'carrier' => (string) $o->get_meta( '_wcmcs_carrier_slug' ),
-				'agent'   => CODCRM_Agents::agent_of( $o ),
+				'started' => $started,
+				'days'    => (int) floor( ( time() - (int) strtotime( get_gmt_from_date( $started ) . ' UTC' ) ) / DAY_IN_SECONDS ),
+				'carrier' => $carrier,
+				'agent'   => $agent,
 			];
 			if ( count( $out ) >= $limit ) {
 				break;
@@ -185,20 +270,29 @@ class CODCRM_Returns {
 		return (array) apply_filters( 'codcrm_returns_missing', $out );
 	}
 
+	/** Compteur stocké — lu partout (notice, carte) ; recalculé par le cron / après une réception. */
 	public static function count_missing(): int {
-		$n = get_transient( self::CACHE_COUNT );
-		if ( false === $n ) {
-			$n = count( self::missing( 1000 ) );
-			set_transient( self::CACHE_COUNT, $n, HOUR_IN_SECONDS );
-		}
-		return (int) $n;
+		return (int) get_option( self::CACHE_COUNT, 0 );
 	}
 
-	/** Tâche quotidienne : tâches agents + email récapitulatif au propriétaire. */
+	public static function recount(): int {
+		$n = count( self::missing( 1000 ) );
+		update_option( self::CACHE_COUNT, $n, true );
+		return $n;
+	}
+
+	private static function schedule_recount(): void {
+		if ( ! wp_next_scheduled( self::RECOUNT_HOOK ) ) {
+			wp_schedule_single_event( time() + 60, self::RECOUNT_HOOK );
+		}
+	}
+
+	/** Tâche quotidienne : tâches agents + email récapitulatif (seulement s'il y a du nouveau). */
 	public static function daily(): void {
 		$rows = self::missing( 500 );
-		set_transient( self::CACHE_COUNT, count( $rows ), HOUR_IN_SECONDS );
+		update_option( self::CACHE_COUNT, count( $rows ), true );
 		if ( ! $rows ) {
+			update_option( self::OPT_NOTIFIED, [], false );
 			return;
 		}
 
@@ -212,19 +306,25 @@ class CODCRM_Returns {
 			);
 		}
 
+		// Un seul email par colis : on ne renvoie que les nouveaux (les autres restent en rappel).
+		$notified = array_map( 'intval', (array) get_option( self::OPT_NOTIFIED, [] ) );
+		$ids      = array_column( $rows, 'id' );
+		$new      = array_diff( $ids, $notified );
+		update_option( self::OPT_NOTIFIED, $ids, false );
 		$to = (string) get_option( 'admin_email' );
-		if ( '' === $to ) {
+		if ( ! $new || '' === $to ) {
 			return;
 		}
 		$lines = [];
 		foreach ( array_slice( $rows, 0, 50 ) as $r ) {
 			$lines[] = sprintf(
-				'#%d — %s — retour annoncé le %s (%d j) — agent : %s',
+				'%s#%d — %s — retour annoncé le %s (%d j) — agent : %s',
+				in_array( $r['id'], $new, true ) ? '[NOUVEAU] ' : '',
 				$r['id'],
 				'' !== $r['carrier'] ? $r['carrier'] : '?',
 				mysql2date( 'd/m/Y', $r['started'] ),
 				$r['days'],
-				CODCRM_Agents::agent_name( $r['agent'] ) ?: '—'
+				CODCRM_Agents::agent_name( $r['agent'] ) ?: __( 'non assigné', 'cod-tracker-crm' )
 			);
 		}
 		if ( count( $rows ) > 50 ) {
@@ -232,7 +332,7 @@ class CODCRM_Returns {
 		}
 		wp_mail(
 			$to,
-			sprintf( '[COD] %d colis retour non reçu(s) depuis plus de %d jours', count( $rows ), self::days() ),
+			sprintf( '[COD] %d nouveau(x) colis retour non reçu(s) (%d au total, > %d jours)', count( $new ), count( $rows ), self::days() ),
 			"Ces colis ont été déclarés retournés par le transporteur mais n'ont pas été scannés à leur retour à la boutique.\n"
 			. "Vérifiez auprès du transporteur (colis possiblement perdu).\n\n"
 			. implode( "\n", $lines )

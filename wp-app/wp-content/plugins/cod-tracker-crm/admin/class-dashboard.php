@@ -108,6 +108,9 @@ class CODCRM_Dashboard {
 			return;
 		}
 
+		// Retours non reçus : suivent les filtres transporteur / agent / gouvernorat, pas la période.
+		$missing_returns = CODCRM_Returns::missing( 1000, $f );
+
 		// Cartes.
 		$on_basis = sprintf( /* translators: %d nombre de colis */ __( 'colis enlevés et clôturés (%d)', 'cod-tracker-crm' ), $o['delivered'] + $o['returned'] );
 		$cards = [
@@ -115,7 +118,7 @@ class CODCRM_Dashboard {
 			[ __( 'Enlevés par le transporteur', 'cod-tracker-crm' ), (string) $o['picked'], __( 'base de tous les taux', 'cod-tracker-crm' ), '#1f3a7a' ],
 			[ __( 'Non enlevés', 'cod-tracker-crm' ), (string) $o['not_picked'], sprintf( _n( '%d depuis plus de %d j', '%d depuis plus de %d j', count( $k['pickup'] ), 'cod-tracker-crm' ), count( $k['pickup'] ), CODCRM_KPIs::pickup_days() ), '#e67e22' ],
 			[ __( 'En transit', 'cod-tracker-crm' ), (string) $o['open'], __( 'enlevés, pas encore clôturés', 'cod-tracker-crm' ), '#0b2a3a' ],
-			[ __( 'Retours non reçus', 'cod-tracker-crm' ), (string) CODCRM_Returns::count_missing(), sprintf( /* translators: %d jours */ __( 'retour annoncé il y a plus de %d j', 'cod-tracker-crm' ), CODCRM_Returns::days() ), '#c0392b' ],
+			[ __( 'Retours non reçus', 'cod-tracker-crm' ), (string) count( $missing_returns ), sprintf( /* translators: %d jours */ __( 'retour annoncé il y a plus de %d j, toute période', 'cod-tracker-crm' ), CODCRM_Returns::days() ), '#c0392b' ],
 			[ __( 'Livrés', 'cod-tracker-crm' ), (string) $o['delivered'], '', '#00a651' ],
 			[ __( 'Retournés', 'cod-tracker-crm' ), (string) $o['returned'], '', '#c0392b' ],
 			[ __( 'Taux de livraison', 'cod-tracker-crm' ), self::pct( $o['delivery_rate'] ), $on_basis, '#00a651' ],
@@ -167,7 +170,7 @@ class CODCRM_Dashboard {
 		echo '</tr></tbody></table>';
 
 		// Retours définitifs annoncés mais jamais revenus à la boutique (colis potentiellement perdus).
-		self::render_missing_returns();
+		self::render_missing_returns( $missing_returns );
 
 		// Colis non enlevés par la société de livraison.
 		printf( '<h2>%s</h2>', esc_html( sprintf( /* translators: %d jours */ __( 'En attente d\'enlèvement depuis plus de %d jours', 'cod-tracker-crm' ), CODCRM_KPIs::pickup_days() ) ) );
@@ -221,8 +224,7 @@ class CODCRM_Dashboard {
 	}
 
 	/** Section « Retours non reçus » avec bouton « Marquer reçu ». */
-	private static function render_missing_returns(): void {
-		$rows = CODCRM_Returns::missing( 200 );
+	private static function render_missing_returns( array $rows ): void {
 		echo '<h2 id="codcrm-returns">' . esc_html( sprintf( /* translators: %d jours */ __( 'Retours non reçus (plus de %d jours après le retour annoncé)', 'cod-tracker-crm' ), CODCRM_Returns::days() ) ) . '</h2>';
 		if ( isset( $_GET['return_marked'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			echo '<div class="notice notice-success inline"><p>' . esc_html( absint( $_GET['return_marked'] ) ? __( 'Retour marqué comme reçu (stock réintégré si applicable).', 'cod-tracker-crm' ) : __( 'Retour déjà reçu ou introuvable.', 'cod-tracker-crm' ) ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification

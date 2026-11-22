@@ -37,8 +37,10 @@ Chaque onglet a son formulaire : enregistrer un onglet ne modifie jamais les aut
 ## Colis retournés : réception, stock et colis perdus
 Le scan d'enlèvement se fait à l'agence du transporteur (la boutique n'en a pas la visibilité) : le scanner propose donc
 **« ↩ Retour reçu »** quand un colis retourné revient à la boutique. Le scan est vérifié avant validation :
-retour déclaré par le transporteur → prêt ; retour pas encore déclaré → accepté avec avertissement (le colis est bien là) ;
-colis livré au client, déjà reçu, sans code-barres ou inconnu → refusé. À la validation : le colis est marqué reçu, les
+retour déclaré par le transporteur → prêt (même si la commande est « Terminée ») ; colis enlevé mais retour pas encore
+déclaré → accepté avec avertissement ; colis livré au client, jamais enlevé / pas encore expédié, annulé, déjà reçu,
+sans code-barres ou inconnu → refusé. Une réception vaut pour un **cycle** : si le colis est réexpédié puis revient
+une seconde fois, il peut être scanné de nouveau. Deux scans simultanés du même colis ne remettent le stock qu'une fois (verrou). À la validation : le colis est marqué reçu, les
 **articles sont remis en stock** (uniquement les produits qui gèrent leur stock et seulement les quantités réellement
 déduites : jamais de double remise en stock), la timeline et une note de commande le tracent, la ligne cash passe à
 « Retourné ». Le statut WooCommerce ne change pas (aucun email client).
@@ -46,10 +48,10 @@ déduites : jamais de double remise en stock), la timeline et une note de comman
 **Détection des colis perdus** : si N jours (Réglages → Général, défaut 5) après un retour **définitif** annoncé par le
 transporteur (Retour expéditeur / définitif / payé, ou statut « Retournée ») le colis n'a pas été scanné « Retour reçu » :
 une tâche « Retour non reçu » est créée pour l'agent assigné (dédoublonnée), un **email récapitulatif quotidien** part
-vers l'administrateur (une seule fois par jour, liste de 50 colis maximum), une **carte, une liste et une notice** apparaissent
+vers l'administrateur (uniquement quand de **nouveaux** colis manquent, liste de 50 colis maximum ; les colis sans agent sont signalés « non assigné »), une **carte, une liste et une notice** apparaissent
 dans le tableau de bord / l'administration, avec un bouton « Marquer reçu » pour un colis rentré sans scan. Seuls les
-retours annoncés après l'activation de la fonction sont surveillés (l'historique n'est pas signalé). Filtre
-`codcrm_returns_missing` pour ajuster la liste.
+retours annoncés après l'activation de la fonction sont surveillés (l'historique n'est pas signalé). La carte et la liste du tableau de bord suivent les filtres transporteur / agent / gouvernorat (pas la période). Le compteur
+est stocké et recalculé par le cron : aucune requête lourde à l'affichage des pages. Filtre `codcrm_returns_missing` pour ajuster la liste.
 
 ## Couleurs des statuts
 Même logique que MultiCarrier Sync : une couleur par défaut par statut, personnalisable (sélecteur de couleur, aperçu en
