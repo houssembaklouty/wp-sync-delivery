@@ -134,13 +134,16 @@ class CODCRM_Bulk_UI {
 		$paged  = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$filter = $wa ? "status IN ('pending','sent')" : "status IN ('failed','skipped','pending','sending')";
 		$t      = CODCRM_Bulk::table_items();
-		$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT order_id, status, error FROM {$t} WHERE job_id = %d AND {$filter} ORDER BY id ASC LIMIT %d OFFSET %d", $id, self::PER_PAGE + 1, ( $paged - 1 ) * self::PER_PAGE ) ); // phpcs:ignore WordPress.DB.PreparedSQL
-		$more   = count( $rows ) > self::PER_PAGE;
-		$rows   = array_slice( $rows, 0, self::PER_PAGE );
+		$total  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE job_id = %d AND {$filter}", $id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$paged  = min( $paged, max( 1, (int) ceil( $total / self::PER_PAGE ) ) );
+		$rows   = $wpdb->get_results( $wpdb->prepare( "SELECT order_id, status, error FROM {$t} WHERE job_id = %d AND {$filter} ORDER BY id ASC LIMIT %d OFFSET %d", $id, self::PER_PAGE, ( $paged - 1 ) * self::PER_PAGE ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 
 		echo '<h3>' . esc_html( $wa ? __( 'Colis à contacter', 'cod-tracker-crm' ) : __( 'En attente, échecs et ignorés', 'cod-tracker-crm' ) ) . '</h3>';
 		if ( $wa ) {
 			echo '<p class="description">' . esc_html__( 'WhatsApp ne permet pas l\'envoi automatique : cliquez sur chaque ligne ; le message prêt s\'ouvre dans WhatsApp et le contact est tracé dans la chronologie.', 'cod-tracker-crm' ) . '</p>';
+		}
+		if ( $rows ) {
+			CODCRM_Work_Queue::tablenav( $total, self::PER_PAGE, $paged, 'top' );
 		}
 		if ( ! $rows ) {
 			echo '<p>' . esc_html__( 'Rien à afficher.', 'cod-tracker-crm' ) . '</p>';
@@ -163,16 +166,6 @@ class CODCRM_Bulk_UI {
 			}
 			echo '</tbody></table>';
 		}
-		if ( $paged > 1 || $more ) {
-			$base = admin_url( 'admin.php?page=' . self::PAGE . '&job=' . $id );
-			echo '<p>';
-			if ( $paged > 1 ) {
-				printf( '<a class="button" href="%s">‹ %s</a> ', esc_url( add_query_arg( 'paged', $paged - 1, $base ) ), esc_html__( 'Précédent', 'cod-tracker-crm' ) );
-			}
-			if ( $more ) {
-				printf( '<a class="button" href="%s">%s ›</a>', esc_url( add_query_arg( 'paged', $paged + 1, $base ) ), esc_html__( 'Suivant', 'cod-tracker-crm' ) );
-			}
-			echo '</p>';
-		}
+		CODCRM_Work_Queue::tablenav( $total, self::PER_PAGE, $paged, 'bottom' );
 	}
 }
