@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class CODCRM_Installer {
 
-	const DB_VERSION = '4';
+	const DB_VERSION = '6';
 
 	public static function activate(): void {
 		self::create_tables();
@@ -110,7 +110,41 @@ class CODCRM_Installer {
 			KEY status_carrier (status, carrier_slug)
 		) {$charset};";
 
+		// Envois groupés : tâches et éléments (file d'attente).
+		$jobs  = CODCRM_Bulk::table_jobs();
+		$items = CODCRM_Bulk::table_items();
+		$sql_jobs = "CREATE TABLE {$jobs} (
+			id          BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			created_by  BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+			channel     VARCHAR(12)         NOT NULL DEFAULT 'sms',
+			context     VARCHAR(40)         NOT NULL DEFAULT '',
+			lang        VARCHAR(6)          NOT NULL DEFAULT 'auto',
+			status      VARCHAR(12)         NOT NULL DEFAULT 'running',
+			total       INT(10) UNSIGNED    NOT NULL DEFAULT 0,
+			note        VARCHAR(255)        NOT NULL DEFAULT '',
+			filter      TEXT,
+			created_at  DATETIME            NOT NULL,
+			finished_at DATETIME            DEFAULT NULL,
+			PRIMARY KEY (id),
+			KEY status_channel (status, channel)
+		) {$charset};";
+		// status : pending | sending | sent | failed | skipped.
+		$sql_items = "CREATE TABLE {$items} (
+			id           BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			job_id       BIGINT(20) UNSIGNED NOT NULL,
+			order_id     BIGINT(20) UNSIGNED NOT NULL,
+			status       VARCHAR(10)         NOT NULL DEFAULT 'pending',
+			tries        TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
+			error        VARCHAR(255)        NOT NULL DEFAULT '',
+			processed_at DATETIME            DEFAULT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY job_order (job_id, order_id),
+			KEY job_status (job_id, status)
+		) {$charset};";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql_jobs );
+		dbDelta( $sql_items );
 		dbDelta( $sql );
 		dbDelta( $sql_tasks );
 		dbDelta( $sql_cash );

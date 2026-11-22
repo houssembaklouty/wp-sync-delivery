@@ -417,6 +417,9 @@ class CODCRM_Templates {
 		$lang    = sanitize_key( wp_unslash( $_POST['lang'] ?? '' ) );
 		$channel = sanitize_key( wp_unslash( $_POST['channel'] ?? '' ) );
 
+		if ( 'auto' === $lang ) {
+			$lang = self::detect_lang( $o ); // envoi groupé : langue propre à chaque client.
+		}
 		if ( ! isset( self::contexts()[ $ctx ] ) || ! in_array( $lang, self::LANGS, true ) || ! in_array( $channel, self::CHANNELS, true ) ) {
 			wp_send_json_error( [ 'message' => __( 'Modèle invalide.', 'cod-tracker-crm' ) ] );
 		}

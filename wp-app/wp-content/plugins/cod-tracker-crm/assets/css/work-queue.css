@@ -20,3 +20,10 @@
 .codcrm-msg-count.is-long { color: #b32d2e; font-weight: 600; }
 .codcrm-muted { color: #8c8f94; }
 .codcrm-modal-msg textarea { font-size: 14px; line-height: 1.5; }
+
+/* Sélection / envoi groupé */
+.codcrm-bulkbar { margin: 8px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.codcrm-table .check-column { width: 28px; padding: 8px 0 0 8px; }
+.codcrm-bar { background: #e5e5e5; border-radius: 4px; height: 12px; overflow: hidden; max-width: 520px; }
+.codcrm-bar span { display: block; height: 100%; transition: width .4s; }
+.b-prev { width: 100%; font-size: 14px; background: #f6f7f7; }

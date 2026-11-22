@@ -48,6 +48,9 @@ class CODCRM_Work_Queue {
 			'nonce'    => wp_create_nonce( 'codcrm' ),
 			'outcomes' => CODCRM_Contacts::call_outcomes(),
 			'orderScreen' => $order_scr,
+			'contexts'    => array_diff_key( CODCRM_Templates::contexts(), [ 'custom' => 1 ] ),
+			'sms'         => CODCRM_SMS_Gateway::is_configured(),
+			'bulkMax'     => CODCRM_Bulk::MAX_ORDERS,
 			'i18n'     => [
 				'call_title'  => __( 'Résultat de l\'appel', 'cod-tracker-crm' ),
 				'outcome'     => __( 'Résultat', 'cod-tracker-crm' ),
@@ -55,6 +58,14 @@ class CODCRM_Work_Queue {
 				'callback_at' => __( 'Rappeler le', 'cod-tracker-crm' ),
 				'note'        => __( 'Commentaire', 'cod-tracker-crm' ),
 				'save'        => __( 'Enregistrer', 'cod-tracker-crm' ),
+				'bulk_title'  => __( 'Message groupé', 'cod-tracker-crm' ),
+				'bulk_count'  => __( 'colis', 'cod-tracker-crm' ),
+				'bulk_auto'   => __( 'Langue de chaque client (auto)', 'cod-tracker-crm' ),
+				'bulk_preview' => __( 'Aperçu (premier colis sélectionné)', 'cod-tracker-crm' ),
+				'bulk_sms_info' => __( 'Les SMS partent en arrière-plan, par lots ; vous pouvez fermer la page et suivre la progression dans « Envois groupés ».', 'cod-tracker-crm' ),
+				'bulk_wa_info'  => __( 'WhatsApp ne permet pas l\'envoi automatique : une liste de liens à ouvrir un par un sera créée.', 'cod-tracker-crm' ),
+				'bulk_create' => __( 'Créer l\'envoi', 'cod-tracker-crm' ),
+				'bulk_confirm' => __( 'Créer cet envoi groupé ?', 'cod-tracker-crm' ),
 				'msg_title'   => __( 'Envoyer un message', 'cod-tracker-crm' ),
 				'msg_channel' => __( 'Canal', 'cod-tracker-crm' ),
 				'msg_lang'    => __( 'Langue', 'cod-tracker-crm' ),
@@ -150,6 +161,86 @@ class CODCRM_Work_Queue {
 		return [ $args, $agent_for_tasks ];
 	}
 
+	/** Identifiants de tous les colis du filtre en cours (envoi groupé « tous les résultats », lu par tranches : la requête complète est lente). */
+	public static function filtered_ids( int $limit, int $offset = 0 ): array {
+		$fast = self::filtered_ids_sql( $limit, $offset );
+		if ( null !== $fast ) {
+			return $fast;
+		}
+		[ $args ]       = self::build_query( 1 );
+		$args['limit']  = $limit;
+		$args['offset'] = $offset;
+		$args['return'] = 'ids';
+		$ids            = wc_get_orders( $args );
+		return is_array( $ids ) ? array_map( 'intval', $ids ) : [];
+	}
+
+	/**
+	 * Même filtre que build_query() en SQL direct (EXISTS sur les métadonnées indexées) : ~100× plus
+	 * rapide que wc_get_orders() avec ses jointures. Uniquement si les commandes sont dans les tables
+	 * HPOS ; sinon null (repli sur wc_get_orders).
+	 *
+	 * @return int[]|null
+	 */
+	private static function filtered_ids_sql( int $limit, int $offset ): ?array {
+		if ( ! class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) || ! \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			return null;
+		}
+		global $wpdb;
+		$o = $wpdb->prefix . 'wc_orders';
+		$m = $wpdb->prefix . 'wc_orders_meta';
+
+		$is_manager = current_user_can( CODCRM_Agents::CAP_MANAGE );
+		$stage = sanitize_text_field( wp_unslash( $_GET['stage'] ?? 'actif' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$flt   = sanitize_key( wp_unslash( $_GET['flt'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$agent = $is_manager ? sanitize_text_field( wp_unslash( $_GET['agent'] ?? 'all' ) ) : (string) get_current_user_id(); // phpcs:ignore WordPress.Security.NonceVerification
+
+		$has = static function ( string $key, string $extra = '' ) use ( $wpdb, $m, $o ): string {
+			return $wpdb->prepare( "EXISTS (SELECT 1 FROM {$m} x WHERE x.order_id = {$o}.id AND x.meta_key = %s", $key ) . ( $extra ? " AND {$extra}" : '' ) . ')'; // phpcs:ignore WordPress.DB.PreparedSQL
+		};
+
+		$statuses = array_keys( wc_get_order_statuses() );
+		$where    = [
+			"{$o}.type = 'shop_order'",
+			$wpdb->prepare( "{$o}.status IN (" . implode( ',', array_fill( 0, count( $statuses ), '%s' ) ) . ')', $statuses ), // phpcs:ignore WordPress.DB.PreparedSQL
+			'(' . implode( ' OR ', [
+				$has( '_wcmcs_sync_status', $wpdb->prepare( 'x.meta_value = %s', 'synced' ) ),
+				$has( CODCRM_Agents::META_AGENT ),
+				$has( CODCRM_Dispatcher::META_WAITING, $wpdb->prepare( 'x.meta_value = %s', '1' ) ),
+			] ) . ')',
+		];
+
+		$stage_key = CODCRM_Event_Collector::META_STAGE;
+		if ( 'actif' === $stage ) {
+			$term    = CODCRM_Stages::TERMINAL;
+			$where[] = 'NOT ' . $has( $stage_key, $wpdb->prepare( 'x.meta_value IN (' . implode( ',', array_fill( 0, count( $term ), '%s' ) ) . ')', $term ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		} elseif ( 'tous' !== $stage && isset( CODCRM_Stages::all()[ $stage ] ) ) {
+			$where[] = $has( $stage_key, $wpdb->prepare( 'x.meta_value = %s', $stage ) );
+		}
+
+		$agent_for_tasks = 0;
+		if ( 'none' === $agent ) {
+			$where[] = 'NOT ' . $has( CODCRM_Agents::META_AGENT );
+		} elseif ( ctype_digit( $agent ) && (int) $agent > 0 ) {
+			$where[]         = $has( CODCRM_Agents::META_AGENT, $wpdb->prepare( 'x.meta_value = %s', (string) (int) $agent ) );
+			$agent_for_tasks = (int) $agent;
+		}
+
+		if ( 'failed' === $flt ) {
+			$where[] = $has( CODCRM_Attempts::META_FAILED, 'CAST(x.meta_value AS SIGNED) >= 1' );
+		} elseif ( 'waiting' === $flt ) {
+			$where[] = $has( CODCRM_Dispatcher::META_WAITING, $wpdb->prepare( 'x.meta_value = %s', '1' ) );
+		} elseif ( 'risk' === $flt ) {
+			$where[] = $has( CODCRM_Attempts::META_RISK, $wpdb->prepare( 'x.meta_value = %s', '1' ) );
+		} elseif ( in_array( $flt, [ 'due', 'overdue' ], true ) ) {
+			$ids     = array_map( 'intval', CODCRM_Tasks::order_ids_due( 'due' === $flt ? 'today' : 'overdue', $agent_for_tasks ) ) ?: [ 0 ];
+			$where[] = "{$o}.id IN (" . implode( ',', $ids ) . ')';
+		}
+
+		$sql = "SELECT {$o}.id FROM {$o} WHERE " . implode( ' AND ', $where ) . $wpdb->prepare( " ORDER BY {$o}.id DESC LIMIT %d OFFSET %d", $limit, $offset ); // phpcs:ignore WordPress.DB.PreparedSQL
+		return array_map( 'intval', (array) $wpdb->get_col( $sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
 	/** Numéro tunisien sur 8 chiffres (préfixe 216 / 00216 retiré), '' si invalide. */
 	public static function norm_phone( string $phone ): string {
 		$d = preg_replace( '/\D+/', '', $phone );
@@ -164,9 +255,9 @@ class CODCRM_Work_Queue {
 
 		$paged      = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$is_manager = current_user_can( CODCRM_Agents::CAP_MANAGE );
-		[ $args ]   = self::build_query( $paged );
-		$res        = wc_get_orders( $args );
-		$orders     = is_array( $res ) ? $res : [];
+		// Identifiants par SQL direct (instantané), puis chargement des seules 25 commandes affichées.
+		$ids        = self::filtered_ids( self::PER_PAGE + 1, ( $paged - 1 ) * self::PER_PAGE );
+		$orders     = array_values( array_filter( array_map( 'wc_get_order', $ids ) ) );
 		$has_more   = count( $orders ) > self::PER_PAGE;
 		$orders     = array_slice( $orders, 0, self::PER_PAGE );
 		$tasks      = CODCRM_Tasks::next_open_for_orders( array_map( static function ( $o ) { return $o->get_id(); }, $orders ) );
@@ -207,14 +298,20 @@ class CODCRM_Work_Queue {
 		echo '<button class="button">' . esc_html__( 'Filtrer', 'cod-tracker-crm' ) . '</button> ';
 		printf( '<span class="codcrm-count">%s <strong>%d</strong></span></form>', esc_html__( 'Page', 'cod-tracker-crm' ), $paged );
 
-		echo '<table class="widefat striped codcrm-table"><thead><tr>';
+		// Barre d'actions groupées (sélection par cases à cocher).
+		echo '<div class="codcrm-bulkbar"><strong class="codcrm-selcount">0</strong> ' . esc_html__( 'sélectionné(s)', 'cod-tracker-crm' )
+			. ' <button type="button" class="button button-primary codcrm-bulk-open" disabled>✉ ' . esc_html__( 'Message groupé', 'cod-tracker-crm' ) . '</button>'
+			. ' <a href="#" class="codcrm-sel-all" style="display:none">' . esc_html( sprintf( /* translators: %d plafond */ __( 'Sélectionner tous les résultats du filtre (jusqu\'à %d)', 'cod-tracker-crm' ), CODCRM_Bulk::MAX_ORDERS ) ) . '</a>'
+			. ' <a href="' . esc_url( admin_url( 'admin.php?page=' . CODCRM_Bulk_UI::PAGE ) ) . '">' . esc_html__( 'Voir les envois groupés', 'cod-tracker-crm' ) . '</a></div>';
+
+		echo '<table class="widefat striped codcrm-table"><thead><tr><td class="check-column"><input type="checkbox" class="codcrm-cb-all" /></td>';
 		foreach ( [ __( 'Commande', 'cod-tracker-crm' ), __( 'Client', 'cod-tracker-crm' ), __( 'Étape', 'cod-tracker-crm' ), __( 'Tentatives', 'cod-tracker-crm' ), __( 'Dernier contact', 'cod-tracker-crm' ), __( 'Prochaine tâche', 'cod-tracker-crm' ), __( 'Agent', 'cod-tracker-crm' ), __( 'Actions', 'cod-tracker-crm' ) ] as $h ) {
 			echo '<th>' . esc_html( $h ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
 
 		if ( ! $orders ) {
-			echo '<tr><td colspan="8">' . esc_html__( 'Aucun colis à afficher avec ces filtres.', 'cod-tracker-crm' ) . '</td></tr>';
+			echo '<tr><td colspan="9">' . esc_html__( 'Aucun colis à afficher avec ces filtres.', 'cod-tracker-crm' ) . '</td></tr>';
 		}
 
 		foreach ( $orders as $order ) {
@@ -247,7 +344,7 @@ class CODCRM_Work_Queue {
 		$client  = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
 		$overdue = $task && $task->due_at < current_time( 'mysql' );
 
-		echo '<tr data-order="' . (int) $id . '">';
+		echo '<tr data-order="' . (int) $id . '"><th class="check-column"><input type="checkbox" class="codcrm-cb" value="' . (int) $id . '"' . ( $phone8 ? '' : ' disabled' ) . ' /></th>';
 		printf( '<td><a href="%s"><strong>#%s</strong></a><br><small>%s · %s</small></td>',
 			esc_url( $order->get_edit_order_url() ),
 			esc_html( $order->get_order_number() ),

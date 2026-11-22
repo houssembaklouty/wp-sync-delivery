@@ -53,6 +53,22 @@ dans le tableau de bord / l'administration, avec un bouton « Marquer reçu » p
 retours annoncés après l'activation de la fonction sont surveillés (l'historique n'est pas signalé). La carte et la liste du tableau de bord suivent les filtres transporteur / agent / gouvernorat (pas la période). Le compteur
 est stocké et recalculé par le cron : aucune requête lourde à l'affichage des pages. Filtre `codcrm_returns_missing` pour ajuster la liste.
 
+## Envois groupés (file d'attente)
+Dans « Mes suivis », cochez des colis (ou « Sélectionner tous les résultats du filtre », jusqu'à 1000) puis **✉ Message groupé** :
+canal, situation (modèle de la bibliothèque), langue (celle de chaque client ou FR / AR) et aperçu. L'envoi est une **tâche en file d'attente** (page
+« Envois groupés », progression en direct) :
+- **SMS** : traités en arrière-plan par lots (cron chaque minute ; cadence réglable dans Réglages → Général, défaut 20 SMS / minute),
+  3 essais par SMS, **pause automatique** si la passerelle échoue 5 fois de suite, pause / reprise / annulation, relance des échecs.
+  Jamais de double envoi : un SMS marqué « en cours » dont le traitement a été interrompu devient « état incertain » (à vérifier avant relance).
+  Chaque SMS est tracé dans la chronologie de la commande (avec le numéro de la tâche).
+- **WhatsApp** : pas d'envoi automatique possible (wa.me exige un clic) → liste « à contacter » : chaque clic ouvre le message prêt
+  et trace le contact.
+- « Tous les résultats du filtre » est préparé par tranches en arrière-plan (statut « Préparation de la liste… »).
+- Un agent ne peut écrire qu'aux clients de ses propres commandes ; il ne voit que ses tâches.
+- Si WP-Cron est inactif, la page de la tâche ouverte fait avancer la file (au plus toutes les 2 minutes).
+
+La liste « Mes suivis » est lue en SQL direct (instantané, au lieu de ~50 s) quand les commandes sont dans les tables HPOS.
+
 ## Couleurs des statuts
 Même logique que MultiCarrier Sync : une couleur par défaut par statut, personnalisable (sélecteur de couleur, aperçu en
 direct, bouton ↺ par ligne et « Tout remettre par défaut »), texte noir ou blanc choisi automatiquement selon le

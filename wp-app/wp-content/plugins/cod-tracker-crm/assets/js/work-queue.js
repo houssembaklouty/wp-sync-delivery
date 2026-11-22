@@ -225,4 +225,75 @@
             location.reload();
         });
     });
+
+    // ── Sélection + « Message groupé » (file d'attente côté serveur) ──
+    var allMode = false;
+
+    function selected() {
+        return $('.codcrm-cb:checked').map(function () { return $(this).val(); }).get();
+    }
+    function refreshSel() {
+        var n = allMode ? codcrm.bulkMax : selected().length;
+        $('.codcrm-selcount').text(allMode ? '≤ ' + codcrm.bulkMax : n);
+        $('.codcrm-bulk-open').prop('disabled', !n);
+        var total = $('.codcrm-cb:not(:disabled)').length;
+        $('.codcrm-sel-all').toggle(!allMode && total > 0 && selected().length === total);
+    }
+    $(document).on('change', '.codcrm-cb-all', function () {
+        allMode = false;
+        $('.codcrm-cb:not(:disabled)').prop('checked', this.checked);
+        refreshSel();
+    });
+    $(document).on('change', '.codcrm-cb', function () { allMode = false; refreshSel(); });
+    $(document).on('click', '.codcrm-sel-all', function (e) { e.preventDefault(); allMode = true; refreshSel(); });
+
+    $(document).on('click', '.codcrm-bulk-open', function () {
+        var ids = selected(), n = allMode ? codcrm.bulkMax : ids.length;
+        var ctxOpts = '';
+        $.each(codcrm.contexts, function (k, l) { ctxOpts += '<option value="' + esc(k) + '">' + esc(l) + '</option>'; });
+        var $m = $(
+            '<div class="codcrm-overlay"><div class="codcrm-modal codcrm-modal-msg">'
+            + '<h2>' + esc(i18n.bulk_title) + ' — ' + (allMode ? '≤ ' + n : n) + ' ' + esc(i18n.bulk_count) + '</h2>'
+            + '<p class="codcrm-msg-row"><label>' + esc(i18n.msg_channel) + ' <select class="b-channel">'
+            + '<option value="sms"' + (codcrm.sms ? '' : ' disabled') + '>SMS</option><option value="whatsapp">WhatsApp</option></select></label> '
+            + '<label>' + esc(i18n.msg_lang) + ' <select class="b-lang"><option value="auto">' + esc(i18n.bulk_auto) + '</option><option value="fr">FR</option><option value="ar">AR</option></select></label></p>'
+            + '<p><label>' + esc(i18n.msg_context) + '<br><select class="b-ctx">' + ctxOpts + '</select></label></p>'
+            + '<p class="description b-info"></p>'
+            + '<p><strong>' + esc(i18n.bulk_preview) + '</strong></p>'
+            + '<textarea class="b-prev" rows="5" readonly></textarea>'
+            + '<p class="codcrm-err" style="color:#b32d2e"></p>'
+            + '<p><button type="button" class="button button-primary b-go">' + esc(i18n.bulk_create) + '</button> '
+            + '<button type="button" class="button codcrm-cancel">' + esc(i18n.cancel) + '</button></p>'
+            + '</div></div>'
+        );
+        $('body').append($m);
+        $m.on('click', '.codcrm-cancel', function () { $m.remove(); });
+        if (!codcrm.sms) { $m.find('.b-channel').val('whatsapp'); }
+
+        var seq = 0;
+        function preview() {
+            var ch = $m.find('.b-channel').val();
+            $m.find('.b-info').text(ch === 'sms' ? i18n.bulk_sms_info : i18n.bulk_wa_info);
+            if (!ids.length) { $m.find('.b-prev').val(''); return; }
+            var my = ++seq;
+            $m.find('.b-prev').val(i18n.msg_loading);
+            $.post(codcrm.ajax, { action: 'codcrm_message_preview', nonce: codcrm.nonce, order_id: ids[0], context: $m.find('.b-ctx').val(), lang: $m.find('.b-lang').val(), channel: ch })
+                .done(function (r) { if (my === seq) { $m.find('.b-prev').val(r && r.success ? r.data.text : ''); } });
+        }
+        $m.on('change', 'select', preview);
+        preview();
+
+        $m.on('click', '.b-go', function () {
+            if (!window.confirm(i18n.bulk_confirm)) { return; }
+            var $b = $(this).prop('disabled', true);
+            var data = { action: 'codcrm_bulk_create', nonce: codcrm.nonce, channel: $m.find('.b-channel').val(), context: $m.find('.b-ctx').val(), lang: $m.find('.b-lang').val() };
+            if (allMode) { data.all = 1; } else { data.ids = ids; }
+            // « Tous les résultats » : le serveur rejoue le filtre de la page (même URL).
+            var url = codcrm.ajax + (allMode ? location.search : '');
+            $.post(url, data).done(function (r) {
+                if (r && r.success) { location.href = r.data.url; }
+                else { $m.find('.codcrm-err').text((r && r.data && r.data.message) || i18n.error); $b.prop('disabled', false); }
+            }).fail(function () { $m.find('.codcrm-err').text(i18n.error); $b.prop('disabled', false); });
+        });
+    });
 })(jQuery);
