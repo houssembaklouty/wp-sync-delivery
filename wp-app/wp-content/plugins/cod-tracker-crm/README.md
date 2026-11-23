@@ -127,3 +127,9 @@ enlèvement : seule la confirmation du transporteur fait foi.
   qu'à partir des changements d'état suivis en direct.
 - Le suivi Colissimo lit la page publique `tracking.php` (pas d'API de suivi documentée).
 - Les nouvelles chaînes ne sont pas encore traduites (français uniquement).
+
+## « Mes suivis » : historique des statuts et fenêtre « Modifier » (v1.6.0)
+- La colonne **Statut** affiche, au survol de la pastille (ou au clic sur mobile), l'historique complet : client / agent / logo du transporteur, date et statut.
+- Le bouton **✎ Modifier** ouvre une fenêtre : statut, société de livraison, agent (responsables seulement), échange, relance (crée une tâche de rappel), note privée, client (téléphone 2 inclus), produits (recherche, quantité, prix), frais de livraison et code promo.
+- Une fois le colis créé chez le transporteur (commande synchronisée), client / produits / frais / transporteur sont **verrouillés côté serveur** (le transporteur n'est pas mis à jour) ; statut, agent, notes et relance restent modifiables.
+- Un agent ne modifie que ses commandes ; chaque modification est tracée dans la chronologie.

@@ -81,6 +81,9 @@ class CODCRM_Work_Queue {
 				'msg_sent'    => __( 'Message envoyé et tracé dans la chronologie (actualisez la page pour la voir).', 'cod-tracker-crm' ),
 				'cancel'      => __( 'Annuler', 'cod-tracker-crm' ),
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
+				'ed_title'    => __( 'Modifier la commande n°', 'cod-tracker-crm' ),
+				'ed_locked'   => __( 'Colis déjà créé chez le transporteur : client, produits, frais et transporteur sont verrouillés (le transporteur n\'est pas mis à jour).', 'cod-tracker-crm' ),
+				'ed_unsaved'  => __( 'Fermer sans enregistrer les modifications ?', 'cod-tracker-crm' ),
 			],
 		] );
 	}
@@ -359,7 +362,7 @@ class CODCRM_Work_Queue {
 
 		self::tablenav( $total, self::PER_PAGE, $paged, 'top' );
 		echo '<table class="widefat striped codcrm-table"><thead><tr><td class="check-column"><input type="checkbox" class="codcrm-cb-all" /></td>';
-		foreach ( [ __( 'Commande', 'cod-tracker-crm' ), __( 'Client', 'cod-tracker-crm' ), __( 'Étape', 'cod-tracker-crm' ), __( 'Tentatives', 'cod-tracker-crm' ), __( 'Dernier contact', 'cod-tracker-crm' ), __( 'Prochaine tâche', 'cod-tracker-crm' ), __( 'Agent', 'cod-tracker-crm' ), __( 'Actions', 'cod-tracker-crm' ) ] as $h ) {
+		foreach ( [ __( 'Commande', 'cod-tracker-crm' ), __( 'Client', 'cod-tracker-crm' ), __( 'Statut', 'cod-tracker-crm' ), __( 'Tentatives', 'cod-tracker-crm' ), __( 'Dernier contact', 'cod-tracker-crm' ), __( 'Prochaine tâche', 'cod-tracker-crm' ), __( 'Agent', 'cod-tracker-crm' ), __( 'Actions', 'cod-tracker-crm' ) ] as $h ) {
 			echo '<th>' . esc_html( $h ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
@@ -377,7 +380,7 @@ class CODCRM_Work_Queue {
 		echo '</div>';
 	}
 
-	private static function render_row( WC_Order $order, $task ): void {
+	public static function render_row( WC_Order $order, $task ): void {
 		$id      = $order->get_id();
 		$phone   = $order->get_billing_phone();
 		$phone8  = self::norm_phone( $phone );
@@ -410,15 +413,17 @@ class CODCRM_Work_Queue {
 				}
 			}
 		}
-		printf( '<td>%s<br><small>%s%s<br>%s</small></td>',
+		$ph2 = (string) $order->get_meta( CODCRM_Order_Editor::META_PHONE2 );
+		printf( '<td>%s<br><small>%s%s%s<br>%s</small></td>',
 			esc_html( $client ),
 			esc_html( $phone ),
+			$ph2 ? ' / ' . esc_html( $ph2 ) : '',
 			esc_html( $hist ),
 			esc_html( $order->get_billing_state() ?: $order->get_billing_city() )
 		);
 
 		printf( '<td>%s</td>', $stage
-			? '<span class="codcrm-pill" style="' . esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $stage ) ) ) . '">' . esc_html( CODCRM_Stages::label( $stage ) ) . '</span>'
+			? '<span class="codcrm-pill codcrm-status-pill" data-order="' . (int) $id . '" style="' . esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $stage ) ) ) . '">' . esc_html( CODCRM_Stages::label( $stage ) ) . '</span>'
 			: '—' );
 
 		printf( '<td>%d / %d%s</td>', (int) $order->get_meta( CODCRM_Attempts::META_ATTEMPTS ), CODCRM_Attempts::threshold(), $risk ? ' <span class="codcrm-pill" style="background:#c0392b">⚠</span>' : '' );
@@ -439,6 +444,7 @@ class CODCRM_Work_Queue {
 		printf( '<td>%s</td>', $agent ? esc_html( $agent ) : '—' );
 
 		echo '<td class="codcrm-actions">';
+		printf( '<a class="button codcrm-edit" href="#" data-order="%d">✎ %s</a> ', (int) $id, esc_html__( 'Modifier', 'cod-tracker-crm' ) );
 		if ( $phone8 ) {
 			printf( '<a class="button codcrm-call" href="tel:+216%s" data-order="%d">📞</a> ', esc_attr( $phone8 ), (int) $id );
 			// WhatsApp et SMS, FR et AR : une seule fenêtre « Message » (modèle suggéré selon l'étape).
