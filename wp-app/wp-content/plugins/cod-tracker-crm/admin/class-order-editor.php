@@ -30,6 +30,33 @@ class CODCRM_Order_Editor {
 		return $order;
 	}
 
+	/** Attributs lisibles d'une variation (« Noir, 40 »). */
+	private static function attrs( $product ): string {
+		if ( ! $product || ! $product->is_type( 'variation' ) ) {
+			return '';
+		}
+		return wp_strip_all_tags( wc_get_formatted_variation( $product, true, false, false ) );
+	}
+
+	private static function stock_label( $product ): string {
+		if ( ! $product ) {
+			return '';
+		}
+		if ( ! $product->is_in_stock() ) {
+			return __( 'Rupture', 'cod-tracker-crm' );
+		}
+		return $product->managing_stock() ? sprintf( /* translators: %d quantité */ __( 'Stock : %d', 'cod-tracker-crm' ), (int) $product->get_stock_quantity() ) : '';
+	}
+
+	/** Agents sélectionnables, en incluant toujours l'agent actuel (même sans le rôle agent). */
+	private static function agent_list( int $current ): array {
+		$list = array_map( static function ( $u ) { return [ 'id' => (int) $u->ID, 'name' => $u->display_name ]; }, CODCRM_Agents::get_agents() );
+		if ( $current && ! in_array( $current, array_column( $list, 'id' ), true ) ) {
+			$list[] = [ 'id' => $current, 'name' => CODCRM_Agents::agent_name( $current ) ?: '#' . $current ];
+		}
+		return $list;
+	}
+
 	public static function is_locked( WC_Order $o ): bool {
 		return 'synced' === (string) $o->get_meta( '_wcmcs_sync_status' ) || in_array( $o->get_status(), self::LOCKED_STATUS, true );
 	}
@@ -83,8 +110,9 @@ class CODCRM_Order_Editor {
 				'item_id'      => $item->get_id(),
 				'product_id'   => $item->get_product_id(),
 				'variation_id' => $item->get_variation_id(),
-				'name'         => $item->get_name(),
-				'image'        => $p ? wp_get_attachment_image_url( $p->get_image_id(), 'thumbnail' ) : '',
+				'name'         => $p && $p->is_type( 'variation' ) ? get_the_title( $item->get_product_id() ) : $item->get_name(),
+				'attrs'        => self::attrs( $p ),
+				'image'        => $p ? wp_get_attachment_image_url( $p->get_image_id() ?: ( $p->get_parent_id() ? (int) get_post_thumbnail_id( $p->get_parent_id() ) : 0 ), 'thumbnail' ) : '',
 				'qty'          => $qty,
 				'price'        => (float) wc_format_decimal( (float) $item->get_subtotal() / $qty, 3 ),
 			];
@@ -94,13 +122,24 @@ class CODCRM_Order_Editor {
 			$ship += (float) $s->get_total();
 		}
 		$carriers = [];
+		$logos    = [];
 		if ( class_exists( 'WCMCS_Carrier_Detector' ) ) {
 			foreach ( WCMCS_Carrier_Detector::get_enabled_providers() as $slug => $prov ) {
 				$carriers[ $slug ] = method_exists( $prov, 'get_name' ) ? (string) $prov->get_name() : $slug;
+				$logos[ $slug ]    = WCMCS_Carrier_Detector::get_logo_url( $slug );
+			}
+			$now = (string) $o->get_meta( '_wcmcs_carrier_slug' );
+			if ( $now && ! isset( $logos[ $now ] ) ) {
+				$logos[ $now ] = WCMCS_Carrier_Detector::get_logo_url( $now );
 			}
 		}
 		$states = WC()->countries->get_states( 'TN' ) ?: [];
+		asort( $states );
 		$statuses = wc_get_order_statuses();
+		$colors   = [];
+		foreach ( array_keys( $statuses ) as $st ) {
+			$colors[ $st ] = CODCRM_Stages::color( CODCRM_Stage_Mapper::from_order_status( substr( $st, 3 ) ) );
+		}
 		$strikes  = function_exists( 'wparabic_phone_strikes' ) ? (int) wparabic_phone_strikes( $o->get_billing_phone() ) : 0;
 
 		wp_send_json_success( [
@@ -110,11 +149,13 @@ class CODCRM_Order_Editor {
 			'manager'   => current_user_can( CODCRM_Agents::CAP_MANAGE ),
 			'status'    => 'wc-' . $o->get_status(),
 			'statuses'  => $statuses,
+			'status_colors' => $colors,
+			'logos'     => $logos,
 			'carrier'   => (string) $o->get_meta( '_wcmcs_forced_carrier' ),
 			'carrier_now' => (string) $o->get_meta( '_wcmcs_carrier_slug' ),
 			'carriers'  => $carriers,
 			'agent'     => CODCRM_Agents::agent_of( $o ),
-			'agents'    => array_map( static function ( $u ) { return [ 'id' => (int) $u->ID, 'name' => $u->display_name ]; }, CODCRM_Agents::get_agents() ),
+			'agents'    => self::agent_list( CODCRM_Agents::agent_of( $o ) ),
 			'exchange'  => '1' === (string) $o->get_meta( self::META_EXCHANGE ),
 			'first'     => $o->get_billing_first_name(),
 			'last'      => $o->get_billing_last_name(),
@@ -129,6 +170,8 @@ class CODCRM_Order_Editor {
 			'items'     => $items,
 			'shipping'  => $ship,
 			'coupons'   => array_values( $o->get_coupon_codes() ),
+			'subtotal'  => (float) $o->get_subtotal(),
+			'discount'  => (float) $o->get_discount_total(),
 			'total'     => (float) $o->get_total(),
 		] );
 	}
@@ -148,7 +191,9 @@ class CODCRM_Order_Editor {
 					$out[] = [
 						'product_id'   => $v->is_type( 'variation' ) ? $v->get_parent_id() : $v->get_id(),
 						'variation_id' => $v->is_type( 'variation' ) ? $v->get_id() : 0,
-						'name'         => wp_strip_all_tags( $v->get_formatted_name() ),
+						'name'         => $p->get_name(),
+						'attrs'        => self::attrs( $v ),
+						'stock'        => self::stock_label( $v ),
 						'price'        => (float) $v->get_price(),
 						'image'        => wp_get_attachment_image_url( $v->get_image_id() ?: $p->get_image_id(), 'thumbnail' ),
 					];
@@ -176,7 +221,7 @@ class CODCRM_Order_Editor {
 			delete_option( $lock );
 		}
 		if ( is_wp_error( $res ) ) {
-			wp_send_json_error( [ 'message' => $res->get_error_message() ] );
+			wp_send_json_error( [ 'message' => $res->get_error_message(), 'field' => $res->get_error_code() ] );
 		}
 		$o = wc_get_order( $id );
 		ob_start();

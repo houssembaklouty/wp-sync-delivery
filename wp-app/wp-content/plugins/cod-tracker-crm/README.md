@@ -133,3 +133,10 @@ enlèvement : seule la confirmation du transporteur fait foi.
 - Le bouton **✎ Modifier** ouvre une fenêtre : statut, société de livraison, agent (responsables seulement), échange, relance (crée une tâche de rappel), note privée, client (téléphone 2 inclus), produits (recherche, quantité, prix), frais de livraison et code promo.
 - Une fois le colis créé chez le transporteur (commande synchronisée), client / produits / frais / transporteur sont **verrouillés côté serveur** (le transporteur n'est pas mis à jour) ; statut, agent, notes et relance restent modifiables.
 - Un agent ne modifie que ses commandes ; chaque modification est tracée dans la chronologie.
+
+### Design de la fenêtre « Modifier » (v1.6.1)
+- Deux colonnes (client + produits à gauche ; commande, options, note et résumé à droite), plein écran sur mobile.
+- En-tête : statut et total en direct ; « Enregistrer » actif seulement après une modification (raccourci Ctrl/Cmd + S).
+- Téléphones vérifiés en direct ; erreurs affichées sous le champ concerné.
+- Produits : recherche avec vignettes, attributs et stock (clavier ↑ ↓ Entrée), boutons − / +, retrait annulable.
+- Après enregistrement : notification et ligne surlignée ; l'agent attribué n'est envoyé que s'il a été changé.

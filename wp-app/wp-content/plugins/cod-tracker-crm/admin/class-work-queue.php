@@ -393,10 +393,13 @@ class CODCRM_Work_Queue {
 		$overdue = $task && $task->due_at < current_time( 'mysql' );
 
 		echo '<tr data-order="' . (int) $id . '"><th class="check-column"><input type="checkbox" class="codcrm-cb" value="' . (int) $id . '"' . ( $phone8 ? '' : ' disabled' ) . ' /></th>';
-		printf( '<td><a href="%s"><strong>#%s</strong></a><br><small>%s · %s</small></td>',
+		$slug = (string) $order->get_meta( '_wcmcs_carrier_slug' );
+		$logo = $slug && class_exists( 'WCMCS_Carrier_Detector' ) ? WCMCS_Carrier_Detector::get_logo_url( $slug ) : '';
+		printf( '<td><a href="%s"><strong>#%s</strong></a>%s<br><small>%s%s</small></td>',
 			esc_url( $order->get_edit_order_url() ),
 			esc_html( $order->get_order_number() ),
-			esc_html( (string) $order->get_meta( '_wcmcs_carrier_slug' ) ),
+			'1' === (string) $order->get_meta( CODCRM_Order_Editor::META_EXCHANGE ) ? ' <span class="codcrm-badge-ex">' . esc_html__( 'Échange', 'cod-tracker-crm' ) . '</span>' : '',
+			$logo ? '<img class="codcrm-carrier-logo" src="' . esc_url( $logo ) . '" alt="' . esc_attr( $slug ) . '" title="' . esc_attr( $slug ) . '" /> · ' : ( $slug ? esc_html( $slug ) . ' · ' : '' ),
 			esc_html( wc_format_decimal( $order->get_total(), 2 ) . ' DT' )
 		);
 
@@ -444,13 +447,13 @@ class CODCRM_Work_Queue {
 		printf( '<td>%s</td>', $agent ? esc_html( $agent ) : '—' );
 
 		echo '<td class="codcrm-actions">';
-		printf( '<a class="button codcrm-edit" href="#" data-order="%d">✎ %s</a> ', (int) $id, esc_html__( 'Modifier', 'cod-tracker-crm' ) );
+		printf( '<a class="codcrm-act codcrm-edit" href="#" data-order="%d" title="%s">✎ %s</a>', (int) $id, esc_attr__( 'Modifier la commande', 'cod-tracker-crm' ), esc_html__( 'Modifier', 'cod-tracker-crm' ) );
 		if ( $phone8 ) {
-			printf( '<a class="button codcrm-call" href="tel:+216%s" data-order="%d">📞</a> ', esc_attr( $phone8 ), (int) $id );
+			printf( '<a class="codcrm-act codcrm-call" href="tel:+216%s" data-order="%d" title="%s" aria-label="%3$s">📞</a>', esc_attr( $phone8 ), (int) $id, esc_attr__( 'Appeler (résultat tracé)', 'cod-tracker-crm' ) );
 			// WhatsApp et SMS, FR et AR : une seule fenêtre « Message » (modèle suggéré selon l'étape).
-			printf( '<a class="button codcrm-msg" href="#" data-order="%d">✉ %s</a> ', (int) $id, esc_html__( 'Message', 'cod-tracker-crm' ) );
+			printf( '<a class="codcrm-act codcrm-msg" href="#" data-order="%d" title="%s" aria-label="%2$s">✉</a>', (int) $id, esc_attr__( 'Envoyer un message (WhatsApp / SMS)', 'cod-tracker-crm' ) );
 		} else {
-			echo '<em>' . esc_html__( 'Numéro invalide', 'cod-tracker-crm' ) . '</em>';
+			echo '<br><em class="codcrm-muted">' . esc_html__( 'Numéro invalide', 'cod-tracker-crm' ) . '</em>';
 		}
 		echo '</td></tr>';
 	}
