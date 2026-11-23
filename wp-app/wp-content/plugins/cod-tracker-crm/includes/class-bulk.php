@@ -176,8 +176,9 @@ class CODCRM_Bulk {
 			$chunk = 200;
 			$ids   = CODCRM_Work_Queue::filtered_ids( $chunk, $offset );
 
-			$t = self::table_items();
-			foreach ( $ids as $id ) {
+			$t    = self::table_items();
+			$room = self::MAX_ORDERS - (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE job_id = %d", (int) $job->id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+			foreach ( array_slice( $ids, 0, max( 0, $room ) ) as $id ) {
 				$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$t} (job_id, order_id) VALUES (%d, %d)", (int) $job->id, (int) $id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 			}
 			$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE job_id = %d", (int) $job->id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
@@ -413,6 +414,10 @@ class CODCRM_Bulk {
 		if ( ! $job || ! $it || 'whatsapp' !== $job->channel || ! self::can_view( $job ) ) {
 			wp_send_json_error( [ 'message' => __( 'Élément introuvable.', 'cod-tracker-crm' ) ], 404 );
 		}
+		// Envoi annulé, ou élément ignoré : plus de lien (ni contact tracé, ni changement d'état de la tâche).
+		if ( 'cancelled' === $job->status || ! in_array( $it->status, [ 'pending', 'sent' ], true ) ) {
+			wp_send_json_error( [ 'message' => __( 'Cet envoi a été annulé.', 'cod-tracker-crm' ) ] );
+		}
 		$order = wc_get_order( (int) $it->order_id );
 		$phone = $order ? CODCRM_Work_Queue::norm_phone( $order->get_billing_phone() ) : '';
 		if ( ! $order || '' === $phone ) {
@@ -471,7 +476,8 @@ class CODCRM_Bulk {
 				}
 				break;
 			case 'retry':
-				// Seuls les échecs « normaux » sont relancés ; les « état incertain » demandent une vérification.
+				// Relance manuelle de TOUS les échecs, y compris « état incertain » (la confirmation affichée
+				// prévient que le client a peut-être déjà reçu ces SMS). Le cron, lui, ne les renvoie jamais.
 				$wpdb->query( $wpdb->prepare( "UPDATE {$t} SET status = 'pending', tries = 0, error = '' WHERE job_id = %d AND status = 'failed'", $id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 				$wpdb->update( $j, [ 'status' => 'running', 'finished_at' => null, 'note' => '' ], [ 'id' => $id ] );
 				wp_schedule_single_event( time() + 5, self::HOOK );
