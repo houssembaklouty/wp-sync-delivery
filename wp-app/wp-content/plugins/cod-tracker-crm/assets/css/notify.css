@@ -1,0 +1,7 @@
+#wpadminbar #wp-admin-bar-codcrm-notify .ab-icon { margin-right: 2px; }
+#wpadminbar #wp-admin-bar-codcrm-notify .ab-icon:before { top: 2px; }
+.codcrm-ab-count { display: inline-block; min-width: 16px; padding: 0 4px; margin-left: 2px; border-radius: 999px; background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; vertical-align: 6px; }
+.codcrm-ab-count[hidden] { display: none; }
+.codcrm-notify-toast { position: fixed; right: 24px; top: 48px; z-index: 100005; max-width: 380px; padding: 12px 16px; border-radius: 10px; background: #6d28d9; color: #fff !important; font-weight: 600; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,.28); opacity: 0; transform: translateY(-8px); transition: opacity .25s, transform .25s; }
+.codcrm-notify-toast.is-in { opacity: 1; transform: none; }
+.codcrm-notify-toast:hover { background: #7c3aed; }

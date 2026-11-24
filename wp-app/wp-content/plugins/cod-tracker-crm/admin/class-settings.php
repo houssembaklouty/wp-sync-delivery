@@ -155,6 +155,8 @@ class CODCRM_Settings {
 		printf( '<p><label><input type="checkbox" name="live_sound_abandoned" value="yes"%s /> %s</label></p>',
 			checked( 'yes' === get_option( 'codcrm_live_sound_abandoned', 'yes' ), true, false ), esc_html__( 'Aussi pour les commandes abandonnées', 'cod-tracker-crm' ) );
 		echo '<p class="description">' . esc_html__( 'Joué dans « Mes suivis » quand une nouvelle commande apparaît en direct (le navigateur exige un premier clic sur la page pour autoriser le son).', 'cod-tracker-crm' ) . '</p></td></tr>';
+		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="notify_enabled" value="yes"%s /> %s</label><br><span class="description">%s</span></td></tr>',
+			esc_html__( 'Alertes sur toutes les pages', 'cod-tracker-crm' ), checked( CODCRM_Notify::enabled(), true, false ), esc_html__( 'Alerter (son, bandeau, pastille et notification du navigateur) d\'une nouvelle commande sur toutes les pages de l\'admin', 'cod-tracker-crm' ), esc_html__( 'Un agent est alerté pour ses commandes attribuées, un responsable pour toute nouvelle commande. Il faut garder un onglet de l\'admin ouvert ; les notifications du navigateur s\'activent depuis la cloche de la barre d\'administration.', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="abandoned_enabled" value="yes"%s /> %s</label><br><span class="description">%s</span></td></tr>',
 			esc_html__( 'Commandes abandonnées', 'cod-tracker-crm' ), checked( CODCRM_Abandoned::enabled(), true, false ), esc_html__( 'Enregistrer une commande « Abandonnée » dès qu\'un téléphone valide est saisi dans le formulaire COD', 'cod-tracker-crm' ), esc_html__( 'Si le client valide le formulaire, la commande abandonnée devient une vraie commande ; sinon un agent la rappelle.', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="form_restore" value="yes"%s /> %s</label><br><span class="description">%s</span></td></tr>',
@@ -591,6 +593,7 @@ class CODCRM_Settings {
 					CODCRM_Abandoned::purge_page_cache(); // les fiches produit en cache doivent charger / retirer le script.
 				}
 				update_option( 'codcrm_abandoned_delay', max( 5, min( 120, absint( $_POST['abandoned_delay'] ?? 15 ) ) ) );
+				update_option( 'codcrm_notify_enabled', ! empty( $_POST['notify_enabled'] ) ? 'yes' : 'no' );
 				$snd = sanitize_key( wp_unslash( $_POST['live_sound'] ?? 'bell' ) );
 				update_option( 'codcrm_live_sound', isset( CODCRM_Work_Queue::sounds()[ $snd ] ) ? $snd : 'bell' );
 				update_option( 'codcrm_live_volume', max( 0, min( 100, absint( $_POST['live_volume'] ?? 70 ) ) ) );

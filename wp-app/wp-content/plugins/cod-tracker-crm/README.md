@@ -168,3 +168,9 @@ enlèvement : seule la confirmation du transporteur fait foi.
 
 ### Son « Matricula » (v1.9.1)
 Cinquième son proposé dans Réglages → Général → « Son nouvelle commande » : fichier audio `assets/sounds/matricula.mp3` (fourni par le propriétaire du site), avec aperçu « ▶ Écouter » et volume.
+
+## Alertes sur toutes les pages de l'admin (v1.10.0)
+- Une nouvelle commande est signalée **sur n'importe quelle page de l'admin** (pas seulement « Mes suivis ») : son (celui choisi dans les réglages), bandeau cliquable vers « Mes suivis », **pastille rouge** avec le nombre de nouvelles commandes sur la cloche de la barre d'administration et sur le menu « Suivi COD » (remise à zéro à l'ouverture de « Mes suivis »), et **notification de bureau du navigateur** quand l'onglet est en arrière-plan.
+- Un agent est alerté pour les commandes qui lui sont attribuées ; un responsable pour toute nouvelle commande (abandonnées comprises). Un seul son par commande, même avec plusieurs onglets.
+- Les notifications du navigateur s'activent depuis la cloche (« Activer les notifications du navigateur ») ; il faut garder un onglet de l'admin ouvert (pas de notification navigateur fermé).
+- Réglage : Suivi COD → Général → « Alertes sur toutes les pages » (activé par défaut).
