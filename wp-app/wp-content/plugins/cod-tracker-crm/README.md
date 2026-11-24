@@ -153,3 +153,8 @@ enlèvement : seule la confirmation du transporteur fait foi.
 - Réglages (Suivi COD → Général, **activé par défaut**) : activer/désactiver, délai d'attribution, statut d'une commande validée (**En attente** = on-hold par défaut, ou En cours).
 - Le thème expose le filtre `wparabic_cod_order_status` (`inc/cod-form.php`). Les caches de pages sont vidés à chaque nouvelle version du plugin ; si une fiche produit reste en cache, videz-le pour qu'elle charge le script.
 - Les abandonnées consomment des numéros de commande (trous dans la numérotation) ; pensez à le mentionner dans la politique de confidentialité.
+
+### Restauration du formulaire COD (v1.8.1)
+- Si le client rafraîchit la page ou revient sur la fiche produit, ses informations sont **remplies à nouveau** : coordonnées (nom, téléphone, gouvernorat, délégation, adresse, email) sur toutes les fiches ; quantité et choix de variations sur la même fiche. Stockage dans le navigateur du client (7 jours, rien n'est envoyé au serveur pour cela) ; effacé dès que la commande est validée. Les champs déjà remplis par le navigateur ne sont jamais écrasés.
+- Réglage Suivi COD → Général → « Restaurer le formulaire » (**activé par défaut**), indépendant de la capture des commandes abandonnées.
+- Correctif : les variations (couleur / pointure) choisies sont maintenant bien envoyées à la commande abandonnée.

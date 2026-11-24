@@ -68,6 +68,11 @@ class CODCRM_Abandoned {
 		return 'yes' === get_option( 'codcrm_abandoned_enabled', 'yes' );
 	}
 
+	/** Restaurer le formulaire (champs + choix de produit) après un rafraîchissement de la page. */
+	public static function restore_enabled(): bool {
+		return 'yes' === get_option( 'codcrm_form_restore', 'yes' );
+	}
+
 	/** Minutes d'inactivité avant d'attribuer l'abandonnée à un agent. */
 	public static function delay(): int {
 		return max( 5, min( 120, (int) get_option( 'codcrm_abandoned_delay', 15 ) ) );
@@ -113,13 +118,16 @@ class CODCRM_Abandoned {
 	// ── Script de la fiche produit ─────────────────────────────
 
 	public static function enqueue(): void {
-		if ( ! self::enabled() || ! function_exists( 'is_product' ) || ! is_product() ) {
+		if ( ( ! self::enabled() && ! self::restore_enabled() ) || ! function_exists( 'is_product' ) || ! is_product() ) {
 			return;
 		}
 		$rel = 'assets/js/abandoned.js';
 		wp_enqueue_script( 'codcrm-abandoned', CODCRM_URL . $rel . '?v=' . CODCRM_VERSION . '-' . (int) @filemtime( CODCRM_DIR . $rel ), [ 'jquery' ], null, true );
 		wp_localize_script( 'codcrm-abandoned', 'codcrmAb', [
-			'ajax' => admin_url( 'admin-ajax.php' ),
+			'ajax'    => admin_url( 'admin-ajax.php' ),
+			'capture' => self::enabled(),
+			'restore' => self::restore_enabled(),
+			'pid'     => (int) get_queried_object_id(),
 		] );
 	}
 

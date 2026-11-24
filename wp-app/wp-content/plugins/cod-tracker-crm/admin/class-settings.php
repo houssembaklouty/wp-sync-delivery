@@ -143,6 +143,8 @@ class CODCRM_Settings {
 			esc_html__( 'Alerte retour non reçu après', 'cod-tracker-crm' ), CODCRM_Returns::days(), esc_html__( 'jours après le retour définitif annoncé par le transporteur, si le colis n\'a pas été scanné « Retour reçu » (colis potentiellement perdu).', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="abandoned_enabled" value="yes"%s /> %s</label><br><span class="description">%s</span></td></tr>',
 			esc_html__( 'Commandes abandonnées', 'cod-tracker-crm' ), checked( CODCRM_Abandoned::enabled(), true, false ), esc_html__( 'Enregistrer une commande « Abandonnée » dès qu\'un téléphone valide est saisi dans le formulaire COD', 'cod-tracker-crm' ), esc_html__( 'Si le client valide le formulaire, la commande abandonnée devient une vraie commande ; sinon un agent la rappelle.', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="form_restore" value="yes"%s /> %s</label><br><span class="description">%s</span></td></tr>',
+			esc_html__( 'Restaurer le formulaire', 'cod-tracker-crm' ), checked( CODCRM_Abandoned::restore_enabled(), true, false ), esc_html__( 'Remplir à nouveau le formulaire COD si le client rafraîchit la page ou revient sur la fiche produit', 'cod-tracker-crm' ), esc_html__( 'Les informations restent dans le navigateur du client pendant 7 jours (coordonnées sur toutes les fiches ; quantité et variations sur le même produit) et sont effacées dès que la commande est validée.', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><input type="number" min="5" max="120" name="abandoned_delay" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Abandonnée : attribuer à un agent après', 'cod-tracker-crm' ), CODCRM_Abandoned::delay(), esc_html__( 'minutes d\'inactivité (laisse au client le temps de finir de remplir le formulaire).', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><select name="cod_final_status"><option value="on-hold"%s>%s</option><option value="processing"%s>%s</option></select> <span class="description">%s</span></td></tr>',
@@ -569,7 +571,9 @@ class CODCRM_Settings {
 				CODCRM_Returns::recount();
 				$was = CODCRM_Abandoned::enabled();
 				update_option( 'codcrm_abandoned_enabled', ! empty( $_POST['abandoned_enabled'] ) ? 'yes' : 'no' );
-				if ( $was !== CODCRM_Abandoned::enabled() ) {
+				$was_restore = CODCRM_Abandoned::restore_enabled();
+				update_option( 'codcrm_form_restore', ! empty( $_POST['form_restore'] ) ? 'yes' : 'no' );
+				if ( $was !== CODCRM_Abandoned::enabled() || $was_restore !== CODCRM_Abandoned::restore_enabled() ) {
 					CODCRM_Abandoned::purge_page_cache(); // les fiches produit en cache doivent charger / retirer le script.
 				}
 				update_option( 'codcrm_abandoned_delay', max( 5, min( 120, absint( $_POST['abandoned_delay'] ?? 15 ) ) ) );
