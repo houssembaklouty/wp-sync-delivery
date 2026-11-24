@@ -27,7 +27,7 @@
         double: function (c, out, t) { tone(c, out, 880, t, 0.12, 'square', 0.25); tone(c, out, 880, t + 0.2, 0.12, 'square', 0.25); }
     };
     window.codcrmSound = {
-        names: Object.keys(SOUNDS),
+        names: Object.keys(SOUNDS).concat(Object.keys(window.codcrmSoundFiles || {})),
         /** Le navigateur autorise-t-il le son (après une interaction de l'utilisateur) ? */
         ready: function () { var c = audio(); return !!c && c.state === 'running'; },
         unlock: function () {
@@ -36,6 +36,15 @@
             return Promise.resolve(!!c);
         },
         play: function (name, volume) {
+            var files = window.codcrmSoundFiles || {};
+            if (files[name]) { // fichier audio (mp3) du plugin
+                var a = new Audio(files[name]);
+                a.volume = Math.max(0, Math.min(1, (volume == null ? 70 : volume) / 100));
+                var pr = a.play();
+                if (pr && pr.then) { pr.then(function () { window.codcrmSound.plays = (window.codcrmSound.plays || 0) + 1; }).catch(function () { /* bloqué par le navigateur */ }); }
+                else { window.codcrmSound.plays = (window.codcrmSound.plays || 0) + 1; }
+                return true;
+            }
             var c = audio(), fn = SOUNDS[name];
             if (!c || !fn || c.state !== 'running') { return false; }
             var out = c.createGain();

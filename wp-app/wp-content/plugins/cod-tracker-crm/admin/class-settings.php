@@ -59,6 +59,7 @@ class CODCRM_Settings {
 		wp_enqueue_script( 'wc-enhanced-select' );
 		wp_enqueue_style( 'woocommerce_admin_styles' );
 		wp_enqueue_script( 'codcrm-sounds', $v( 'assets/js/sounds.js' ), [], null, true );
+		wp_localize_script( 'codcrm-sounds', 'codcrmSoundFiles', CODCRM_Work_Queue::sound_files() );
 		wp_enqueue_script( 'codcrm-settings', $v( 'assets/js/settings.js' ), [ 'jquery', 'codcrm-sounds' ], null, true );
 	}
 

@@ -26,8 +26,14 @@ class CODCRM_Work_Queue {
 			'chime'  => __( 'Carillon (3 notes)', 'cod-tracker-crm' ),
 			'beep'   => __( 'Bip court', 'cod-tracker-crm' ),
 			'double' => __( 'Double bip', 'cod-tracker-crm' ),
+			'matricula' => __( 'Matricula (fichier audio)', 'cod-tracker-crm' ),
 			'none'   => __( 'Aucun son', 'cod-tracker-crm' ),
 		];
+	}
+
+	/** Sons qui sont des fichiers audio du plugin : clé => URL (les autres sont générés par le navigateur). */
+	public static function sound_files(): array {
+		return [ 'matricula' => CODCRM_URL . 'assets/sounds/matricula.mp3?v=' . CODCRM_VERSION ];
 	}
 
 	public static function live_sound(): string {
@@ -151,6 +157,7 @@ class CODCRM_Work_Queue {
 		}
 		wp_enqueue_style( 'codcrm-queue', self::asset( 'assets/css/work-queue.css' ), [], null );
 		wp_enqueue_script( 'codcrm-sounds', self::asset( 'assets/js/sounds.js' ), [], null, true );
+		wp_localize_script( 'codcrm-sounds', 'codcrmSoundFiles', self::sound_files() );
 		wp_enqueue_script( 'codcrm-queue', self::asset( 'assets/js/work-queue.js' ), [ 'jquery', 'codcrm-sounds' ], null, true );
 		wp_localize_script( 'codcrm-queue', 'codcrm', [
 			'ajax'     => admin_url( 'admin-ajax.php' ),
