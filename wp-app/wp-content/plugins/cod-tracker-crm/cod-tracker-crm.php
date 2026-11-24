@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       COD Tracker CRM
  * Description:       Suivi des colis / commandes COD : timeline complète, tentatives de livraison, agents de suivi, KPIs et rapprochement cash. Se synchronise avec MultiCarrier Sync TN.
- * Version:           1.7.9
+ * Version:           1.8.0
  * Requires PHP:      7.4
  * Requires at least: 6.0
  * Text Domain:       cod-tracker-crm
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CODCRM_VERSION', '1.7.9' );
+define( 'CODCRM_VERSION', '1.8.0' );
 define( 'CODCRM_FILE', __FILE__ );
 define( 'CODCRM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CODCRM_URL', plugin_dir_url( __FILE__ ) );
@@ -46,6 +46,7 @@ require_once CODCRM_DIR . 'admin/class-timeline.php';
 require_once CODCRM_DIR . 'admin/class-assignment-ui.php';
 require_once CODCRM_DIR . 'admin/class-work-queue.php';
 require_once CODCRM_DIR . 'includes/class-customers.php';
+require_once CODCRM_DIR . 'includes/class-abandoned.php';
 require_once CODCRM_DIR . 'admin/class-order-editor.php';
 require_once CODCRM_DIR . 'admin/class-settings.php';
 require_once CODCRM_DIR . 'admin/class-scanner.php';
@@ -94,6 +95,7 @@ add_action( 'plugins_loaded', static function () {
 	CODCRM_Returns::init();
 	CODCRM_Order_Editor::init();
 	CODCRM_Customers::init();
+	CODCRM_Abandoned::init();
 	CODCRM_Bulk::init();
 	CODCRM_Bulk_UI::init();
 	CODCRM_Cash_Page::init();

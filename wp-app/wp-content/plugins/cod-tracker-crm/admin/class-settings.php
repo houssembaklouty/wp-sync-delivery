@@ -141,6 +141,12 @@ class CODCRM_Settings {
 			esc_html__( 'Envois groupés : SMS par minute', 'cod-tracker-crm' ), CODCRM_Bulk::batch_size(), esc_html__( 'cadence de la file d\'attente (taille du lot traité chaque minute). Baissez-la si votre fournisseur SMS limite le débit.', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><input type="number" min="1" max="60" name="return_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Alerte retour non reçu après', 'cod-tracker-crm' ), CODCRM_Returns::days(), esc_html__( 'jours après le retour définitif annoncé par le transporteur, si le colis n\'a pas été scanné « Retour reçu » (colis potentiellement perdu).', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="abandoned_enabled" value="yes"%s /> %s</label><br><span class="description">%s</span></td></tr>',
+			esc_html__( 'Commandes abandonnées', 'cod-tracker-crm' ), checked( CODCRM_Abandoned::enabled(), true, false ), esc_html__( 'Enregistrer une commande « Abandonnée » dès qu\'un téléphone valide est saisi dans le formulaire COD', 'cod-tracker-crm' ), esc_html__( 'Si le client valide le formulaire, la commande abandonnée devient une vraie commande ; sinon un agent la rappelle.', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><input type="number" min="5" max="120" name="abandoned_delay" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
+			esc_html__( 'Abandonnée : attribuer à un agent après', 'cod-tracker-crm' ), CODCRM_Abandoned::delay(), esc_html__( 'minutes d\'inactivité (laisse au client le temps de finir de remplir le formulaire).', 'cod-tracker-crm' ) );
+		printf( '<tr><th>%s</th><td><select name="cod_final_status"><option value="on-hold"%s>%s</option><option value="processing"%s>%s</option></select> <span class="description">%s</span></td></tr>',
+			esc_html__( 'Statut d\'une commande validée du formulaire', 'cod-tracker-crm' ), selected( CODCRM_Abandoned::final_status( 'processing' ), 'on-hold', false ), esc_html__( 'En attente (confirmation, pas de paiement)', 'cod-tracker-crm' ), selected( CODCRM_Abandoned::final_status( 'processing' ), 'processing', false ), esc_html__( 'En cours (ancien comportement)', 'cod-tracker-crm' ), esc_html__( 'Statut donné quand le client clique sur « Acheter ».', 'cod-tracker-crm' ) );
 		printf( '<tr><th>%s</th><td><input type="text" name="shop_phone" value="%s" class="regular-text" placeholder="71 000 000" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Téléphone de la boutique', 'cod-tracker-crm' ), esc_attr( (string) get_option( 'codcrm_shop_phone', '' ) ), esc_html__( 'Utilisé par le placeholder {telephone_boutique} dans les messages.', 'cod-tracker-crm' ) );
 		echo '</table>';
@@ -561,6 +567,13 @@ class CODCRM_Settings {
 				update_option( 'codcrm_bulk_batch', max( 1, min( 200, absint( $_POST['bulk_batch'] ?? 20 ) ) ) );
 				update_option( 'codcrm_return_days', max( 1, min( 60, absint( $_POST['return_days'] ?? 5 ) ) ) );
 				CODCRM_Returns::recount();
+				$was = CODCRM_Abandoned::enabled();
+				update_option( 'codcrm_abandoned_enabled', ! empty( $_POST['abandoned_enabled'] ) ? 'yes' : 'no' );
+				if ( $was !== CODCRM_Abandoned::enabled() ) {
+					CODCRM_Abandoned::purge_page_cache(); // les fiches produit en cache doivent charger / retirer le script.
+				}
+				update_option( 'codcrm_abandoned_delay', max( 5, min( 120, absint( $_POST['abandoned_delay'] ?? 15 ) ) ) );
+				update_option( 'codcrm_cod_final_status', 'processing' === ( $_POST['cod_final_status'] ?? '' ) ? 'processing' : 'on-hold' );
 				update_option( 'codcrm_shop_phone', mb_substr( sanitize_text_field( wp_unslash( $_POST['shop_phone'] ?? '' ) ), 0, 40 ) );
 				break;
 

@@ -146,3 +146,10 @@ enlèvement : seule la confirmation du transporteur fait foi.
 - Au survol des badges : « Commandes totales : N » avec une carte par commande (n°, date, statut, montant, vignette) et un lien « Voir commandes ».
 - Colonne **Produits** : vignettes avec pastille de quantité (3 max, puis « +N »).
 - Les statistiques de toute la page sont calculées en 2 requêtes (au lieu de 2 requêtes WooCommerce par ligne).
+
+## Commandes abandonnées (v1.8.0)
+- Fiche produit : dès qu'un **téléphone valide** est saisi dans le formulaire COD, une commande au statut **« Abandonnée »** est créée, puis mise à jour pendant la saisie (nom, gouvernorat, délégation, adresse, produit/variations, quantité). Si le client clique sur « Acheter », la vraie commande est créée et l'abandonnée est absorbée (agent, appels et tâches transférés) puis supprimée.
+- Une abandonnée est attribuée à un agent (mêmes règles que les autres commandes) après un délai d'inactivité (défaut 15 min), pour qu'il rappelle le client. Filtre « Commandes abandonnées » dans « Mes suivis ». Numéros de la liste noire du thème ignorés ; ni stock réduit, ni ventes, ni statistiques client.
+- Réglages (Suivi COD → Général, **activé par défaut**) : activer/désactiver, délai d'attribution, statut d'une commande validée (**En attente** = on-hold par défaut, ou En cours).
+- Le thème expose le filtre `wparabic_cod_order_status` (`inc/cod-form.php`). Les caches de pages sont vidés à chaque nouvelle version du plugin ; si une fiche produit reste en cache, videz-le pour qu'elle charge le script.
+- Les abandonnées consomment des numéros de commande (trous dans la numérotation) ; pensez à le mentionner dans la politique de confidentialité.

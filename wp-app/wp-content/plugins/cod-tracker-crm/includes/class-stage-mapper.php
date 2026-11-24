@@ -18,6 +18,7 @@ class CODCRM_Stage_Mapper {
 		'wcmcs-delivered'  => CODCRM_Stages::LIVRES,
 		'wcmcs-returned'   => CODCRM_Stages::RETOUR_DEFINITIF,
 		'cancelled'        => CODCRM_Stages::ANNULEE,
+		'codcrm-abandoned' => CODCRM_Stages::ABANDONNEE,
 	];
 
 	/**

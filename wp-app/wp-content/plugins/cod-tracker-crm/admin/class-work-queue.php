@@ -144,6 +144,8 @@ class CODCRM_Work_Queue {
 
 		if ( 'failed' === $flt ) {
 			$meta[] = [ 'key' => CODCRM_Attempts::META_FAILED, 'value' => 1, 'compare' => '>=', 'type' => 'NUMERIC' ];
+		} elseif ( 'abandoned' === $flt ) {
+			$args['status'] = CODCRM_Abandoned::SLUG;
 		} elseif ( 'waiting' === $flt ) {
 			$meta[] = [ 'key' => CODCRM_Dispatcher::META_WAITING, 'value' => '1' ];
 		} elseif ( 'risk' === $flt ) {
@@ -287,6 +289,8 @@ class CODCRM_Work_Queue {
 
 		if ( 'failed' === $flt ) {
 			$where[] = $has( CODCRM_Attempts::META_FAILED, 'CAST(x.meta_value AS SIGNED) >= 1' );
+		} elseif ( 'abandoned' === $flt ) {
+			$where[] = $wpdb->prepare( "{$o}.status = %s", CODCRM_Abandoned::STATUS ); // phpcs:ignore WordPress.DB.PreparedSQL
 		} elseif ( 'waiting' === $flt ) {
 			$where[] = $has( CODCRM_Dispatcher::META_WAITING, $wpdb->prepare( 'x.meta_value = %s', '1' ) );
 		} elseif ( 'risk' === $flt ) {
@@ -341,6 +345,7 @@ class CODCRM_Work_Queue {
 			''        => __( 'Tous les colis', 'cod-tracker-crm' ),
 			'failed'  => __( 'Avec échec(s) de livraison', 'cod-tracker-crm' ),
 			'risk'    => __( '⚠ Risque de retour', 'cod-tracker-crm' ),
+			'abandoned' => __( 'Commandes abandonnées', 'cod-tracker-crm' ),
 			'waiting' => __( 'En attente d\'un agent', 'cod-tracker-crm' ),
 			'due'     => __( 'Rappels du jour', 'cod-tracker-crm' ),
 			'overdue' => __( 'Rappels en retard', 'cod-tracker-crm' ),

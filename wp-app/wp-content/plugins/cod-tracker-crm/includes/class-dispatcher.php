@@ -328,6 +328,10 @@ class CODCRM_Dispatcher {
 		if ( 'auto' !== self::mode() || CODCRM_Agents::agent_of( $o ) || self::is_closed( $o ) ) {
 			return false;
 		}
+		// Commande abandonnée : on laisse au client le temps de finir de remplir le formulaire.
+		if ( (int) $o->get_meta( CODCRM_Abandoned::META_UNTIL ) > self::now() ) {
+			return false;
+		}
 		$ts  = self::now();
 		$res = self::pick( $o, $ts );
 

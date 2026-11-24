@@ -13,6 +13,7 @@ class CODCRM_Stages {
 	const SYNCHRONISEE = 'SYNCHRONISEE';
 	const EMBALLEE     = 'EMBALLEE';
 	const ANNULEE      = 'ANNULEE';
+	const ABANDONNEE   = 'ABANDONNEE';
 
 	// Transporteur.
 	const EN_ATTENTE         = 'EN_ATTENTE';
@@ -70,6 +71,7 @@ class CODCRM_Stages {
 			self::SYNCHRONISEE        => [ 'label' => __( 'Colis créé', 'cod-tracker-crm' ),          'color' => '#16a085', 'icon' => 'update' ],
 			self::EMBALLEE            => [ 'label' => __( 'Emballée', 'cod-tracker-crm' ),            'color' => '#8e44ad', 'icon' => 'archive' ],
 			self::ANNULEE             => [ 'label' => __( 'Annulée', 'cod-tracker-crm' ),             'color' => '#c0392b', 'icon' => 'dismiss' ],
+			self::ABANDONNEE          => [ 'label' => __( 'Abandonnée', 'cod-tracker-crm' ),          'color' => '#94a3b8', 'icon' => 'dismiss' ],
 			self::EN_ATTENTE          => [ 'label' => __( 'En attente (transporteur)', 'cod-tracker-crm' ), 'color' => '#f1a208', 'icon' => 'clock' ],
 			self::A_ENLEVER           => [ 'label' => __( 'À enlever', 'cod-tracker-crm' ),           'color' => '#e67e22', 'icon' => 'location' ],
 			self::ENLEVES             => [ 'label' => __( 'Enlevé', 'cod-tracker-crm' ),              'color' => '#e67e22', 'icon' => 'migrate' ],

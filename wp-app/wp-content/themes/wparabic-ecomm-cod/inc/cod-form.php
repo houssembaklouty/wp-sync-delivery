@@ -1114,7 +1114,8 @@ function wparabic_cod_ajax_handler() {
         $status_note = (function_exists('wparabic_current_lang') && wparabic_current_lang() === 'fr')
             ? 'Commande COD via le site'
             : 'طلب COD عبر الموقع';
-        $order->set_status('processing', $status_note);
+        // Filtre : le plugin COD Tracker CRM peut choisir « en attente » (on-hold).
+        $order->set_status(apply_filters('wparabic_cod_order_status', 'processing', $order), $status_note);
 
         $order_id = $order->save();
     } catch (Exception $e) {

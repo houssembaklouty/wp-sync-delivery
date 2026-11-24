@@ -69,7 +69,7 @@ class CODCRM_Customers {
 				FROM {$o} o
 				JOIN {$a} a ON a.order_id = o.id AND a.address_type = 'billing'
 				LEFT JOIN {$m} st ON st.order_id = o.id AND st.meta_key = '_codcrm_stage'
-				WHERE o.type = 'shop_order' AND o.status NOT IN ('trash','auto-draft','wc-checkout-draft')
+				WHERE o.type = 'shop_order' AND o.status NOT IN ('trash','auto-draft','wc-checkout-draft','wc-codcrm-abandoned')
 					AND {$key} IN ({$in})
 			) t GROUP BY p",
 			array_merge( CODCRM_Returns::DEFINITIVE, $need )
@@ -162,7 +162,7 @@ class CODCRM_Customers {
 		$key = self::key_sql( 'a.phone' );
 		$ids = $wpdb->get_col( $wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL
 			"SELECT o.id FROM {$o} o JOIN {$a} a ON a.order_id = o.id AND a.address_type = 'billing'
-			WHERE o.type = 'shop_order' AND o.status NOT IN ('trash','auto-draft','wc-checkout-draft') AND {$key} = %s
+			WHERE o.type = 'shop_order' AND o.status NOT IN ('trash','auto-draft','wc-checkout-draft','wc-codcrm-abandoned') AND {$key} = %s
 			ORDER BY o.date_created_gmt DESC, o.id DESC",
 			$phone8
 		) );
