@@ -153,6 +153,7 @@ class CODCRM_Order_Editor {
 			'logos'     => $logos,
 			'carrier'   => (string) $o->get_meta( '_wcmcs_forced_carrier' ),
 			'carrier_now' => (string) $o->get_meta( '_wcmcs_carrier_slug' ),
+			'tracking'  => (string) $o->get_meta( '_wcmcs_tracking_id' ),
 			'carriers'  => $carriers,
 			'agent'     => CODCRM_Agents::agent_of( $o ),
 			'agents'    => self::agent_list( CODCRM_Agents::agent_of( $o ) ),

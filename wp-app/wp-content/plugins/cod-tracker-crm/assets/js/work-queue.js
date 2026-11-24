@@ -446,6 +446,7 @@
                 + field('Statut', '<div class="ed-inline"><span class="ed-dot"></span><select class="f-status">' + opts(d.statuses, d.status) + '</select></div>', 'f-wrap-status')
                 + field('Société de livraison', '<div class="ed-inline ed-carrier"><span class="ed-logo">' + carrierLogo(d.carrier) + '</span><select class="f-carrier"' + ro + '>'
                     + opts(d.carriers, d.carrier || '', d.carrier_now ? 'Automatique (' + (d.carriers[d.carrier_now] || d.carrier_now) + ')' : 'Automatique') + '</select></div>')
+                + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">⧉</button></div></div>' : '')
                 + field('Attribuée à', '<select class="f-agent"' + (d.manager ? '' : ' disabled title="Réservé aux responsables"') + '>' + opts(agentMap, d.agent || '', '— Non assignée —') + '</select>')
                 + '</section>'
                 // Options
@@ -518,6 +519,12 @@
         function bind() {
             $ed.on('input change', 'input, select, textarea', function () { if (!$(this).is('.f-psearch')) { setDirty(true); } });
             $ed.on('click', '.ed-x', function () { close(); });
+            $ed.on('click', '.ed-copy', function () {
+                var $b = $(this), t = d.tracking;
+                function done() { $b.text('✓'); setTimeout(function () { $b.text('⧉'); }, 1500); }
+                if (navigator.clipboard) { navigator.clipboard.writeText(t).then(done); }
+                else { var $i = $('<input>').val(t).appendTo('body').select(); document.execCommand('copy'); $i.remove(); done(); }
+            });
             $ed.on('change', '.f-status', refreshStatus);
             $ed.on('change', '.f-carrier', function () { $ed.find('.ed-logo').html(carrierLogo($(this).val())); });
             $ed.on('change', '.f-reminder', function () {
