@@ -83,7 +83,7 @@ class CODCRM_Work_Queue {
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
 				'ed_title'    => __( 'Modifier la commande n°', 'cod-tracker-crm' ),
 				'ed_locked'   => __( 'Colis déjà créé chez le transporteur : client, produits, frais et transporteur sont verrouillés (le transporteur n\'est pas mis à jour).', 'cod-tracker-crm' ),
-				'ed_unsync_confirm' => __( 'Supprimer le colis chez le transporteur ? La commande repassera à « Confirmée » et pourra être modifiée, puis re-synchronisée.', 'cod-tracker-crm' ),
+				'ed_unsync_confirm' => __( 'Retirer le code à barre ? La commande repassera à « Confirmée » et pourra être modifiée, puis re-synchronisée. Si le transporteur n\'autorise pas l\'annulation, supprimez aussi le colis dans son espace expéditeur.', 'cod-tracker-crm' ),
 				'ed_open_dashboard' => __( 'Ouvrir l\'espace expéditeur', 'cod-tracker-crm' ),
 				'ed_unsync_local' => __( 'Je l\'ai supprimé chez le transporteur — retirer le code ici', 'cod-tracker-crm' ),
 				'ed_unsync_local_confirm' => __( 'Retirer le code de la commande ? Si le colis existe encore chez le transporteur, il sera livré quand même : supprimez-le d\'abord là-bas.', 'cod-tracker-crm' ),
