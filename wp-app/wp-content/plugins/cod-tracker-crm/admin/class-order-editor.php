@@ -17,6 +17,7 @@ class CODCRM_Order_Editor {
 		add_action( 'wp_ajax_codcrm_status_history', [ __CLASS__, 'ajax_history' ] );
 		add_action( 'wp_ajax_codcrm_order_get', [ __CLASS__, 'ajax_get' ] );
 		add_action( 'wp_ajax_codcrm_order_save', [ __CLASS__, 'ajax_save' ] );
+		add_action( 'wp_ajax_codcrm_order_unsync', [ __CLASS__, 'ajax_unsync' ] );
 		add_action( 'wp_ajax_codcrm_product_search', [ __CLASS__, 'ajax_product_search' ] );
 	}
 
@@ -94,6 +95,54 @@ class CODCRM_Order_Editor {
 		wp_send_json_success( [ 'html' => $cards ? implode( '', $cards ) : '<p class="codcrm-muted">' . esc_html__( 'Aucun historique.', 'cod-tracker-crm' ) . '</p>' ] );
 	}
 
+	// ── Suppression du colis chez le transporteur ──────────────
+
+	/**
+	 * Annule le colis chez le transporteur (MultiCarrier Sync) puis remet la commande à « Confirmée »
+	 * (statut d'avant la synchro) pour qu'elle redevienne modifiable. MCS ne re-synchronise jamais
+	 * seul : la re-synchronisation reste une action manuelle.
+	 */
+	public static function ajax_unsync(): void {
+		$o = self::order_from_request();
+		if ( ! class_exists( 'WCMCS_Sync_Manager' ) ) {
+			wp_send_json_error( [ 'message' => __( 'MultiCarrier Sync est requis.', 'cod-tracker-crm' ) ] );
+		}
+		$id   = $o->get_id();
+		$lock = 'codcrm_lock_edit_' . $id;
+		if ( ! add_option( $lock, time(), '', false ) ) {
+			if ( (int) get_option( $lock ) > time() - 60 ) {
+				wp_send_json_error( [ 'message' => __( 'Cette commande est en cours de modification.', 'cod-tracker-crm' ) ] );
+			}
+			update_option( $lock, time(), false );
+		}
+		try {
+			if ( ! in_array( $o->get_status(), [ 'wcmcs-synced', 'wcmcs-packed' ], true ) ) {
+				wp_send_json_error( [ 'message' => __( 'Le colis ne peut plus être supprimé : la commande a dépassé l\'étape « Synchronisée / Emballée ».', 'cod-tracker-crm' ) ] );
+			}
+			$res = WCMCS_Sync_Manager::cancel_single( $id );
+			if ( 'success' !== ( $res['status'] ?? '' ) ) {
+				wp_send_json_error( [ 'message' => (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) ) ] );
+			}
+			self::after_unsync( wc_get_order( $id ), (string) $res['tracking_id'] );
+		} finally {
+			delete_option( $lock );
+		}
+		ob_start();
+		CODCRM_Work_Queue::render_row( wc_get_order( $id ), CODCRM_Tasks::next_open_for_orders( [ $id ] )[ $id ] ?? null );
+		wp_send_json_success( [ 'row' => ob_get_clean(), 'message' => (string) $res['message'] ] );
+	}
+
+	/** Après annulation réussie : statut « Confirmée » + trace dans la chronologie. */
+	public static function after_unsync( WC_Order $o, string $tracking ): void {
+		$o->update_status( 'wcmcs-confirmed', '[COD] ' . wp_get_current_user()->display_name . ' : ' );
+		CODCRM_Events::add( $o->get_id(), [
+			'type'     => 'note',
+			'note'     => sprintf( /* translators: %s code */ __( 'Colis %s supprimé chez le transporteur — commande remise à « Confirmée »', 'cod-tracker-crm' ), $tracking ),
+			'actor_id' => get_current_user_id(),
+			'source'   => 'agent',
+		] );
+	}
+
 	// ── Lecture ────────────────────────────────────────────────
 
 	public static function ajax_get(): void {
@@ -154,6 +203,7 @@ class CODCRM_Order_Editor {
 			'carrier'   => (string) $o->get_meta( '_wcmcs_forced_carrier' ),
 			'carrier_now' => (string) $o->get_meta( '_wcmcs_carrier_slug' ),
 			'tracking'  => (string) $o->get_meta( '_wcmcs_tracking_id' ),
+			'can_unsync' => in_array( $o->get_status(), [ 'wcmcs-synced', 'wcmcs-packed' ], true ) && '' !== (string) $o->get_meta( '_wcmcs_tracking_id' ),
 			'carriers'  => $carriers,
 			'agent'     => CODCRM_Agents::agent_of( $o ),
 			'agents'    => self::agent_list( CODCRM_Agents::agent_of( $o ) ),

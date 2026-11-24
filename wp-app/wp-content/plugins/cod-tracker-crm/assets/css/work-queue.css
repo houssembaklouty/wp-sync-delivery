@@ -226,3 +226,4 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
 .codcrm-ed .ed-track { background: #f8fafc; border: 1px dashed #8b5cf6; border-radius: 8px; padding: 6px 6px 6px 12px; }
 .codcrm-ed .ed-code { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; background: none; padding: 0; word-break: break-all; }
 .codcrm-ed .ed-track .ed-icon { width: 34px; height: 34px; cursor: pointer; }
+.codcrm-ed .ed-unsync:hover { background: #fee2e2; border-color: #fca5a5; }

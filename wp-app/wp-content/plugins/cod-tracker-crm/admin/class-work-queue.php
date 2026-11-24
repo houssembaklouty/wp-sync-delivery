@@ -83,6 +83,8 @@ class CODCRM_Work_Queue {
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
 				'ed_title'    => __( 'Modifier la commande n°', 'cod-tracker-crm' ),
 				'ed_locked'   => __( 'Colis déjà créé chez le transporteur : client, produits, frais et transporteur sont verrouillés (le transporteur n\'est pas mis à jour).', 'cod-tracker-crm' ),
+				'ed_unsync_confirm' => __( 'Supprimer le colis chez le transporteur ? La commande repassera à « Confirmée » et pourra être modifiée, puis re-synchronisée.', 'cod-tracker-crm' ),
+				'ed_unsync_done' => __( 'Colis supprimé. Commande remise à « Confirmée ».', 'cod-tracker-crm' ),
 				'ed_unsaved'  => __( 'Fermer sans enregistrer les modifications ?', 'cod-tracker-crm' ),
 			],
 		] );

@@ -446,7 +446,8 @@
                 + field('Statut', '<div class="ed-inline"><span class="ed-dot"></span><select class="f-status">' + opts(d.statuses, d.status) + '</select></div>', 'f-wrap-status')
                 + field('Société de livraison', '<div class="ed-inline ed-carrier"><span class="ed-logo">' + carrierLogo(d.carrier) + '</span><select class="f-carrier"' + ro + '>'
                     + opts(d.carriers, d.carrier || '', d.carrier_now ? 'Automatique (' + (d.carriers[d.carrier_now] || d.carrier_now) + ')' : 'Automatique') + '</select></div>')
-                + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">⧉</button></div></div>' : '')
+                + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">⧉</button>'
+                    + (d.can_unsync ? '<button type="button" class="ed-icon ed-unsync" title="Supprimer le colis chez le transporteur" aria-label="Supprimer le colis">🗑</button>' : '') + '</div></div>' : '')
                 + field('Attribuée à', '<select class="f-agent"' + (d.manager ? '' : ' disabled title="Réservé aux responsables"') + '>' + opts(agentMap, d.agent || '', '— Non assignée —') + '</select>')
                 + '</section>'
                 // Options
@@ -519,6 +520,22 @@
         function bind() {
             $ed.on('input change', 'input, select, textarea', function () { if (!$(this).is('.f-psearch')) { setDirty(true); } });
             $ed.on('click', '.ed-x', function () { close(); });
+            $ed.on('click', '.ed-unsync', function () {
+                if (!window.confirm(i18n.ed_unsync_confirm)) { return; }
+                var $b = $(this).prop('disabled', true);
+                post({ action: 'codcrm_order_unsync', order_id: orderId }).done(function (r) {
+                    if (r && r.success) {
+                        delete histCache[orderId];
+                        var $old = $('tr[data-order="' + orderId + '"]');
+                        if (r.data.row && $old.length) { var $new = $(r.data.row).addClass('codcrm-flash'); $old.replaceWith($new); $trigger = $new.find('.codcrm-edit'); }
+                        toast('✓ ' + (r.data.message || i18n.ed_unsync_done));
+                        close(true); openEditor(orderId, $trigger); // rouvre : la commande est de nouveau modifiable.
+                    } else {
+                        $b.prop('disabled', false);
+                        $ed.find('.ed-err').text((r && r.data && r.data.message) || i18n.error).prop('hidden', false); $ed.scrollTop(0);
+                    }
+                }).fail(function () { $b.prop('disabled', false); $ed.find('.ed-err').text(i18n.error).prop('hidden', false); });
+            });
             $ed.on('click', '.ed-copy', function () {
                 var $b = $(this), t = d.tracking;
                 function done() { $b.text('✓'); setTimeout(function () { $b.text('⧉'); }, 1500); }
