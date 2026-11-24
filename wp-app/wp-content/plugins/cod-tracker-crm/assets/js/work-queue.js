@@ -425,7 +425,7 @@
                 + (L ? '<div class="ed-alert ed-warn">🔒 ' + esc(i18n.ed_locked) + '</div>' : '')
                 + '<div class="ed-body"><div class="ed-main">'
                 // Client
-                + '<section class="ed-card' + (L ? ' is-locked' : '') + '"><h3>👤 Détails du client' + lock + '</h3><div class="ed-grid">'
+                + '<section class="ed-card' + (L ? ' is-locked' : '') + '"><h3>Détails du client' + lock + '</h3><div class="ed-grid">'
                 + field('Prénom', '<input class="f-first" value="' + esc(d.first) + '"' + ro + ' />')
                 + field('Nom', '<input class="f-last" value="' + esc(d.last) + '"' + ro + ' />')
                 + field('Téléphone', '<div class="ed-inline"><input type="tel" inputmode="tel" class="f-phone" value="' + esc(d.phone) + '"' + ro + ' />'
@@ -437,26 +437,26 @@
                 + field('Note du client', '<textarea class="f-note" rows="2" placeholder="Instructions de livraison…">' + esc(d.note) + '</textarea>', 'ed-wide')
                 + '</div></section>'
                 // Produits
-                + '<section class="ed-card' + (L ? ' is-locked' : '') + '"><h3>🛍️ Produits' + lock + ' <span class="ed-count"></span></h3>'
+                + '<section class="ed-card' + (L ? ' is-locked' : '') + '"><h3>Produits' + lock + ' <span class="ed-count"></span></h3>'
                 + (L ? '' : '<div class="ed-search"><span class="ed-search-ico">🔍</span><input type="search" class="f-psearch" placeholder="Ajouter un produit : tapez son nom…" autocomplete="off" role="combobox" aria-expanded="false" /><div class="ed-results" role="listbox"></div></div>')
                 + '<div class="ed-undo" hidden></div><div class="ed-items"></div></section>'
                 + '</div><aside class="ed-side">'
                 // Commande
-                + '<section class="ed-card"><h3>📦 Commande</h3>'
+                + '<section class="ed-card"><h3>Commande</h3>'
                 + field('Statut', '<div class="ed-inline"><span class="ed-dot"></span><select class="f-status">' + opts(d.statuses, d.status) + '</select></div>', 'f-wrap-status')
                 + field('Société de livraison', '<div class="ed-inline ed-carrier"><span class="ed-logo">' + carrierLogo(d.carrier) + '</span><select class="f-carrier"' + ro + '>'
                     + opts(d.carriers, d.carrier || '', d.carrier_now ? 'Automatique (' + (d.carriers[d.carrier_now] || d.carrier_now) + ')' : 'Automatique') + '</select></div>')
                 + field('Attribuée à', '<select class="f-agent"' + (d.manager ? '' : ' disabled title="Réservé aux responsables"') + '>' + opts(agentMap, d.agent || '', '— Non assignée —') + '</select>')
                 + '</section>'
                 // Options
-                + '<section class="ed-card"><h3>⚙️ Options</h3>'
+                + '<section class="ed-card"><h3>Options</h3>'
                 + '<label class="ed-switch"><input type="checkbox" class="f-exchange"' + (d.exchange ? ' checked' : '') + ' /><span></span> Commande d\'échange</label>'
                 + '<label class="ed-switch"><input type="checkbox" class="f-reminder" /><span></span> Relance (rappel agent)</label>'
                 + '<div class="ed-field f-reminder-box" hidden><label>Rappeler le</label><input type="datetime-local" class="f-reminder-at" /></div>'
                 + field('Note privée', '<textarea class="f-private" rows="2" maxlength="500" placeholder="Visible uniquement par l\'équipe…"></textarea>')
                 + '</section>'
                 // Résumé
-                + '<section class="ed-card ed-summary' + (L ? ' is-locked' : '') + '"><h3>🧾 Résumé' + lock + '</h3>'
+                + '<section class="ed-card ed-summary' + (L ? ' is-locked' : '') + '"><h3>Résumé' + lock + '</h3>'
                 + '<div class="ed-row"><span>Sous-total</span><strong class="s-sub">0</strong></div>'
                 + '<div class="ed-row"><label for="codcrm-ship">Frais de livraison</label><input id="codcrm-ship" type="number" step="0.001" min="0" class="f-ship" value="' + esc(d.shipping) + '"' + ro + ' /></div>'
                 + (d.discount ? '<div class="ed-row"><span>Remise (' + esc(d.coupons.join(', ')) + ')</span><strong>− ' + money(d.discount) + '</strong></div>' : '')
