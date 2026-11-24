@@ -447,7 +447,7 @@
                 + field('Société de livraison', '<div class="ed-inline ed-carrier"><span class="ed-logo">' + carrierLogo(d.carrier) + '</span><select class="f-carrier"' + ro + '>'
                     + opts(d.carriers, d.carrier || '', d.carrier_now ? 'Automatique (' + (d.carriers[d.carrier_now] || d.carrier_now) + ')' : 'Automatique') + '</select></div>')
                 + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">⧉</button>'
-                    + (d.can_unsync ? '<button type="button" class="ed-icon ed-unsync" title="Supprimer le colis chez le transporteur" aria-label="Supprimer le colis">🗑</button>' : '') + '</div></div>' : '')
+                    + (d.can_unsync ? '<button type="button" class="ed-icon ed-unsync" title="Supprimer le colis chez le transporteur" aria-label="Supprimer le colis"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>' : '') + '</div></div>' : '')
                 + field('Attribuée à', '<select class="f-agent"' + (d.manager ? '' : ' disabled title="Réservé aux responsables"') + '>' + opts(agentMap, d.agent || '', '— Non assignée —') + '</select>')
                 + '</section>'
                 // Options

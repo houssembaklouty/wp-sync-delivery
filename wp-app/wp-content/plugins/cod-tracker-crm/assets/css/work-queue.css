@@ -227,3 +227,5 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
 .codcrm-ed .ed-code { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; background: none; padding: 0; word-break: break-all; }
 .codcrm-ed .ed-track .ed-icon { width: 34px; height: 34px; cursor: pointer; }
 .codcrm-ed .ed-unsync:hover { background: #fee2e2; border-color: #fca5a5; }
+.codcrm-ed .ed-unsync { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.codcrm-ed .ed-unsync:hover { color: #b91c1c; background: #fee2e2; border-color: #fca5a5; }
