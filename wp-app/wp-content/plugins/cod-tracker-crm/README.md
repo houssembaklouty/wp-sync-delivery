@@ -174,3 +174,8 @@ Cinquième son proposé dans Réglages → Général → « Son nouvelle command
 - Un agent est alerté pour les commandes qui lui sont attribuées ; un responsable pour toute nouvelle commande (abandonnées comprises). Un seul son par commande, même avec plusieurs onglets.
 - Les notifications du navigateur s'activent depuis la cloche (« Activer les notifications du navigateur ») ; il faut garder un onglet de l'admin ouvert (pas de notification navigateur fermé).
 - Réglage : Suivi COD → Général → « Alertes sur toutes les pages » (activé par défaut).
+
+### Alertes fiables en arrière-plan (v1.10.1)
+- « Mes suivis » continue de vérifier les commandes quand l'onglet est caché ou que vous êtes sur un autre site, et envoie une **notification de bureau** (avec le son du système) — minuterie dans un Web Worker, non ralentie par le navigateur.
+- Bandeau « 🔔 Activer les alertes (son + notifications) » en haut de l'admin tant que les notifications ne sont pas autorisées : un clic autorise les notifications et débloque le son. Cloche orange dans la barre d'admin quand le navigateur bloque le son (cliquer n'importe où sur la page, ou Chrome → cadenas → Paramètres du site → Son : Autoriser).
+- Le mp3 est autorisé dès ce premier clic ; s'il est refusé, repli automatique sur la clochette.

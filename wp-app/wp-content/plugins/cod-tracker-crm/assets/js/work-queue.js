@@ -693,7 +693,8 @@
     $(document).on('click', '.codcrm-edit', function (e) { e.preventDefault(); openEditor($(this).data('order'), $(this)); });
 
     // ── Mes suivis en direct : lignes mises à jour / nouvelles / retirées sans recharger la page ──
-    (function () {
+    // Démarré au « DOM prêt » : notify.js (window.codcrmAlert), chargé après ce fichier, est alors disponible.
+    $(function () {
         var L = codcrm.live;
         var $tbody = $('table.codcrm-table tbody');
         if (!L || !$tbody.length) { return; }
@@ -732,6 +733,14 @@
             try { window.localStorage.setItem(NOTIF, JSON.stringify(n)); } catch (e) { /* rien */ }
         }
         function announce(items) {
+            // Module commun (notify.js) : son, notification de bureau quand l'onglet est en arrière-plan, anti-doublon.
+            if (window.codcrmAlert && !first) {
+                var mapped = $.map(items, function (a) { return { id: a.id, number: (a.meta && a.meta.number) || a.id, phone: (a.meta && a.meta.phone) || '', abandoned: !!(a.meta && a.meta.abandoned) }; });
+                var fr = window.codcrmAlert.announce(mapped, { toast: false, badge: false });
+                if (fr.length) { var f0 = fr[0]; toast('🔔 ' + (f0.abandoned ? i18n.live_abandoned : i18n.live_new) + ' #' + f0.number + (f0.phone ? ' — ' + f0.phone : '') + (fr.length > 1 ? ' (+' + (fr.length - 1) + ')' : '')); }
+                sndBtn();
+                return;
+            }
             var n = notified(), fresh = $.grep(items, function (it) { return !n[it.id]; });
             if (!fresh.length) { return; }
             $.each(fresh, function (_, it) { markNotified(it.id); });
@@ -782,7 +791,8 @@
             return { stage: u.get('stage') || 'actif', flt: u.get('flt') || '', agent: u.get('agent') || 'all', paged: parseInt(u.get('paged'), 10) || 1 };
         }
         function tick() {
-            if (running || document.visibilityState === 'hidden') { schedule(); return; }
+            // On continue en arrière-plan (autre onglet / autre site) pour pouvoir alerter l'agent.
+            if (running) { schedule(); return; }
             running = true;
             var f = qs();
             $.post(codcrm.ajax, { action: 'codcrm_queue_live', nonce: codcrm.nonce, since_utc: now.utc, since_db: now.db, ids: rowIds(), stage: f.stage, flt: f.flt, agent: f.agent, paged: f.paged })
@@ -793,18 +803,22 @@
                 .fail(function () { fails++; showState(false); })
                 .always(function () { running = false; schedule(); });
         }
+        function delay() { return Math.min(60000, (document.hidden ? 15000 : L.interval) * (1 + Math.min(fails, 6))); }
+        // Minuterie dans un Web Worker (non ralentie par le navigateur en arrière-plan) si disponible.
+        var loop = window.codcrmAlert ? window.codcrmAlert.loop(function (next) { pendingNext = next; tick(); }, delay) : null, pendingNext = null;
         function schedule() {
+            if (loop) { if (pendingNext) { var n = pendingNext; pendingNext = null; n(); } return; }
             clearTimeout(timer);
-            timer = setTimeout(tick, Math.min(60000, L.interval * (1 + Math.min(fails, 6))));
+            timer = setTimeout(tick, delay());
         }
         document.addEventListener('visibilitychange', function () {
-            if (document.visibilityState === 'visible') { clearTimeout(timer); showState(true); tick(); } else { showState(false); }
+            if (document.visibilityState === 'visible') { showState(true); if (!loop) { clearTimeout(timer); tick(); } } else { showState(true); }
         });
         showState(true);
         first = true;
         // Premier passage après le chargement : on mémorise ce qui est déjà affiché (pas de son), puis la boucle démarre.
         $.each(rowIds(), function (_, id) { var n = notified(); if (!n[id]) { markNotified(id); } });
         first = false;
-        schedule();
-    })();
+        if (loop) { loop.start(); } else { schedule(); }
+    });
 })(jQuery);

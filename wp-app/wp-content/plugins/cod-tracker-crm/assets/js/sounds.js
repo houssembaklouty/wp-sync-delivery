@@ -1,7 +1,7 @@
 /* Sons de notification (Web Audio : aucun fichier audio). window.codcrmSound.play(nom, volume 0-100). */
 (function () {
     'use strict';
-    var ctx = null;
+    var ctx = null, elems = {}, fileOk = {};
     function audio() {
         if (!ctx) {
             var C = window.AudioContext || window.webkitAudioContext;
@@ -30,23 +30,39 @@
         names: Object.keys(SOUNDS).concat(Object.keys(window.codcrmSoundFiles || {})),
         /** Le navigateur autorise-t-il le son (après une interaction de l'utilisateur) ? */
         ready: function () { var c = audio(); return !!c && c.state === 'running'; },
+        fileReady: function (k) { return !!fileOk[k]; },
         unlock: function () {
             var c = audio();
-            if (c && c.state === 'suspended') { return c.resume().then(function () { return c.state === 'running'; }); }
+            // Fichiers audio : une lecture muette pendant le geste de l'utilisateur les autorise ensuite.
+            var files = window.codcrmSoundFiles || {};
+            Object.keys(files).forEach(function (k) {
+                var a = elems[k] || (elems[k] = new Audio(files[k]));
+                a.preload = 'auto'; a.muted = true;
+                var pr = a.play();
+                if (pr && pr.then) { pr.then(function () { a.pause(); a.currentTime = 0; a.muted = false; fileOk[k] = true; }).catch(function () { a.muted = false; }); }
+            });
+            if (c && c.state === 'suspended') { return c.resume().then(function () { return c.state === 'running'; }).catch(function () { return false; }); }
             return Promise.resolve(!!c);
         },
         play: function (name, volume) {
-            var files = window.codcrmSoundFiles || {};
+            var files = window.codcrmSoundFiles || {}, vol = Math.max(0, Math.min(1, (volume == null ? 70 : volume) / 100));
             if (files[name]) { // fichier audio (mp3) du plugin
-                var a = new Audio(files[name]);
-                a.volume = Math.max(0, Math.min(1, (volume == null ? 70 : volume) / 100));
+                var a = elems[name] || (elems[name] = new Audio(files[name]));
+                a.muted = false; a.volume = vol; a.currentTime = 0;
                 var pr = a.play();
-                if (pr && pr.then) { pr.then(function () { window.codcrmSound.plays = (window.codcrmSound.plays || 0) + 1; }).catch(function () { /* bloqué par le navigateur */ }); }
-                else { window.codcrmSound.plays = (window.codcrmSound.plays || 0) + 1; }
+                if (pr && pr.then) {
+                    pr.then(function () { window.codcrmSound.plays = (window.codcrmSound.plays || 0) + 1; })
+                      .catch(function () { window.codcrmSound.play('bell', volume); }); // refusé : repli sur la clochette.
+                } else { window.codcrmSound.plays = (window.codcrmSound.plays || 0) + 1; }
                 return true;
             }
             var c = audio(), fn = SOUNDS[name];
-            if (!c || !fn || c.state !== 'running') { return false; }
+            if (!c || !fn) { return false; }
+            if (c.state !== 'running') {
+                // La page a peut-être déjà reçu un clic (activation) : on tente de reprendre le contexte audio.
+                c.resume().then(function () { if (c.state === 'running') { window.codcrmSound.play(name, volume); } }).catch(function () { /* bloqué */ });
+                return false;
+            }
             var out = c.createGain();
             out.gain.value = Math.max(0, Math.min(1, (volume == null ? 70 : volume) / 100));
             out.connect(c.destination);

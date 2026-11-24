@@ -45,12 +45,19 @@ class CODCRM_Notify {
 			'sound'          => CODCRM_Work_Queue::live_sound(),
 			'volume'         => CODCRM_Work_Queue::live_volume(),
 			'soundAbandoned' => 'yes' === get_option( 'codcrm_live_sound_abandoned', 'yes' ),
+			'icon'           => (string) get_site_icon_url( 128 ),
 			'i18n'           => [
 				'new'       => __( 'Nouvelle commande', 'cod-tracker-crm' ),
 				'abandoned' => __( 'Commande abandonnée', 'cod-tracker-crm' ),
 				'enable'    => __( 'Activer les notifications du navigateur', 'cod-tracker-crm' ),
 				'enabled'   => __( 'Notifications du navigateur activées', 'cod-tracker-crm' ),
-				'blocked'   => __( 'Notifications bloquées : autorisez-les dans les réglages du navigateur (cadenas de la barre d\'adresse).', 'cod-tracker-crm' ),
+				'blocked'   => __( 'Notifications bloquées pour ce site : cliquez sur le cadenas de la barre d\'adresse → Notifications : Autoriser, puis rechargez la page.', 'cod-tracker-crm' ),
+				'bannerText' => __( 'Activez les alertes pour être prévenu des nouvelles commandes, même quand vous êtes sur un autre onglet ou un autre site (garder un onglet de l\'admin ouvert).', 'cod-tracker-crm' ),
+				'enableAll' => __( 'Activer les alertes (son + notifications)', 'cod-tracker-crm' ),
+				'later'     => __( 'Plus tard', 'cod-tracker-crm' ),
+				'soundOff'  => __( 'Son bloqué par le navigateur : cliquez n\'importe où sur la page pour l\'activer (ou Chrome → cadenas → Paramètres du site → Son : Autoriser).', 'cod-tracker-crm' ),
+				'title'     => __( 'Suivi COD — nouvelles commandes', 'cod-tracker-crm' ),
+				'testBody'  => __( 'Les alertes sont activées. Vous serez prévenu ici des nouvelles commandes.', 'cod-tracker-crm' ),
 			],
 		] );
 	}
