@@ -234,3 +234,6 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
 .codcrm-ed .ed-manual a { color: #6d28d9; font-weight: 600; }
 .codcrm-ed .ed-danger { background: #dc2626; border-color: #dc2626; color: #fff; height: auto; min-height: 34px; padding: 6px 12px; text-align: left; }
 .codcrm-ed .ed-danger:hover:not(:disabled) { background: #b91c1c; }
+.codcrm-notice-warn { position: fixed; left: 50%; top: 24px; transform: translateX(-50%); z-index: 100003; width: 460px; max-width: 92vw; padding: 14px 16px; border-radius: 12px; background: #fffbeb; border: 2px solid #f59e0b; color: #92400e; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+.codcrm-notice-warn p { margin: 6px 0 10px; }
+.codcrm-notice-warn .ed-btn { height: 34px; padding: 0 16px; border-radius: 8px; border: 1px solid #f59e0b; background: #f59e0b; color: #fff; font-weight: 600; cursor: pointer; }

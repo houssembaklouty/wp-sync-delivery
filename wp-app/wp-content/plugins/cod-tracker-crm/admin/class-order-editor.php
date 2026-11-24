@@ -198,14 +198,14 @@ class CODCRM_Order_Editor {
 				// le code est retiré côté boutique quand même, avec un avertissement.
 				$warn = '';
 				if ( $local || in_array( $slug, self::manual_cancel_carriers(), true ) ) {
-					$warn = sprintf( /* translators: %s transporteur */ __( '%s n\'autorise pas l\'annulation automatique : pensez à supprimer le colis dans votre espace expéditeur.', 'cod-tracker-crm' ), ucfirst( $slug ) );
+					$warn = sprintf( /* translators: %s transporteur */ __( '%s n\'autorise pas l\'annulation automatique : le colis existe toujours chez lui et sera livré si vous ne le supprimez pas vous-même.', 'cod-tracker-crm' ), ucfirst( $slug ) );
 				} else {
 					$res = WCMCS_Sync_Manager::cancel_single( $id );
 					if ( 'success' === ( $res['status'] ?? '' ) ) {
 						self::after_unsync( wc_get_order( $id ), (string) $res['tracking_id'] );
 						$warn = null;
 					} else {
-						$warn = self::friendly_error( (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) ) ) . ' — ' . __( 'pensez à supprimer le colis chez le transporteur.', 'cod-tracker-crm' );
+						$warn = self::friendly_error( (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) ) ) . ' — ' . __( 'le colis existe toujours chez le transporteur et sera livré si vous ne le supprimez pas vous-même.', 'cod-tracker-crm' );
 					}
 				}
 				if ( null !== $warn ) {

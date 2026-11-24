@@ -355,6 +355,11 @@
         setTimeout(function () { $t.addClass('is-in'); }, 10);
         setTimeout(function () { $t.removeClass('is-in'); setTimeout(function () { $t.remove(); }, 300); }, 3200);
     }
+    // Avertissement persistant (reste affiché jusqu'à fermeture) : le colis existe encore chez le transporteur.
+    function notice(msg) {
+        var $n = $('<div class="codcrm-notice-warn" role="alert"><strong>⚠ ' + esc(i18n.ed_not_deleted) + '</strong><p>' + esc(msg) + '</p><button type="button" class="ed-btn">OK</button></div>').appendTo('body');
+        $n.on('click', 'button', function () { $n.remove(); });
+    }
     var FIELD_LABELS = { first_name: 'prénom', last_name: 'nom', phone: 'téléphone', phone2: 'téléphone 2', state: 'ville', address: 'adresse', email: 'email',
         carrier: 'société de livraison', items: 'produits', shipping: 'frais', coupon: 'code promo', note_client: 'note client', exchange: 'échange',
         agent: 'agent', note_privee: 'note privée', relance: 'relance', status: 'statut' };
@@ -528,9 +533,9 @@
                         delete histCache[orderId];
                         var $old = $('tr[data-order="' + orderId + '"]');
                         if (r.data.row && $old.length) { var $new = $(r.data.row).addClass('codcrm-flash'); $old.replaceWith($new); $trigger = $new.find('.codcrm-edit'); }
-                        toast('✓ ' + (r.data.message || i18n.ed_unsync_done) + (r.data.warning ? ' ⚠ ' + r.data.warning : ''));
-                        if (r.data.warning && r.data.dashboard) { window.open(r.data.dashboard, '_blank', 'noopener'); }
+                        toast('✓ ' + (r.data.message || i18n.ed_unsync_done));
                         close(true); openEditor(orderId, $trigger); // rouvre : la commande est de nouveau modifiable.
+                        if (r.data.warning) { notice(r.data.warning); } // colis NON supprimé chez le transporteur.
                     } else {
                         $b.prop('disabled', false);
                         $ed.find('.ed-err').text((r && r.data && r.data.message) || i18n.error).prop('hidden', false); $ed.scrollTop(0);

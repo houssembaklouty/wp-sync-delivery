@@ -87,6 +87,7 @@ class CODCRM_Work_Queue {
 				'ed_open_dashboard' => __( 'Ouvrir l\'espace expéditeur', 'cod-tracker-crm' ),
 				'ed_unsync_local' => __( 'Je l\'ai supprimé chez le transporteur — retirer le code ici', 'cod-tracker-crm' ),
 				'ed_unsync_local_confirm' => __( 'Retirer le code de la commande ? Si le colis existe encore chez le transporteur, il sera livré quand même : supprimez-le d\'abord là-bas.', 'cod-tracker-crm' ),
+				'ed_not_deleted' => __( 'Le colis n\'est PAS supprimé chez le transporteur', 'cod-tracker-crm' ),
 				'ed_unsync_done' => __( 'Colis supprimé. Commande remise à « Confirmée ».', 'cod-tracker-crm' ),
 				'ed_unsaved'  => __( 'Fermer sans enregistrer les modifications ?', 'cod-tracker-crm' ),
 			],
