@@ -141,6 +141,19 @@ class CODCRM_Customers {
 		return '<div class="codcrm-cbadges codcrm-client-hist" data-order="' . (int) $order->get_id() . '">' . implode( '', $h ) . '</div>';
 	}
 
+	/** Attributs lisibles d'un article : variation (« Noir, 40 ») ou, à défaut, attributs choisis en méta (abandonnée). */
+	public static function item_attrs( WC_Order_Item_Product $item ): string {
+		$p = $item->get_product();
+		if ( $p && $p->is_type( 'variation' ) ) {
+			return wp_strip_all_tags( wc_get_formatted_variation( $p, true, false, false ) );
+		}
+		$parts = [];
+		foreach ( $item->get_formatted_meta_data( '_', true ) as $m ) {
+			$parts[] = wp_strip_all_tags( $m->display_key ) . ' : ' . wp_strip_all_tags( $m->display_value );
+		}
+		return implode( ', ', $parts );
+	}
+
 	/** Vignette d'un produit de commande (variation, sinon parent). */
 	public static function item_image( WC_Order_Item_Product $item ): string {
 		$p  = $item->get_product();

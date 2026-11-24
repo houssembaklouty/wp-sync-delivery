@@ -438,10 +438,9 @@ class CODCRM_Work_Queue {
 				continue;
 			}
 			$img    = CODCRM_Customers::item_image( $item );
-			$p      = $item->get_product();
-			$attrs  = $p && $p->is_type( 'variation' ) ? wp_strip_all_tags( wc_get_formatted_variation( $p, true, false, false ) ) : '';
+			$attrs  = CODCRM_Customers::item_attrs( $item );
 			$title  = trim( $item->get_name() . ( $attrs ? ' (' . $attrs . ')' : '' ) ) . ' × ' . (int) $item->get_quantity();
-			$thumbs .= '<span class="codcrm-prod" title="' . esc_attr( $title ) . '">' . ( $img ? '<img src="' . esc_url( $img ) . '" alt="" />' : '<span class="codcrm-noimg">📦</span>' ) . '<b>' . (int) $item->get_quantity() . '</b></span>';
+			$thumbs .= '<span class="codcrm-prod' . ( $item->get_variation_id() || $order->get_status() !== 'codcrm-abandoned' ? '' : ' is-partial' ) . '" title="' . esc_attr( $title ) . '">' . ( $img ? '<img src="' . esc_url( $img ) . '" alt="" />' : '<span class="codcrm-noimg">📦</span>' ) . '<b>' . (int) $item->get_quantity() . '</b></span>';
 		}
 		if ( $n > 3 ) {
 			$thumbs .= '<span class="codcrm-prod-more">+' . ( $n - 3 ) . '</span>';

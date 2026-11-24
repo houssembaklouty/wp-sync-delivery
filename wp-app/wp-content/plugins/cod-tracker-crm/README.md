@@ -158,3 +158,6 @@ enlèvement : seule la confirmation du transporteur fait foi.
 - Si le client rafraîchit la page ou revient sur la fiche produit, ses informations sont **remplies à nouveau** : coordonnées (nom, téléphone, gouvernorat, délégation, adresse, email) sur toutes les fiches ; quantité et choix de variations sur la même fiche. Stockage dans le navigateur du client (7 jours, rien n'est envoyé au serveur pour cela) ; effacé dès que la commande est validée. Les champs déjà remplis par le navigateur ne sont jamais écrasés.
 - Réglage Suivi COD → Général → « Restaurer le formulaire » (**activé par défaut**), indépendant de la capture des commandes abandonnées.
 - Correctif : les variations (couleur / pointure) choisies sont maintenant bien envoyées à la commande abandonnée.
+
+### Produit et attributs des commandes abandonnées (v1.8.2)
+- Même si le client n'a pas fini de choisir (ex. couleur choisie, pointure non), l'abandonnée contient le **produit** et les **attributs déjà choisis** (couleur / pointure…), visibles dans « Mes suivis » (vignette entourée en pointillé + infobulle) et dans la fenêtre « Modifier ». Dès que le choix est complet, les lignes deviennent celles des variations avec leur prix.

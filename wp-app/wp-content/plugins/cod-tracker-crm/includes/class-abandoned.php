@@ -198,11 +198,38 @@ class CODCRM_Abandoned {
 				'email'   => sanitize_email( wp_unslash( $_POST['billing_email'] ?? '' ) ),
 				'qty'     => max( 1, min( 20, absint( $_POST['codplugin_c_number'] ?? 1 ) ) ),
 				'vars'    => array_slice( array_map( 'absint', (array) wp_unslash( $_POST['vars'] ?? [] ) ), 0, 20 ),
+				'attrs'   => self::clean_attrs( (string) wp_unslash( $_POST['attrs'] ?? '' ) ),
 			] );
 		} finally {
 			delete_option( $lock );
 		}
 		self::ok();
+	}
+
+	/** JSON {blocs → {attribute_x: valeur}} du formulaire → tableau assaini (≤ 20 blocs, ≤ 6 attributs). */
+	private static function clean_attrs( string $json ): array {
+		$raw = json_decode( $json, true );
+		$out = [];
+		foreach ( array_slice( is_array( $raw ) ? $raw : [], 0, 20 ) as $i => $block ) {
+			$row = [];
+			foreach ( array_slice( is_array( $block ) ? $block : [], 0, 6, true ) as $name => $val ) {
+				$name = sanitize_title( (string) $name );
+				$val  = is_scalar( $val ) ? wc_sanitize_term_text_based( (string) $val ) : '';
+				if ( 0 === strpos( $name, 'attribute_' ) && '' !== $val ) {
+					$row[ $name ] = mb_substr( $val, 0, 80 );
+				}
+			}
+			$out[ (int) $i ] = $row;
+		}
+		return $out;
+	}
+
+	/** @return array{0:string,1:string} libellé lisible de l'attribut et de sa valeur */
+	private static function attr_label( string $name, string $slug ): array {
+		$tax   = preg_replace( '/^attribute_/', '', $name );
+		$label = taxonomy_exists( $tax ) ? wc_attribute_label( $tax ) : ucfirst( str_replace( [ 'pa_', '-', '_' ], [ '', ' ', ' ' ], $tax ) );
+		$term  = taxonomy_exists( $tax ) ? get_term_by( 'slug', $slug, $tax ) : false;
+		return [ $label, $term ? $term->name : $slug ];
 	}
 
 	/** Commande abandonnée existante : jeton, sinon même téléphone + même produit (< 24 h). */
@@ -267,27 +294,45 @@ class CODCRM_Abandoned {
 		$order->set_address( $address, 'billing' );
 		$order->set_address( $address, 'shipping' );
 
-		// Articles : variations vérifiées (appartiennent au produit), regroupées.
+		// Articles : une ligne par combinaison. Variation complète → ligne de la variation ; sinon (le client n'a
+		// pas fini de choisir) → ligne du produit avec les attributs déjà choisis, pour que l'agent sache quoi proposer.
 		$lines = [];
 		if ( $product->is_type( 'variable' ) ) {
 			$groups = [];
-			foreach ( array_slice( array_filter( $d['vars'] ), 0, $d['qty'] ) as $vid ) {
-				$groups[ $vid ] = ( $groups[ $vid ] ?? 0 ) + 1;
-			}
-			foreach ( $groups as $vid => $count ) {
-				$v = wc_get_product( $vid );
+			for ( $i = 0; $i < $d['qty']; $i++ ) {
+				$vid = (int) ( $d['vars'][ $i ] ?? 0 );
+				$v   = $vid ? wc_get_product( $vid ) : null;
 				if ( $v instanceof WC_Product_Variation && $v->get_parent_id() === $product->get_id() ) {
-					$lines[] = [ $v, $count ];
+					$groups[ 'v' . $vid ] = [ $v, ( $groups[ 'v' . $vid ][1] ?? 0 ) + 1, null ];
+				} else {
+					$chosen = array_filter( (array) ( $d['attrs'][ $i ] ?? [] ) );
+					$k      = 'p' . md5( wp_json_encode( $chosen ) );
+					$groups[ $k ] = [ $product, ( $groups[ $k ][1] ?? 0 ) + 1, $chosen ];
 				}
 			}
+			$lines = array_values( $groups );
 		} elseif ( $product->is_purchasable() ) {
-			$lines[] = [ $product, $d['qty'] ];
+			$lines[] = [ $product, $d['qty'], null ];
 		}
-		$sig = md5( wp_json_encode( [ array_map( static function ( $l ) { return [ $l[0]->get_id(), $l[1] ]; }, $lines ), $state ] ) );
+		$sig = md5( wp_json_encode( [ array_map( static function ( $l ) { return [ $l[0]->get_id(), $l[1], $l[2] ]; }, $lines ), $state ] ) );
 		if ( $new || (string) $order->get_meta( self::META_SIG ) !== $sig ) {
 			$order->remove_order_items();
 			foreach ( $lines as $l ) {
-				$order->add_product( $l[0], $l[1] );
+				if ( null === $l[2] ) {
+					$order->add_product( $l[0], $l[1] );
+					continue;
+				}
+				// Variation incomplète : prix inconnu (0), attributs choisis en méta d'article.
+				$item_id = $order->add_product( $l[0], $l[1], [ 'subtotal' => 0, 'total' => 0 ] );
+				$item    = $item_id ? $order->get_item( $item_id ) : null;
+				if ( $item ) {
+					foreach ( $l[2] as $name => $slug ) {
+						[ $label, $value ] = self::attr_label( (string) $name, (string) $slug );
+						$item->add_meta_data( $label, $value );
+					}
+					$item->add_meta_data( '_codcrm_partial', '1' ); // masquée : choix de variation incomplet.
+					$item->save();
+				}
 			}
 			if ( $state && function_exists( 'wparabic_get_shipping_rate' ) && function_exists( 'wparabic_build_shipping_item' ) ) {
 				$qty  = array_sum( array_column( $lines, 1 ) ) ?: $d['qty'];

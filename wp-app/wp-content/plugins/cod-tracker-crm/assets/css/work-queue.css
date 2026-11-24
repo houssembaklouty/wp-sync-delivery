@@ -258,3 +258,4 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
     .codcrm-ed .ed-item { grid-template-columns: 44px minmax(0, 1fr) 34px; }
     .codcrm-ed .ed-qty { width: 118px; } .codcrm-ed .ed-price { width: 120px; }
 }
+.codcrm-prod.is-partial img, .codcrm-prod.is-partial .codcrm-noimg { outline: 2px dashed #f59e0b; outline-offset: 1px; }

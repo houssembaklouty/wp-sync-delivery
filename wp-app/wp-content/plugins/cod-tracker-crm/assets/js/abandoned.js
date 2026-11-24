@@ -129,9 +129,14 @@
             codplugin_website: field('codplugin_website').val() || '',
             codplugin_c_number: $('#codplugin_c_number').val() || 1, vars: []
         };
+        var attrs = [];
         $root.find('.codplugin-article').slice(0, qty()).each(function () {
             p.vars.push(parseInt($(this).find('.codplugin-item-var').val(), 10) || 0);
+            var a = {};
+            $(this).find('.variations select').each(function () { if (this.name && $(this).val()) { a[this.name] = $(this).val(); } });
+            attrs.push(a);
         });
+        p.attrs = JSON.stringify(attrs);
         return p;
     }
     function send(useBeacon) {

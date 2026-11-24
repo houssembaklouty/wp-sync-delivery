@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       COD Tracker CRM
  * Description:       Suivi des colis / commandes COD : timeline complète, tentatives de livraison, agents de suivi, KPIs et rapprochement cash. Se synchronise avec MultiCarrier Sync TN.
- * Version:           1.8.1
+ * Version:           1.8.2
  * Requires PHP:      7.4
  * Requires at least: 6.0
  * Text Domain:       cod-tracker-crm
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CODCRM_VERSION', '1.8.1' );
+define( 'CODCRM_VERSION', '1.8.2' );
 define( 'CODCRM_FILE', __FILE__ );
 define( 'CODCRM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CODCRM_URL', plugin_dir_url( __FILE__ ) );

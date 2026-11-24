@@ -255,7 +255,7 @@ class CODCRM_Order_Editor {
 				'product_id'   => $item->get_product_id(),
 				'variation_id' => $item->get_variation_id(),
 				'name'         => $p && $p->is_type( 'variation' ) ? get_the_title( $item->get_product_id() ) : $item->get_name(),
-				'attrs'        => self::attrs( $p ),
+				'attrs'        => CODCRM_Customers::item_attrs( $item ),
 				'image'        => $p ? wp_get_attachment_image_url( $p->get_image_id() ?: ( $p->get_parent_id() ? (int) get_post_thumbnail_id( $p->get_parent_id() ) : 0 ), 'thumbnail' ) : '',
 				'qty'          => $qty,
 				'price'        => (float) wc_format_decimal( (float) $item->get_subtotal() / $qty, 3 ),
