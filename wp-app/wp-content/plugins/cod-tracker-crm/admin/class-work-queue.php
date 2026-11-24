@@ -362,17 +362,19 @@ class CODCRM_Work_Queue {
 
 		self::tablenav( $total, self::PER_PAGE, $paged, 'top' );
 		echo '<table class="widefat striped codcrm-table"><thead><tr><td class="check-column"><input type="checkbox" class="codcrm-cb-all" /></td>';
-		foreach ( [ __( 'Commande', 'cod-tracker-crm' ), __( 'Client', 'cod-tracker-crm' ), __( 'Statut', 'cod-tracker-crm' ), __( 'Tentatives', 'cod-tracker-crm' ), __( 'Dernier contact', 'cod-tracker-crm' ), __( 'Prochaine tâche', 'cod-tracker-crm' ), __( 'Agent', 'cod-tracker-crm' ), __( 'Actions', 'cod-tracker-crm' ) ] as $h ) {
+		foreach ( [ __( 'Commande', 'cod-tracker-crm' ), __( 'Client', 'cod-tracker-crm' ), __( 'Produits', 'cod-tracker-crm' ), __( 'Statut', 'cod-tracker-crm' ), __( 'Tentatives', 'cod-tracker-crm' ), __( 'Dernier contact', 'cod-tracker-crm' ), __( 'Prochaine tâche', 'cod-tracker-crm' ), __( 'Agent', 'cod-tracker-crm' ), __( 'Actions', 'cod-tracker-crm' ) ] as $h ) {
 			echo '<th>' . esc_html( $h ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
 
 		if ( ! $orders ) {
-			echo '<tr><td colspan="9">' . esc_html__( 'Aucun colis à afficher avec ces filtres.', 'cod-tracker-crm' ) . '</td></tr>';
+			echo '<tr><td colspan="10">' . esc_html__( 'Aucun colis à afficher avec ces filtres.', 'cod-tracker-crm' ) . '</td></tr>';
 		}
 
+		$stats = CODCRM_Customers::stats_for_phones( array_map( static function ( $o ) { return $o->get_billing_phone(); }, $orders ) );
+		$zero  = [ 'orders' => 0, 'delivered' => 0, 'returned' => 0, 'calls' => 0, 'answered' => 0 ];
 		foreach ( $orders as $order ) {
-			self::render_row( $order, $tasks[ $order->get_id() ] ?? null );
+			self::render_row( $order, $tasks[ $order->get_id() ] ?? null, $stats[ self::norm_phone( $order->get_billing_phone() ) ] ?? $zero );
 		}
 		echo '</tbody></table>';
 
@@ -380,7 +382,7 @@ class CODCRM_Work_Queue {
 		echo '</div>';
 	}
 
-	public static function render_row( WC_Order $order, $task ): void {
+	public static function render_row( WC_Order $order, $task, ?array $stats = null ): void {
 		$id      = $order->get_id();
 		$phone   = $order->get_billing_phone();
 		$phone8  = self::norm_phone( $phone );
@@ -403,27 +405,37 @@ class CODCRM_Work_Queue {
 			esc_html( wc_format_decimal( $order->get_total(), 2 ) . ' DT' )
 		);
 
-		// Client + historique par téléphone.
-		$hist = '';
-		if ( $phone8 ) {
-			$all  = wc_get_orders( [ 'billing_phone' => $phone, 'limit' => 1, 'paginate' => true, 'return' => 'ids' ] );
-			$ret  = wc_get_orders( [ 'billing_phone' => $phone, 'status' => [ 'wc-wcmcs-returned' ], 'limit' => 1, 'paginate' => true, 'return' => 'ids' ] );
-			$hist = sprintf( ' · %d cmd / %d retour(s)', is_object( $all ) ? (int) $all->total : 0, is_object( $ret ) ? (int) $ret->total : 0 );
-			if ( function_exists( 'wparabic_phone_strikes' ) ) {
-				$strikes = (int) wparabic_phone_strikes( $phone );
-				if ( $strikes ) {
-					$hist .= sprintf( ' · ⚠ %d strike(s)', $strikes );
-				}
-			}
-		}
-		$ph2 = (string) $order->get_meta( CODCRM_Order_Editor::META_PHONE2 );
-		printf( '<td>%s<br><small>%s%s%s<br>%s</small></td>',
+		// Client + historique par téléphone (statistiques groupées, voir CODCRM_Customers).
+		$stats = $stats ?? ( CODCRM_Customers::stats_for_phones( [ $phone ] )[ $phone8 ] ?? null );
+		$ph2   = (string) $order->get_meta( CODCRM_Order_Editor::META_PHONE2 );
+		printf( '<td><strong>%s</strong><br><small>%s%s<br>%s</small>%s</td>',
 			esc_html( $client ),
 			esc_html( $phone ),
 			$ph2 ? ' / ' . esc_html( $ph2 ) : '',
-			esc_html( $hist ),
-			esc_html( $order->get_billing_state() ?: $order->get_billing_city() )
+			esc_html( $order->get_billing_state() ?: $order->get_billing_city() ),
+			CODCRM_Customers::badges( $order, $stats ) // phpcs:ignore WordPress.Security.EscapeOutput
 		);
+
+		// Produits (vignette + pastille de quantité).
+		$thumbs = '';
+		$n      = 0;
+		foreach ( $order->get_items() as $item ) {
+			if ( ! $item instanceof WC_Order_Item_Product ) {
+				continue;
+			}
+			if ( ++$n > 3 ) {
+				continue;
+			}
+			$img    = CODCRM_Customers::item_image( $item );
+			$p      = $item->get_product();
+			$attrs  = $p && $p->is_type( 'variation' ) ? wp_strip_all_tags( wc_get_formatted_variation( $p, true, false, false ) ) : '';
+			$title  = trim( $item->get_name() . ( $attrs ? ' (' . $attrs . ')' : '' ) ) . ' × ' . (int) $item->get_quantity();
+			$thumbs .= '<span class="codcrm-prod" title="' . esc_attr( $title ) . '">' . ( $img ? '<img src="' . esc_url( $img ) . '" alt="" />' : '<span class="codcrm-noimg">📦</span>' ) . '<b>' . (int) $item->get_quantity() . '</b></span>';
+		}
+		if ( $n > 3 ) {
+			$thumbs .= '<span class="codcrm-prod-more">+' . ( $n - 3 ) . '</span>';
+		}
+		echo '<td class="codcrm-prods">' . ( $thumbs ?: '—' ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		printf( '<td>%s</td>', $stage
 			? '<span class="codcrm-pill codcrm-status-pill" data-order="' . (int) $id . '" style="' . esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $stage ) ) ) . '">' . esc_html( CODCRM_Stages::label( $stage ) ) . '</span>'

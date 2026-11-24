@@ -323,6 +323,20 @@
         histTimer = setTimeout(function () { if ($pop && !$pop.is(':hover')) { hidePop(); } }, 200);
     }).on('click', '.codcrm-status-pill', function (e) { e.stopPropagation(); $(this).data('tap', 1); loadHist($(this)); })
       .on('click', function (e) { if ($pop && !$(e.target).closest('.codcrm-hist').length) { hidePop(); } });
+    // Historique client (badges de la colonne Client).
+    var cliCache = {}, cliTimer = null;
+    $(document).on('mouseenter', '.codcrm-client-hist', function () {
+        var $b = $(this), id = $b.data('order'); clearTimeout(cliTimer);
+        cliTimer = setTimeout(function () {
+            if (cliCache[id]) { showPop($b, cliCache[id]); return; }
+            post({ action: 'codcrm_client_history', order_id: id }).done(function (r) {
+                if (r && r.success) { cliCache[id] = r.data.html; if ($b.is(':hover')) { showPop($b, r.data.html); } }
+            });
+        }, 250);
+    }).on('mouseleave', '.codcrm-client-hist', function () {
+        clearTimeout(cliTimer);
+        cliTimer = setTimeout(function () { if ($pop && !$pop.is(':hover')) { hidePop(); } }, 200);
+    });
     $(document).on('keydown', function (e) { if (e.key === 'Escape') { hidePop(); } });
 
     // ── Fenêtre « Modifier la commande » ──

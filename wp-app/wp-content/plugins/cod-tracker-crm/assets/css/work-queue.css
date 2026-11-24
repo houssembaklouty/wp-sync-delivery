@@ -203,3 +203,23 @@ body.codcrm-noscroll { overflow: hidden; }
 .codcrm-carrier-logo { height: 16px; width: auto; max-width: 64px; vertical-align: middle; }
 .codcrm-badge-ex { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 700; }
 .codcrm-status-pill::after { content: " ⓘ"; opacity: .7; font-weight: 400; }
+
+/* Historique client : badges, popover, colonne Produits */
+.codcrm-cbadges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; cursor: default; }
+.codcrm-cbadge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; white-space: nowrap; }
+.codcrm-cbadge.is-new { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+.codcrm-cbadge.is-good { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.codcrm-cbadge.is-mid { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.codcrm-cbadge.is-bad { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+.codcrm-h-head { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 8px; }
+.codcrm-h-head a { color: #6d28d9; text-decoration: none; font-weight: 600; font-size: 12px; }
+a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
+.codcrm-h-order .codcrm-h-row { display: flex; justify-content: space-between; align-items: center; }
+.codcrm-h-order img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; }
+.codcrm-h-order.is-current { background: #ede9fe; }
+.codcrm-hist { width: 300px; }
+.codcrm-prods { white-space: nowrap; }
+.codcrm-prod { position: relative; display: inline-block; margin: 4px 8px 4px 0; }
+.codcrm-prod img, .codcrm-noimg { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
+.codcrm-prod b { position: absolute; top: -6px; left: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: #1e293b; color: #fff; font-size: 10px; line-height: 18px; text-align: center; }
+.codcrm-prod-more { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #f1f5f9; font-size: 11px; font-weight: 600; }

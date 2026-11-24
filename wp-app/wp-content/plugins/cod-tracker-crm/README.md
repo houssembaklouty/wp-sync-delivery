@@ -140,3 +140,9 @@ enlèvement : seule la confirmation du transporteur fait foi.
 - Téléphones vérifiés en direct ; erreurs affichées sous le champ concerné.
 - Produits : recherche avec vignettes, attributs et stock (clavier ↑ ↓ Entrée), boutons − / +, retrait annulable.
 - Après enregistrement : notification et ligne surlignée ; l'agent attribué n'est envoyé que s'il a été changé.
+
+## Historique client et colonne Produits (v1.7.0)
+- Colonne **Client** : badges « ★ Client régulier » (≥ 2 commandes avec le même numéro) ou « Nouveau client », taux de livraison 🚚 (livrées ÷ clôturées) et taux de réponse aux appels 📞 (vert ≥ 70 %, orange ≥ 40 %, rouge sinon), signalements de la liste noire.
+- Au survol des badges : « Commandes totales : N » avec une carte par commande (n°, date, statut, montant, vignette) et un lien « Voir commandes ».
+- Colonne **Produits** : vignettes avec pastille de quantité (3 max, puis « +N »).
+- Les statistiques de toute la page sont calculées en 2 requêtes (au lieu de 2 requêtes WooCommerce par ligne).
