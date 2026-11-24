@@ -520,21 +520,35 @@
         function bind() {
             $ed.on('input change', 'input, select, textarea', function () { if (!$(this).is('.f-psearch')) { setDirty(true); } });
             $ed.on('click', '.ed-x', function () { close(); });
-            $ed.on('click', '.ed-unsync', function () {
-                if (!window.confirm(i18n.ed_unsync_confirm)) { return; }
-                var $b = $(this).prop('disabled', true);
-                post({ action: 'codcrm_order_unsync', order_id: orderId }).done(function (r) {
-                    if (r && r.success) {
-                        delete histCache[orderId];
-                        var $old = $('tr[data-order="' + orderId + '"]');
-                        if (r.data.row && $old.length) { var $new = $(r.data.row).addClass('codcrm-flash'); $old.replaceWith($new); $trigger = $new.find('.codcrm-edit'); }
-                        toast('✓ ' + (r.data.message || i18n.ed_unsync_done));
-                        close(true); openEditor(orderId, $trigger); // rouvre : la commande est de nouveau modifiable.
+            function unsyncDone(r, $b) {
+                delete histCache[orderId];
+                var $old = $('tr[data-order="' + orderId + '"]');
+                if (r.data.row && $old.length) { var $new = $(r.data.row).addClass('codcrm-flash'); $old.replaceWith($new); $trigger = $new.find('.codcrm-edit'); }
+                toast('✓ ' + (r.data.message || i18n.ed_unsync_done));
+                close(true); openEditor(orderId, $trigger); // rouvre : la commande est de nouveau modifiable.
+            }
+            function unsync(local, $b) {
+                $b.prop('disabled', true);
+                post({ action: 'codcrm_order_unsync', order_id: orderId, local: local ? 1 : 0 }).done(function (r) {
+                    if (r && r.success) { unsyncDone(r, $b); return; }
+                    $b.prop('disabled', false);
+                    var m = (r && r.data && r.data.message) || i18n.error;
+                    if (r && r.data && r.data.manual) {
+                        // Le transporteur ne permet pas l'annulation automatique : retrait côté boutique proposé.
+                        $ed.find('.ed-manual').remove();
+                        $ed.find('.ed-track').closest('.ed-field').append('<div class="ed-manual"><p>' + esc(m) + '</p>'
+                            + (r.data.dashboard ? '<p><a href="' + esc(r.data.dashboard) + '" target="_blank" rel="noopener">' + esc(i18n.ed_open_dashboard) + ' ↗</a></p>' : '')
+                            + '<button type="button" class="ed-btn ed-danger ed-unsync-local">' + esc(i18n.ed_unsync_local) + '</button></div>');
                     } else {
-                        $b.prop('disabled', false);
-                        $ed.find('.ed-err').text((r && r.data && r.data.message) || i18n.error).prop('hidden', false); $ed.scrollTop(0);
+                        $ed.find('.ed-err').text(m).prop('hidden', false); $ed.scrollTop(0);
                     }
                 }).fail(function () { $b.prop('disabled', false); $ed.find('.ed-err').text(i18n.error).prop('hidden', false); });
+            }
+            $ed.on('click', '.ed-unsync', function () {
+                if (window.confirm(i18n.ed_unsync_confirm)) { unsync(false, $(this)); }
+            });
+            $ed.on('click', '.ed-unsync-local', function () {
+                if (window.confirm(i18n.ed_unsync_local_confirm)) { unsync(true, $(this)); }
             });
             $ed.on('click', '.ed-copy', function () {
                 var $b = $(this), t = d.tracking;

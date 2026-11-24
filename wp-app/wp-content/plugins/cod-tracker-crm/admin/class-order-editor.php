@@ -148,24 +148,64 @@ class CODCRM_Order_Editor {
 	 * (statut d'avant la synchro) pour qu'elle redevienne modifiable. MCS ne re-synchronise jamais
 	 * seul : la re-synchronisation reste une action manuelle.
 	 */
+	/** Transporteurs dont l'API ne permet pas d'annuler un colis (suppression depuis leur espace). */
+	public static function manual_cancel_carriers(): array {
+		return (array) apply_filters( 'codcrm_manual_cancel_carriers', [ 'colissimo' ] );
+	}
+
+	/** Espace du transporteur où supprimer le colis à la main ('' si inconnu). */
+	public static function carrier_dashboard_url( string $slug ): string {
+		$urls = [ 'colissimo' => 'https://colissimodelivery.tn/expediteur/' ];
+		return (string) apply_filters( 'codcrm_carrier_dashboard_url', $urls[ $slug ] ?? '', $slug );
+	}
+
+	/** Erreur réseau (cURL 6/7/28/35/52/56…) → phrase lisible. */
+	private static function friendly_error( string $msg ): string {
+		if ( preg_match( '/cURL error (6|7|28|35|52|56)\b/i', $msg ) || false !== stripos( $msg, 'timed out' ) ) {
+			return __( 'Le transporteur ne répond pas (connexion impossible).', 'cod-tracker-crm' ) . ' (' . wp_strip_all_tags( $msg ) . ')';
+		}
+		return $msg;
+	}
+
+	/**
+	 * Supprime le code à barre de la commande.
+	 *  - sans `local` : annulation chez le transporteur (API), sauf transporteurs sans annulation API
+	 *    (Colissimo) pour lesquels on répond tout de suite « manuel » (aucun appel réseau) ;
+	 *  - avec `local=1` : l'utilisateur a supprimé le colis chez le transporteur, on retire seulement
+	 *    le code côté boutique.
+	 * Dans les deux cas la commande repasse à « Confirmée ».
+	 */
 	public static function ajax_unsync(): void {
 		$o = self::order_from_request();
-		if ( ! class_exists( 'WCMCS_Sync_Manager' ) ) {
+		if ( ! class_exists( 'WCMCS_Sync_Manager' ) || ! class_exists( 'WCMCS_Order_Meta' ) ) {
 			wp_send_json_error( [ 'message' => __( 'MultiCarrier Sync est requis.', 'cod-tracker-crm' ) ] );
 		}
-		$id = $o->get_id();
+		$id    = $o->get_id();
+		$local = ! empty( $_POST['local'] );
 		if ( ! self::lock( $id ) ) {
 			self::busy();
 		}
-		$err = '';
-		$res = [];
+		$err    = '';
+		$manual = false;
+		$res    = [];
+		$slug   = '';
 		try {
-			if ( ! in_array( $o->get_status(), [ 'wcmcs-synced', 'wcmcs-packed' ], true ) ) {
+			$slug = (string) $o->get_meta( '_wcmcs_carrier_slug' );
+			$trk  = (string) $o->get_meta( '_wcmcs_tracking_id' );
+			if ( ! in_array( $o->get_status(), [ 'wcmcs-synced', 'wcmcs-packed' ], true ) || '' === $trk ) {
 				$err = __( 'Le colis ne peut plus être supprimé : la commande a dépassé l\'étape « Synchronisée / Emballée ».', 'cod-tracker-crm' );
+			} elseif ( $local ) {
+				WCMCS_Order_Meta::mark_cancelled( $o, $slug, $trk );
+				self::after_unsync( wc_get_order( $id ), $trk, true );
+				$res = [ 'message' => sprintf( /* translators: %s code */ __( 'Code %s retiré. Commande remise à « Confirmée ».', 'cod-tracker-crm' ), $trk ) ];
+			} elseif ( in_array( $slug, self::manual_cancel_carriers(), true ) ) {
+				$manual = true;
+				$err    = sprintf( /* translators: 1 transporteur 2 code */ __( '%1$s n\'autorise pas l\'annulation automatique : supprimez le colis %2$s depuis votre espace expéditeur, puis retirez le code ici.', 'cod-tracker-crm' ), ucfirst( $slug ), $trk );
 			} else {
 				$res = WCMCS_Sync_Manager::cancel_single( $id );
 				if ( 'success' !== ( $res['status'] ?? '' ) ) {
-					$err = (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) );
+					$manual = true;
+					$err    = self::friendly_error( (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) ) );
 				} else {
 					self::after_unsync( wc_get_order( $id ), (string) $res['tracking_id'] );
 				}
@@ -174,7 +214,7 @@ class CODCRM_Order_Editor {
 			self::unlock( $id ); // libéré AVANT toute réponse (wp_send_json_* termine le script).
 		}
 		if ( '' !== $err ) {
-			wp_send_json_error( [ 'message' => $err ] );
+			wp_send_json_error( [ 'message' => $err, 'manual' => $manual, 'dashboard' => $manual ? self::carrier_dashboard_url( $slug ) : '' ] );
 		}
 		ob_start();
 		CODCRM_Work_Queue::render_row( wc_get_order( $id ), CODCRM_Tasks::next_open_for_orders( [ $id ] )[ $id ] ?? null );
@@ -182,11 +222,13 @@ class CODCRM_Order_Editor {
 	}
 
 	/** Après annulation réussie : statut « Confirmée » + trace dans la chronologie. */
-	public static function after_unsync( WC_Order $o, string $tracking ): void {
+	public static function after_unsync( WC_Order $o, string $tracking, bool $manual = false ): void {
 		$o->update_status( 'wcmcs-confirmed', '[COD] ' . wp_get_current_user()->display_name . ' : ' );
 		CODCRM_Events::add( $o->get_id(), [
 			'type'     => 'note',
-			'note'     => sprintf( /* translators: %s code */ __( 'Colis %s supprimé chez le transporteur — commande remise à « Confirmée »', 'cod-tracker-crm' ), $tracking ),
+			'note'     => $manual
+				? sprintf( /* translators: %s code */ __( 'Code %s retiré manuellement (colis supprimé chez le transporteur par l\'utilisateur) — commande remise à « Confirmée »', 'cod-tracker-crm' ), $tracking )
+				: sprintf( /* translators: %s code */ __( 'Colis %s supprimé chez le transporteur — commande remise à « Confirmée »', 'cod-tracker-crm' ), $tracking ),
 			'actor_id' => get_current_user_id(),
 			'source'   => 'agent',
 		] );
