@@ -259,3 +259,14 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
     .codcrm-ed .ed-qty { width: 118px; } .codcrm-ed .ed-price { width: 120px; }
 }
 .codcrm-prod.is-partial img, .codcrm-prod.is-partial .codcrm-noimg { outline: 2px dashed #f59e0b; outline-offset: 1px; }
+
+/* Mes suivis en direct */
+.codcrm-live { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; font-weight: 600; color: #166534; }
+.codcrm-live .dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; animation: codcrm-pulse 1.6s infinite; }
+.codcrm-live.is-off { color: #64748b; } .codcrm-live.is-off .dot { background: #94a3b8; animation: none; }
+@keyframes codcrm-pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.5); } 70% { box-shadow: 0 0 0 7px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+.codcrm-live-snd { margin-left: 8px; border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 3px 10px; cursor: pointer; font-size: 12px; }
+.codcrm-live-snd.is-warn { border-color: #f59e0b; background: #fffbeb; color: #92400e; font-weight: 600; }
+@keyframes codcrm-newrow { from { background: #ddd6fe; } to { background: transparent; } }
+.codcrm-table tr.codcrm-new td, .codcrm-table tr.codcrm-new th { animation: codcrm-newrow 4s ease-out; }
+.codcrm-table tr.codcrm-fade { opacity: .3; transition: opacity .4s; }

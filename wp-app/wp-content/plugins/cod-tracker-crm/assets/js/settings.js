@@ -173,4 +173,12 @@
     });
 
     initTab();
+
+    // Aperçu des sons de notification (onglet Général ; les onglets se chargent sans rechargement → délégué).
+    $(document).on('input', '.codcrm-sound-vol', function () { $('.codcrm-sound-vol-n').text($(this).val()); });
+    $(document).on('click', '.codcrm-sound-preview', function () {
+        var name = $(this).data('sound'), vol = parseInt($('.codcrm-sound-vol').val(), 10);
+        $('input[name=live_sound][value="' + name + '"]').prop('checked', true);
+        window.codcrmSound.unlock().then(function () { window.codcrmSound.play(name, isNaN(vol) ? 70 : vol); });
+    });
 })(jQuery);

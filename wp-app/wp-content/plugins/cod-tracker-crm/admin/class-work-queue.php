@@ -14,6 +14,114 @@ class CODCRM_Work_Queue {
 	public static function init(): void {
 		add_action( 'admin_menu', [ __CLASS__, 'menu' ] );
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'assets' ] );
+		add_action( 'wp_ajax_codcrm_queue_live', [ __CLASS__, 'ajax_live' ] );
+	}
+
+	// ── Mode « en direct » ─────────────────────────────────────
+
+	/** Sons proposés (générés par le navigateur, Web Audio) : clé => libellé. */
+	public static function sounds(): array {
+		return [
+			'bell'   => __( 'Clochette', 'cod-tracker-crm' ),
+			'chime'  => __( 'Carillon (3 notes)', 'cod-tracker-crm' ),
+			'beep'   => __( 'Bip court', 'cod-tracker-crm' ),
+			'double' => __( 'Double bip', 'cod-tracker-crm' ),
+			'none'   => __( 'Aucun son', 'cod-tracker-crm' ),
+		];
+	}
+
+	public static function live_sound(): string {
+		$s = (string) get_option( 'codcrm_live_sound', 'bell' );
+		return isset( self::sounds()[ $s ] ) ? $s : 'bell';
+	}
+
+	public static function live_volume(): int {
+		return max( 0, min( 100, (int) get_option( 'codcrm_live_volume', 70 ) ) );
+	}
+
+	/** Repères temporels du serveur : UTC (date_updated_gmt) et heure de la base (created_at des événements). */
+	private static function live_now(): array {
+		global $wpdb;
+		$r = $wpdb->get_row( 'SELECT UTC_TIMESTAMP() AS u, NOW() AS d', ARRAY_A );
+		return [ 'utc' => (string) ( $r['u'] ?? gmdate( 'Y-m-d H:i:s' ) ), 'db' => (string) ( $r['d'] ?? current_time( 'mysql' ) ) ];
+	}
+
+	/**
+	 * Interrogé toutes les 5 s par « Mes suivis » : lignes modifiées / nouvelles / retirées depuis le dernier passage.
+	 * Le filtre de la page est rejoué (un agent ne voit jamais que ses commandes).
+	 */
+	public static function ajax_live(): void {
+		check_ajax_referer( 'codcrm', 'nonce' );
+		if ( ! current_user_can( CODCRM_Agents::CAP_WORK ) ) {
+			wp_send_json_error( [], 403 );
+		}
+		global $wpdb;
+		$ts_ok = static function ( $v ) { return is_string( $v ) && preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $v ) ? $v : ''; };
+		$since_u = $ts_ok( wp_unslash( $_POST['since_utc'] ?? '' ) );
+		$since_d = $ts_ok( wp_unslash( $_POST['since_db'] ?? '' ) );
+		$shown   = array_slice( array_values( array_unique( array_filter( array_map( 'absint', (array) ( $_POST['ids'] ?? [] ) ) ) ) ), 0, 100 );
+		$page    = max( 1, absint( $_POST['paged'] ?? 1 ) );
+
+		// Le filtre de la page est lu dans $_GET par filtered_ids_sql() (comme pour les envois groupés).
+		$prev_get = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
+		$_GET     = [
+			'stage' => sanitize_text_field( wp_unslash( $_POST['stage'] ?? 'actif' ) ),
+			'flt'   => sanitize_key( wp_unslash( $_POST['flt'] ?? '' ) ),
+			'agent' => sanitize_text_field( wp_unslash( $_POST['agent'] ?? 'all' ) ),
+		];
+		try {
+			$still = $shown ? self::filtered_ids_sql( count( $shown ), 0, false, $shown ) : [];
+			if ( null === $still ) { // hors HPOS : mises à jour des lignes affichées seulement.
+				$still = $shown;
+				$top   = [];
+				$total = 0;
+			} else {
+				$top   = 1 === $page ? (array) self::filtered_ids_sql( self::PER_PAGE, 0 ) : [];
+				$total = self::filtered_total();
+			}
+			$removed = array_values( array_diff( $shown, $still ) );
+
+			// Lignes modifiées : commande enregistrée ou nouvel événement (appel, message, attribution…).
+			$changed = [];
+			if ( $still && '' !== $since_u ) {
+				$in      = implode( ',', array_map( 'absint', $still ) );
+				$orders  = $wpdb->prefix . 'wc_orders';
+				$events  = CODCRM_Installer::table_events();
+				$changed = array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL
+					"SELECT id FROM {$orders} WHERE id IN ({$in}) AND date_updated_gmt >= DATE_SUB(%s, INTERVAL 2 SECOND)
+					 UNION SELECT order_id FROM {$events} WHERE order_id IN ({$in}) AND created_at >= DATE_SUB(%s, INTERVAL 2 SECOND)",
+					$since_u,
+					'' !== $since_d ? $since_d : $since_u
+				) ) );
+			}
+			$added_ids = array_values( array_diff( array_map( 'intval', $top ), $shown ) );
+
+			$render = array_values( array_unique( array_merge( $changed, $added_ids ) ) );
+			$html   = [];
+			$meta   = [];
+			if ( $render ) {
+				$orders_obj = array_values( array_filter( array_map( 'wc_get_order', $render ) ) );
+				$tasks      = CODCRM_Tasks::next_open_for_orders( $render );
+				$stats      = CODCRM_Customers::stats_for_phones( array_map( static function ( $o ) { return $o->get_billing_phone(); }, $orders_obj ) );
+				$zero       = [ 'orders' => 0, 'delivered' => 0, 'returned' => 0, 'calls' => 0, 'answered' => 0 ];
+				foreach ( $orders_obj as $o ) {
+					ob_start();
+					self::render_row( $o, $tasks[ $o->get_id() ] ?? null, $stats[ self::norm_phone( $o->get_billing_phone() ) ] ?? $zero );
+					$html[ $o->get_id() ] = ob_get_clean();
+					$meta[ $o->get_id() ] = [ 'abandoned' => CODCRM_Abandoned::SLUG === $o->get_status(), 'phone' => $o->get_billing_phone(), 'number' => $o->get_order_number() ];
+				}
+			}
+		} finally {
+			$_GET = $prev_get;
+		}
+
+		wp_send_json_success( [
+			'now'     => self::live_now(),
+			'updated' => array_intersect_key( $html, array_flip( $changed ) ),
+			'added'   => array_map( static function ( $id ) use ( $html, $meta ) { return [ 'id' => $id, 'html' => $html[ $id ] ?? '', 'meta' => $meta[ $id ] ?? [] ]; }, array_values( array_filter( $added_ids, static function ( $id ) use ( $html ) { return isset( $html[ $id ] ); } ) ) ),
+			'removed' => $removed,
+			'total'   => $total,
+		] );
 	}
 
 	public static function menu(): void {
@@ -42,12 +150,14 @@ class CODCRM_Work_Queue {
 			return;
 		}
 		wp_enqueue_style( 'codcrm-queue', self::asset( 'assets/css/work-queue.css' ), [], null );
-		wp_enqueue_script( 'codcrm-queue', self::asset( 'assets/js/work-queue.js' ), [ 'jquery' ], null, true );
+		wp_enqueue_script( 'codcrm-sounds', self::asset( 'assets/js/sounds.js' ), [], null, true );
+		wp_enqueue_script( 'codcrm-queue', self::asset( 'assets/js/work-queue.js' ), [ 'jquery', 'codcrm-sounds' ], null, true );
 		wp_localize_script( 'codcrm-queue', 'codcrm', [
 			'ajax'     => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'codcrm' ),
 			'outcomes' => CODCRM_Contacts::call_outcomes(),
 			'orderScreen' => $order_scr,
+			'live'        => false !== strpos( $hook, self::PAGE_QUEUE ) ? [ 'now' => self::live_now(), 'interval' => 5000, 'sound' => self::live_sound(), 'volume' => self::live_volume(), 'soundAbandoned' => 'yes' === get_option( 'codcrm_live_sound_abandoned', 'yes' ), 'perPage' => self::PER_PAGE ] : null,
 			'contexts'    => array_diff_key( CODCRM_Templates::contexts(), [ 'custom' => 1 ] ),
 			'sms'         => CODCRM_SMS_Gateway::is_configured(),
 			'bulkMax'     => CODCRM_Bulk::MAX_ORDERS,
@@ -81,6 +191,12 @@ class CODCRM_Work_Queue {
 				'msg_sent'    => __( 'Message envoyé et tracé dans la chronologie (actualisez la page pour la voir).', 'cod-tracker-crm' ),
 				'cancel'      => __( 'Annuler', 'cod-tracker-crm' ),
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
+				'live_on'     => __( 'En direct', 'cod-tracker-crm' ),
+				'live_off'    => __( 'En pause', 'cod-tracker-crm' ),
+				'live_new'    => __( 'Nouvelle commande', 'cod-tracker-crm' ),
+				'live_abandoned' => __( 'Commande abandonnée', 'cod-tracker-crm' ),
+				'live_enable_sound' => __( 'Activer le son', 'cod-tracker-crm' ),
+				'live_mute'   => __( 'Couper le son sur ce navigateur', 'cod-tracker-crm' ),
 				'ed_title'    => __( 'Modifier la commande n°', 'cod-tracker-crm' ),
 				'ed_locked'   => __( 'Colis déjà créé chez le transporteur : client, produits, frais et transporteur sont verrouillés (le transporteur n\'est pas mis à jour).', 'cod-tracker-crm' ),
 				'ed_unsync_confirm' => __( 'Retirer le code à barre ? La commande repassera à « Confirmée » et pourra être modifiée, puis re-synchronisée. Si le transporteur n\'autorise pas l\'annulation, supprimez aussi le colis dans son espace expéditeur.', 'cod-tracker-crm' ),
@@ -243,7 +359,7 @@ class CODCRM_Work_Queue {
 	 *
 	 * @return int[]|null
 	 */
-	private static function filtered_ids_sql( int $limit, int $offset, bool $count = false ): ?array {
+	private static function filtered_ids_sql( int $limit, int $offset, bool $count = false, array $only_ids = [] ): ?array {
 		if ( ! class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) || ! \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			return null;
 		}
@@ -298,6 +414,10 @@ class CODCRM_Work_Queue {
 		} elseif ( in_array( $flt, [ 'due', 'overdue' ], true ) ) {
 			$ids     = array_map( 'intval', CODCRM_Tasks::order_ids_due( 'due' === $flt ? 'today' : 'overdue', $agent_for_tasks ) ) ?: [ 0 ];
 			$where[] = "{$o}.id IN (" . implode( ',', $ids ) . ')';
+		}
+
+		if ( $only_ids ) { // parmi ces commandes seulement (mode « en direct » : celles qui sont toujours dans le filtre).
+			$where[] = "{$o}.id IN (" . implode( ',', array_map( 'absint', $only_ids ) ) . ')';
 		}
 
 		if ( $count ) {

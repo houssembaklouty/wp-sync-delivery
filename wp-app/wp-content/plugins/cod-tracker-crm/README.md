@@ -161,3 +161,7 @@ enlèvement : seule la confirmation du transporteur fait foi.
 
 ### Produit et attributs des commandes abandonnées (v1.8.2)
 - Même si le client n'a pas fini de choisir (ex. couleur choisie, pointure non), l'abandonnée contient le **produit** et les **attributs déjà choisis** (couleur / pointure…), visibles dans « Mes suivis » (vignette entourée en pointillé + infobulle) et dans la fenêtre « Modifier ». Dès que le choix est complet, les lignes deviennent celles des variations avec leur prix.
+
+## Mes suivis en direct + notification sonore (v1.9.0)
+- « Mes suivis » se met à jour **sans rechargement** (sondage léger toutes les 5 s, onglet visible) : nouvelles commandes (dont les abandonnées qui se complètent pendant que le client remplit le formulaire), changements de statut, d'agent, de contact ; lignes devenues hors filtre retirées. Cases cochées et fenêtre « Modifier » ouverte préservées. Indicateur « ● En direct ».
+- **Son de notification** à chaque nouvelle commande (une fois par commande, même avec plusieurs onglets) : 4 sons générés par le navigateur (Clochette par défaut, Carillon, Bip, Double bip) ou aucun ; volume réglable ; aperçu « ▶ Écouter ». Réglages → Général. Le navigateur exige un premier clic sur la page pour autoriser le son (bouton « 🔔 Activer le son » sinon) ; 🔕 coupe le son sur ce navigateur.

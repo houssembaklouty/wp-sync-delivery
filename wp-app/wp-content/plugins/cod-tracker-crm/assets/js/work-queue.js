@@ -375,6 +375,7 @@
             + '<div class="ed-side"><div class="sk sk-card"></div><div class="sk sk-small"></div></div></div></div></div></div>').appendTo('body');
         var $ed = $ov.find('.codcrm-ed'), dirty = false, d = null, items = [], removed = null;
         $('body').addClass('codcrm-noscroll');
+        window.codcrmEditingOrder = orderId;
 
         function setDirty(v) {
             dirty = v;
@@ -385,6 +386,7 @@
             $(document).off('.codcrmed');
             $ov.remove();
             $('body').removeClass('codcrm-noscroll');
+            window.codcrmEditingOrder = 0;
             if ($trigger && $trigger.length && document.body.contains($trigger[0])) { $trigger.trigger('focus'); }
         }
         $ov.on('mousedown', function (e) { if (e.target === $ov[0]) { close(); } });
@@ -689,4 +691,120 @@
         }
     }
     $(document).on('click', '.codcrm-edit', function (e) { e.preventDefault(); openEditor($(this).data('order'), $(this)); });
+
+    // ── Mes suivis en direct : lignes mises à jour / nouvelles / retirées sans recharger la page ──
+    (function () {
+        var L = codcrm.live;
+        var $tbody = $('table.codcrm-table tbody');
+        if (!L || !$tbody.length) { return; }
+
+        var now = L.now, timer = null, fails = 0, running = false, first = true;
+        var muted = false, NOTIF = 'codcrm_notified';
+        try { muted = window.localStorage.getItem('codcrm_mute') === '1'; } catch (e) { /* rien */ }
+
+        // Barre d'état : « ● En direct » + bouton son.
+        var $st = $('<span class="codcrm-live" role="status"><i class="dot"></i><span class="lbl"></span></span>');
+        var $snd = $('<button type="button" class="codcrm-live-snd" hidden></button>');
+        $('.codcrm-bulkbar').first().append($st).append($snd);
+        function showState(on) { $st.toggleClass('is-off', !on).find('.lbl').text(on ? i18n.live_on : i18n.live_off); }
+        function sndBtn() {
+            if (L.sound === 'none') { $snd.prop('hidden', true); return; }
+            var ready = window.codcrmSound && window.codcrmSound.ready();
+            $snd.prop('hidden', false).toggleClass('is-warn', !ready && !muted)
+                .text(muted ? '🔕' : (ready ? '🔔' : '🔔 ' + i18n.live_enable_sound))
+                .attr('title', ready || muted ? i18n.live_mute : i18n.live_enable_sound);
+        }
+        $snd.on('click', function () {
+            if (muted) { muted = false; } else if (window.codcrmSound.ready()) { muted = true; }
+            try { window.localStorage.setItem('codcrm_mute', muted ? '1' : '0'); } catch (e) { /* rien */ }
+            window.codcrmSound.unlock().then(sndBtn); sndBtn();
+        });
+        // Le navigateur n'autorise le son qu'après un geste de l'utilisateur.
+        $(document).one('click keydown', function () { window.codcrmSound.unlock().then(sndBtn); });
+        sndBtn();
+
+        // Commandes déjà annoncées (partagé entre onglets) : un son par commande, une seule fois.
+        function notified() { try { return JSON.parse(window.localStorage.getItem(NOTIF) || '{}'); } catch (e) { return {}; } }
+        function markNotified(id) {
+            var n = notified(), t = Date.now();
+            n[id] = t;
+            $.each(n, function (k, v) { if (t - v > 86400000) { delete n[k]; } });
+            try { window.localStorage.setItem(NOTIF, JSON.stringify(n)); } catch (e) { /* rien */ }
+        }
+        function announce(items) {
+            var n = notified(), fresh = $.grep(items, function (it) { return !n[it.id]; });
+            if (!fresh.length) { return; }
+            $.each(fresh, function (_, it) { markNotified(it.id); });
+            if (first) { return; } // premier passage : pas de son pour ce qui existait déjà.
+            var abandoned = $.grep(fresh, function (it) { return it.meta && it.meta.abandoned; }).length === fresh.length;
+            var it0 = fresh[0], label = (it0.meta && it0.meta.abandoned) ? i18n.live_abandoned : i18n.live_new;
+            toast('🔔 ' + label + ' #' + (it0.meta.number || it0.id) + (it0.meta.phone ? ' — ' + it0.meta.phone : '') + (fresh.length > 1 ? ' (+' + (fresh.length - 1) + ')' : ''));
+            if (L.sound !== 'none' && !muted && (L.soundAbandoned || !abandoned)) { window.codcrmSound.play(L.sound, L.volume); }
+            sndBtn();
+        }
+
+        function rowIds() { return $tbody.find('tr[data-order]').map(function () { return $(this).data('order'); }).get(); }
+        function insertRow($row, id) {
+            var placed = false;
+            $tbody.find('tr[data-order]').each(function () {
+                if (parseInt($(this).data('order'), 10) < id) { $row.insertBefore(this); placed = true; return false; }
+            });
+            if (!placed) { $tbody.append($row); }
+        }
+        function keepState($old, $new) {
+            if ($old.find('.codcrm-cb').is(':checked')) { $new.find('.codcrm-cb:not(:disabled)').prop('checked', true); }
+        }
+        function apply(d) {
+            var changed = false;
+            $.each(d.removed || [], function (_, id) {
+                $tbody.find('tr[data-order="' + id + '"]').addClass('codcrm-fade').delay(400).queue(function () { $(this).remove(); });
+                changed = true;
+            });
+            $.each(d.updated || {}, function (id, html) {
+                if (parseInt(window.codcrmEditingOrder, 10) === parseInt(id, 10)) { return; } // en cours de modification.
+                var $old = $tbody.find('tr[data-order="' + id + '"]'), $new = $(html).addClass('codcrm-flash');
+                if ($old.length) { keepState($old, $new); $old.replaceWith($new); delete histCache[id]; changed = true; }
+            });
+            var perPage = L.perPage || 25, addedNow = [];
+            $.each(d.added || [], function (_, a) {
+                if ($tbody.find('tr[data-order="' + a.id + '"]').length) { return; }
+                var $row = $(a.html).addClass('codcrm-new');
+                $tbody.find('tr:not([data-order])').remove(); // message « aucun colis ».
+                insertRow($row, a.id); addedNow.push(a); changed = true;
+            });
+            while ($tbody.find('tr[data-order]').length > perPage && addedNow.length) { $tbody.find('tr[data-order]').last().remove(); }
+            if (addedNow.length) { announce(addedNow); }
+            if (typeof d.total === 'number' && d.total > 0) { $('.displaying-num').text(d.total + ' ' + (d.total > 1 ? 'éléments' : 'élément')); }
+            return changed;
+        }
+        function qs() {
+            var u = new URLSearchParams(window.location.search);
+            return { stage: u.get('stage') || 'actif', flt: u.get('flt') || '', agent: u.get('agent') || 'all', paged: parseInt(u.get('paged'), 10) || 1 };
+        }
+        function tick() {
+            if (running || document.visibilityState === 'hidden') { schedule(); return; }
+            running = true;
+            var f = qs();
+            $.post(codcrm.ajax, { action: 'codcrm_queue_live', nonce: codcrm.nonce, since_utc: now.utc, since_db: now.db, ids: rowIds(), stage: f.stage, flt: f.flt, agent: f.agent, paged: f.paged })
+                .done(function (r) {
+                    if (r && r.success) { fails = 0; now = r.data.now; apply(r.data); first = false; showState(true); }
+                    else { fails++; showState(false); }
+                })
+                .fail(function () { fails++; showState(false); })
+                .always(function () { running = false; schedule(); });
+        }
+        function schedule() {
+            clearTimeout(timer);
+            timer = setTimeout(tick, Math.min(60000, L.interval * (1 + Math.min(fails, 6))));
+        }
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') { clearTimeout(timer); showState(true); tick(); } else { showState(false); }
+        });
+        showState(true);
+        first = true;
+        // Premier passage après le chargement : on mémorise ce qui est déjà affiché (pas de son), puis la boucle démarre.
+        $.each(rowIds(), function (_, id) { var n = notified(); if (!n[id]) { markNotified(id); } });
+        first = false;
+        schedule();
+    })();
 })(jQuery);
