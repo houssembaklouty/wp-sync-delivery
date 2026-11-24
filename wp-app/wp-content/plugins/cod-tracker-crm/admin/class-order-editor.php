@@ -95,6 +95,52 @@ class CODCRM_Order_Editor {
 		wp_send_json_success( [ 'html' => $cards ? implode( '', $cards ) : '<p class="codcrm-muted">' . esc_html__( 'Aucun historique.', 'cod-tracker-crm' ) . '</p>' ] );
 	}
 
+	// ── Verrou d'édition ───────────────────────────────────────
+
+	/** @var array<int,string> verrous tenus par ce processus (id commande => jeton) */
+	private static $held = [];
+
+	/**
+	 * Verrou par commande. Libéré même si le script s'arrête brutalement (wp_send_json_* / die ne
+	 * déclenchent PAS les blocs finally) grâce à une fonction de fermeture.
+	 */
+	private static function lock( int $id ): bool {
+		$key = 'codcrm_lock_edit_' . $id;
+		$tok = uniqid( '', true );
+		if ( ! add_option( $key, time() . '|' . $tok, '', false ) ) {
+			$cur = (string) get_option( $key );
+			if ( (int) $cur > time() - 30 ) {
+				return false;
+			}
+			update_option( $key, time() . '|' . $tok, false ); // verrou périmé.
+		}
+		if ( ! self::$held ) {
+			register_shutdown_function( [ __CLASS__, 'release_all' ] );
+		}
+		self::$held[ $id ] = $tok;
+		return true;
+	}
+
+	private static function unlock( int $id ): void {
+		if ( isset( self::$held[ $id ] ) ) {
+			$key = 'codcrm_lock_edit_' . $id;
+			if ( false !== strpos( (string) get_option( $key ), '|' . self::$held[ $id ] ) ) {
+				delete_option( $key );
+			}
+			unset( self::$held[ $id ] );
+		}
+	}
+
+	public static function release_all(): void {
+		foreach ( array_keys( self::$held ) as $id ) {
+			self::unlock( (int) $id );
+		}
+	}
+
+	private static function busy(): void {
+		wp_send_json_error( [ 'message' => __( 'Un enregistrement de cette commande est déjà en cours — réessayez dans quelques secondes.', 'cod-tracker-crm' ) ] );
+	}
+
 	// ── Suppression du colis chez le transporteur ──────────────
 
 	/**
@@ -107,25 +153,28 @@ class CODCRM_Order_Editor {
 		if ( ! class_exists( 'WCMCS_Sync_Manager' ) ) {
 			wp_send_json_error( [ 'message' => __( 'MultiCarrier Sync est requis.', 'cod-tracker-crm' ) ] );
 		}
-		$id   = $o->get_id();
-		$lock = 'codcrm_lock_edit_' . $id;
-		if ( ! add_option( $lock, time(), '', false ) ) {
-			if ( (int) get_option( $lock ) > time() - 60 ) {
-				wp_send_json_error( [ 'message' => __( 'Cette commande est en cours de modification.', 'cod-tracker-crm' ) ] );
-			}
-			update_option( $lock, time(), false );
+		$id = $o->get_id();
+		if ( ! self::lock( $id ) ) {
+			self::busy();
 		}
+		$err = '';
+		$res = [];
 		try {
 			if ( ! in_array( $o->get_status(), [ 'wcmcs-synced', 'wcmcs-packed' ], true ) ) {
-				wp_send_json_error( [ 'message' => __( 'Le colis ne peut plus être supprimé : la commande a dépassé l\'étape « Synchronisée / Emballée ».', 'cod-tracker-crm' ) ] );
+				$err = __( 'Le colis ne peut plus être supprimé : la commande a dépassé l\'étape « Synchronisée / Emballée ».', 'cod-tracker-crm' );
+			} else {
+				$res = WCMCS_Sync_Manager::cancel_single( $id );
+				if ( 'success' !== ( $res['status'] ?? '' ) ) {
+					$err = (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) );
+				} else {
+					self::after_unsync( wc_get_order( $id ), (string) $res['tracking_id'] );
+				}
 			}
-			$res = WCMCS_Sync_Manager::cancel_single( $id );
-			if ( 'success' !== ( $res['status'] ?? '' ) ) {
-				wp_send_json_error( [ 'message' => (string) ( $res['message'] ?: __( 'Annulation refusée par le transporteur.', 'cod-tracker-crm' ) ) ] );
-			}
-			self::after_unsync( wc_get_order( $id ), (string) $res['tracking_id'] );
 		} finally {
-			delete_option( $lock );
+			self::unlock( $id ); // libéré AVANT toute réponse (wp_send_json_* termine le script).
+		}
+		if ( '' !== $err ) {
+			wp_send_json_error( [ 'message' => $err ] );
 		}
 		ob_start();
 		CODCRM_Work_Queue::render_row( wc_get_order( $id ), CODCRM_Tasks::next_open_for_orders( [ $id ] )[ $id ] ?? null );
@@ -258,18 +307,14 @@ class CODCRM_Order_Editor {
 
 	public static function ajax_save(): void {
 		$o    = self::order_from_request();
-		$id   = $o->get_id();
-		$lock = 'codcrm_lock_edit_' . $id;
-		if ( ! add_option( $lock, time(), '', false ) ) {
-			if ( (int) get_option( $lock ) > time() - 60 ) {
-				wp_send_json_error( [ 'message' => __( 'Cette commande est en cours de modification.', 'cod-tracker-crm' ) ] );
-			}
-			update_option( $lock, time(), false );
+		$id = $o->get_id();
+		if ( ! self::lock( $id ) ) {
+			self::busy();
 		}
 		try {
 			$res = self::save( $o, (array) json_decode( (string) wp_unslash( $_POST['data'] ?? '' ), true ) );
 		} finally {
-			delete_option( $lock );
+			self::unlock( $id );
 		}
 		if ( is_wp_error( $res ) ) {
 			wp_send_json_error( [ 'message' => $res->get_error_message(), 'field' => $res->get_error_code() ] );
