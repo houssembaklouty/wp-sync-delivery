@@ -15,6 +15,60 @@ class CODCRM_Work_Queue {
 		add_action( 'admin_menu', [ __CLASS__, 'menu' ] );
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'assets' ] );
 		add_action( 'wp_ajax_codcrm_queue_live', [ __CLASS__, 'ajax_live' ] );
+		add_action( 'wp_ajax_codcrm_bulk_assign', [ __CLASS__, 'ajax_bulk_assign' ] );
+	}
+
+	// ── Affectation groupée (responsables) ────────────────────
+
+	/** Liste « Affecter à… » + bouton, dans la barre d'actions groupées. */
+	private static function assign_controls(): string {
+		$h = ' <span class="codcrm-assign"><select class="codcrm-assign-to" disabled><option value="">' . esc_html__( '— Affecter à… —', 'cod-tracker-crm' ) . '</option>';
+		foreach ( CODCRM_Agents::get_agents() as $u ) {
+			$h .= '<option value="' . (int) $u->ID . '">' . esc_html( $u->display_name ) . '</option>';
+		}
+		$h .= '<option value="0">' . esc_html__( '✕ Retirer l\'agent', 'cod-tracker-crm' ) . '</option></select>';
+		$h .= ' <button type="button" class="button codcrm-assign-go" disabled>👤 ' . esc_html__( 'Affecter', 'cod-tracker-crm' ) . '</button></span>';
+		return $h;
+	}
+
+	/** AJAX : affecte (ou désaffecte) les commandes cochées, ou tous les résultats du filtre (≤ 1000). */
+	public static function ajax_bulk_assign(): void {
+		check_ajax_referer( 'codcrm', 'nonce' );
+		if ( ! current_user_can( CODCRM_Agents::CAP_MANAGE ) ) {
+			wp_send_json_error( [ 'message' => __( 'Accès refusé.', 'cod-tracker-crm' ) ], 403 );
+		}
+		$agent = (int) ( $_POST['agent'] ?? -1 );
+		if ( $agent < 0 || ( $agent > 0 && ! user_can( $agent, CODCRM_Agents::CAP_WORK ) ) ) {
+			wp_send_json_error( [ 'message' => __( 'Choisissez un agent.', 'cod-tracker-crm' ) ] );
+		}
+		// « Tous les résultats » : le filtre de la page est dans l'URL de l'appel (comme les envois groupés).
+		$ids = ! empty( $_POST['all'] )
+			? self::filtered_ids( CODCRM_Bulk::MAX_ORDERS, 0 )
+			: array_slice( array_values( array_unique( array_filter( array_map( 'absint', (array) ( $_POST['ids'] ?? [] ) ) ) ) ), 0, CODCRM_Bulk::MAX_ORDERS );
+		if ( ! $ids ) {
+			wp_send_json_error( [ 'message' => __( 'Aucune commande sélectionnée.', 'cod-tracker-crm' ) ] );
+		}
+		$done = 0;
+		$same = 0;
+		$uid  = get_current_user_id();
+		foreach ( $ids as $id ) {
+			$o = wc_get_order( (int) $id );
+			if ( ! $o ) {
+				continue;
+			}
+			if ( CODCRM_Agents::agent_of( $o ) === $agent ) {
+				$same++;
+				continue;
+			}
+			if ( CODCRM_Agents::assign( $o, $agent, $uid, 'agent', __( 'Affectation groupée', 'cod-tracker-crm' ), 'manual' ) ) {
+				if ( $agent ) {
+					$o->delete_meta_data( CODCRM_Dispatcher::META_WAITING );
+					$o->save_meta_data();
+				}
+				$done++;
+			}
+		}
+		wp_send_json_success( [ 'done' => $done, 'same' => $same ] );
 	}
 
 	// ── Mode « en direct » ─────────────────────────────────────
@@ -208,6 +262,8 @@ class CODCRM_Work_Queue {
 				'msg_sent'    => __( 'Message envoyé et tracé dans la chronologie (actualisez la page pour la voir).', 'cod-tracker-crm' ),
 				'cancel'      => __( 'Annuler', 'cod-tracker-crm' ),
 				'error'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
+				'assign_confirm' => __( 'Affecter %1$s commande(s) à %2$s ?', 'cod-tracker-crm' ),
+				'assign_done' => __( '%d commande(s) affectée(s).', 'cod-tracker-crm' ),
 				'live_on'     => __( 'En direct', 'cod-tracker-crm' ),
 				'live_off'    => __( 'En pause', 'cod-tracker-crm' ),
 				'live_new'    => __( 'Nouvelle commande', 'cod-tracker-crm' ),
@@ -505,6 +561,7 @@ class CODCRM_Work_Queue {
 		// Barre d'actions groupées (sélection par cases à cocher).
 		echo '<div class="codcrm-bulkbar"><strong class="codcrm-selcount">0</strong> ' . esc_html__( 'sélectionné(s)', 'cod-tracker-crm' )
 			. ' <button type="button" class="button button-primary codcrm-bulk-open" disabled>✉ ' . esc_html__( 'Message groupé', 'cod-tracker-crm' ) . '</button>'
+			. ( $is_manager ? self::assign_controls() : '' )
 			. ' <a href="#" class="codcrm-sel-all" style="display:none">' . esc_html( sprintf( /* translators: %d plafond */ __( 'Sélectionner tous les résultats du filtre (jusqu\'à %d)', 'cod-tracker-crm' ), CODCRM_Bulk::MAX_ORDERS ) ) . '</a>'
 			. ' <a href="' . esc_url( admin_url( 'admin.php?page=' . CODCRM_Bulk_UI::PAGE ) ) . '">' . esc_html__( 'Voir les envois groupés', 'cod-tracker-crm' ) . '</a></div>';
 
@@ -542,7 +599,7 @@ class CODCRM_Work_Queue {
 		$client  = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
 		$overdue = $task && $task->due_at < current_time( 'mysql' );
 
-		echo '<tr data-order="' . (int) $id . '"><th class="check-column"><input type="checkbox" class="codcrm-cb" value="' . (int) $id . '"' . ( $phone8 ? '' : ' disabled' ) . ' /></th>';
+		echo '<tr data-order="' . (int) $id . '"><th class="check-column"><input type="checkbox" class="codcrm-cb" value="' . (int) $id . '"' . ( $phone8 ? '' : ' data-nophone="1"' ) . ' /></th>';
 		$slug = (string) $order->get_meta( '_wcmcs_carrier_slug' );
 		$logo = $slug && class_exists( 'WCMCS_Carrier_Detector' ) ? WCMCS_Carrier_Detector::get_logo_url( $slug ) : '';
 		printf( '<td><a href="%s"><strong>#%s</strong></a>%s<br><small>%s%s</small></td>',

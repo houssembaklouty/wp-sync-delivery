@@ -23,6 +23,8 @@ class CODCRM_Agents {
 		add_filter( 'woocommerce_login_redirect', [ __CLASS__, 'wc_login_redirect' ], 20, 2 );
 		// « WordPress X est disponible ! Veuillez informer l'administrateur… » : réservé à ceux qui peuvent mettre à jour.
 		add_action( 'admin_init', [ __CLASS__, 'hide_update_nag' ] );
+		// Agent supprimé : ses commandes ne doivent pas rester attribuées à un utilisateur inexistant.
+		add_action( 'delete_user', [ __CLASS__, 'on_delete_user' ], 10, 2 );
 		// Sites déjà installés : ajoute la capacité manquante au rôle existant.
 		add_action( 'init', [ __CLASS__, 'maybe_upgrade_role' ] );
 	}
@@ -52,6 +54,39 @@ class CODCRM_Agents {
 			remove_action( 'admin_notices', 'maintenance_nag', 10 );
 			remove_action( 'network_admin_notices', 'maintenance_nag', 10 );
 		}
+	}
+
+	public static function on_delete_user( $user_id, $reassign = null ): void {
+		$to = ( $reassign && user_can( (int) $reassign, self::CAP_WORK ) ) ? (int) $reassign : 0;
+		self::release_agent_orders( (int) $user_id, $to );
+	}
+
+	/**
+	 * Commandes d'un agent (supprimé / retiré) : transférées à $to, sinon remises « en attente d'un agent »
+	 * (le moteur de répartition les réattribue au prochain passage).
+	 *
+	 * @return int commandes traitées
+	 */
+	public static function release_agent_orders( int $agent_id, int $to = 0 ): int {
+		if ( $agent_id <= 0 ) {
+			return 0;
+		}
+		$ids = wc_get_orders( [ 'limit' => -1, 'return' => 'ids', 'type' => 'shop_order', 'meta_key' => self::META_AGENT, 'meta_value' => (string) $agent_id ] ); // phpcs:ignore WordPress.DB.SlowDBQuery
+		$n   = 0;
+		foreach ( (array) $ids as $id ) {
+			$o = wc_get_order( (int) $id );
+			if ( ! $o ) {
+				continue;
+			}
+			self::assign( $o, $to, get_current_user_id(), 'system', __( 'Agent supprimé', 'cod-tracker-crm' ), 'auto' );
+			if ( ! $to ) {
+				$o = wc_get_order( (int) $id );
+				$o->update_meta_data( CODCRM_Dispatcher::META_WAITING, '1' );
+				$o->save_meta_data();
+			}
+			$n++;
+		}
+		return $n;
 	}
 
 	public static function maybe_upgrade_role(): void {

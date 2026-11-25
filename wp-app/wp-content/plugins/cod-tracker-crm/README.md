@@ -179,3 +179,8 @@ Cinquième son proposé dans Réglages → Général → « Son nouvelle command
 - « Mes suivis » continue de vérifier les commandes quand l'onglet est caché ou que vous êtes sur un autre site, et envoie une **notification de bureau** (avec le son du système) — minuterie dans un Web Worker, non ralentie par le navigateur.
 - Bandeau « 🔔 Activer les alertes (son + notifications) » en haut de l'admin tant que les notifications ne sont pas autorisées : un clic autorise les notifications et débloque le son. Cloche orange dans la barre d'admin quand le navigateur bloque le son (cliquer n'importe où sur la page, ou Chrome → cadenas → Paramètres du site → Son : Autoriser).
 - Le mp3 est autorisé dès ce premier clic ; s'il est refusé, repli automatique sur la clochette.
+
+## Affectation groupée (v1.11.0)
+- « Mes suivis » (responsables) : cochez des commandes (ou « Sélectionner tous les résultats du filtre », jusqu'à 1000) → liste **« Affecter à… »** (un agent ou « ✕ Retirer l'agent ») → **Affecter**. Chaque affectation est tracée dans la chronologie ; ces affectations manuelles ne sont jamais réattribuées automatiquement.
+- Toutes les commandes peuvent être cochées (même sans numéro valide : elles sont simplement ignorées par les messages groupés).
+- Agent supprimé : ses commandes sont transférées à l'utilisateur choisi par WordPress (« attribuer le contenu à »), sinon remises « en attente d'un agent » pour être réparties de nouveau.

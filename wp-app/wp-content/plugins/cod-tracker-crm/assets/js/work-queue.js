@@ -236,6 +236,8 @@
         var n = allMode ? codcrm.bulkMax : selected().length;
         $('.codcrm-selcount').text(allMode ? '≤ ' + codcrm.bulkMax : n);
         $('.codcrm-bulk-open').prop('disabled', !n);
+        $('.codcrm-assign-to').prop('disabled', !n);
+        $('.codcrm-assign-go').prop('disabled', !n || $('.codcrm-assign-to').val() === '');
         var total = $('.codcrm-cb:not(:disabled)').length;
         $('.codcrm-sel-all').toggle(!allMode && total > 0 && selected().length === total);
     }
@@ -246,6 +248,26 @@
     });
     $(document).on('change', '.codcrm-cb', function () { allMode = false; refreshSel(); });
     $(document).on('click', '.codcrm-sel-all', function (e) { e.preventDefault(); allMode = true; refreshSel(); });
+
+    // ── Affectation groupée (responsables) ──
+    $(document).on('change', '.codcrm-assign-to', refreshSel);
+    $(document).on('click', '.codcrm-assign-go', function () {
+        var $sel = $('.codcrm-assign-to'), agent = $sel.val(), ids = selected(), n = allMode ? '≤ ' + codcrm.bulkMax : ids.length;
+        if (agent === '' || (!allMode && !ids.length)) { return; }
+        var who = $sel.find('option:selected').text();
+        if (!window.confirm(i18n.assign_confirm.replace('%1$s', n).replace('%2$s', who))) { return; }
+        var $b = $(this).prop('disabled', true);
+        var data = { action: 'codcrm_bulk_assign', nonce: codcrm.nonce, agent: agent };
+        if (allMode) { data.all = 1; } else { data.ids = ids; }
+        $.post(codcrm.ajax + (allMode ? location.search : ''), data).done(function (r) {
+            if (r && r.success) {
+                toast('✓ ' + i18n.assign_done.replace('%d', r.data.done));
+                setTimeout(function () { location.reload(); }, 900);
+            } else {
+                window.alert((r && r.data && r.data.message) || i18n.error); $b.prop('disabled', false);
+            }
+        }).fail(function () { window.alert(i18n.error); $b.prop('disabled', false); });
+    });
 
     $(document).on('click', '.codcrm-bulk-open', function () {
         var ids = selected(), n = allMode ? codcrm.bulkMax : ids.length;

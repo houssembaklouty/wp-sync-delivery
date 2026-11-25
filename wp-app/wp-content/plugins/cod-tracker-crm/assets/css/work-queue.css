@@ -270,3 +270,5 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
 @keyframes codcrm-newrow { from { background: #ddd6fe; } to { background: transparent; } }
 .codcrm-table tr.codcrm-new td, .codcrm-table tr.codcrm-new th { animation: codcrm-newrow 4s ease-out; }
 .codcrm-table tr.codcrm-fade { opacity: .3; transition: opacity .4s; }
+.codcrm-assign { display: inline-flex; gap: 6px; align-items: center; }
+.codcrm-assign select { min-width: 170px; }
