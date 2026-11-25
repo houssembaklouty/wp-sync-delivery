@@ -21,6 +21,8 @@ class CODCRM_Agents {
 		// Après connexion : un agent arrive directement sur « Mes suivis ».
 		add_filter( 'login_redirect', [ __CLASS__, 'login_redirect' ], 20, 3 );
 		add_filter( 'woocommerce_login_redirect', [ __CLASS__, 'wc_login_redirect' ], 20, 2 );
+		// « WordPress X est disponible ! Veuillez informer l'administrateur… » : réservé à ceux qui peuvent mettre à jour.
+		add_action( 'admin_init', [ __CLASS__, 'hide_update_nag' ] );
 		// Sites déjà installés : ajoute la capacité manquante au rôle existant.
 		add_action( 'init', [ __CLASS__, 'maybe_upgrade_role' ] );
 	}
@@ -41,6 +43,15 @@ class CODCRM_Agents {
 
 	public static function wc_login_redirect( $to, $user ) {
 		return self::is_agent_only( $user ) ? admin_url( 'admin.php?page=codcrm-queue' ) : $to;
+	}
+
+	public static function hide_update_nag(): void {
+		if ( ! current_user_can( 'update_core' ) ) {
+			remove_action( 'admin_notices', 'update_nag', 3 );
+			remove_action( 'network_admin_notices', 'update_nag', 3 );
+			remove_action( 'admin_notices', 'maintenance_nag', 10 );
+			remove_action( 'network_admin_notices', 'maintenance_nag', 10 );
+		}
 	}
 
 	public static function maybe_upgrade_role(): void {
