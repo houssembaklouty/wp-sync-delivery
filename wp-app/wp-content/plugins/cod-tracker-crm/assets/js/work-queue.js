@@ -703,26 +703,10 @@
         var muted = false, NOTIF = 'codcrm_notified';
         try { muted = window.localStorage.getItem('codcrm_mute') === '1'; } catch (e) { /* rien */ }
 
-        // Barre d'état : « ● En direct » + bouton son.
-        var $st = $('<span class="codcrm-live" role="status"><i class="dot"></i><span class="lbl"></span></span>');
-        var $snd = $('<button type="button" class="codcrm-live-snd" hidden></button>');
-        $('.codcrm-bulkbar').first().append($st).append($snd);
-        function showState(on) { $st.toggleClass('is-off', !on).find('.lbl').text(on ? i18n.live_on : i18n.live_off); }
-        function sndBtn() {
-            if (L.sound === 'none') { $snd.prop('hidden', true); return; }
-            var ready = window.codcrmSound && window.codcrmSound.ready();
-            $snd.prop('hidden', false).toggleClass('is-warn', !ready && !muted)
-                .text(muted ? '🔕' : (ready ? '🔔' : '🔔 ' + i18n.live_enable_sound))
-                .attr('title', ready || muted ? i18n.live_mute : i18n.live_enable_sound);
-        }
-        $snd.on('click', function () {
-            if (muted) { muted = false; } else if (window.codcrmSound.ready()) { muted = true; }
-            try { window.localStorage.setItem('codcrm_mute', muted ? '1' : '0'); } catch (e) { /* rien */ }
-            window.codcrmSound.unlock().then(sndBtn); sndBtn();
-        });
-        // Le navigateur n'autorise le son qu'après un geste de l'utilisateur.
-        $(document).one('click keydown', function () { window.codcrmSound.unlock().then(sndBtn); });
-        sndBtn();
+        // Pas d'indicateur ni de bouton sur la page : le son se règle dans Suivi COD → Réglages (et la cloche de la barre d'admin).
+        function showState() { /* rien */ }
+        function sndBtn() { /* rien */ }
+        $(document).one('click keydown', function () { if (window.codcrmSound) { window.codcrmSound.unlock(); } });
 
         // Commandes déjà annoncées (partagé entre onglets) : un son par commande, une seule fois.
         function notified() { try { return JSON.parse(window.localStorage.getItem(NOTIF) || '{}'); } catch (e) { return {}; } }

@@ -41,6 +41,16 @@ class CODCRM_Work_Queue {
 		return isset( self::sounds()[ $s ] ) ? $s : 'bell';
 	}
 
+	/** Son des alertes activé (réglage) ? */
+	public static function sound_enabled(): bool {
+		return 'yes' === get_option( 'codcrm_sound_enabled', 'yes' );
+	}
+
+	/** Son réellement joué : celui choisi, ou « none » si le son des alertes est désactivé. */
+	public static function effective_sound(): string {
+		return self::sound_enabled() ? self::live_sound() : 'none';
+	}
+
 	public static function live_volume(): int {
 		return max( 0, min( 100, (int) get_option( 'codcrm_live_volume', 70 ) ) );
 	}
@@ -164,7 +174,7 @@ class CODCRM_Work_Queue {
 			'nonce'    => wp_create_nonce( 'codcrm' ),
 			'outcomes' => CODCRM_Contacts::call_outcomes(),
 			'orderScreen' => $order_scr,
-			'live'        => false !== strpos( $hook, self::PAGE_QUEUE ) ? [ 'now' => self::live_now(), 'interval' => 5000, 'sound' => self::live_sound(), 'volume' => self::live_volume(), 'soundAbandoned' => 'yes' === get_option( 'codcrm_live_sound_abandoned', 'yes' ), 'perPage' => self::PER_PAGE ] : null,
+			'live'        => false !== strpos( $hook, self::PAGE_QUEUE ) ? [ 'now' => self::live_now(), 'interval' => 5000, 'sound' => self::effective_sound(), 'volume' => self::live_volume(), 'soundAbandoned' => 'yes' === get_option( 'codcrm_live_sound_abandoned', 'yes' ), 'perPage' => self::PER_PAGE ] : null,
 			'contexts'    => array_diff_key( CODCRM_Templates::contexts(), [ 'custom' => 1 ] ),
 			'sms'         => CODCRM_SMS_Gateway::is_configured(),
 			'bulkMax'     => CODCRM_Bulk::MAX_ORDERS,

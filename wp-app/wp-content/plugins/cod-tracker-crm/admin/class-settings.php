@@ -144,6 +144,8 @@ class CODCRM_Settings {
 		printf( '<tr><th>%s</th><td><input type="number" min="1" max="60" name="return_days" value="%d" class="small-text" /> <span class="description">%s</span></td></tr>',
 			esc_html__( 'Alerte retour non reçu après', 'cod-tracker-crm' ), CODCRM_Returns::days(), esc_html__( 'jours après le retour définitif annoncé par le transporteur, si le colis n\'a pas été scanné « Retour reçu » (colis potentiellement perdu).', 'cod-tracker-crm' ) );
 		// Mes suivis en direct : son de notification.
+		printf( '<tr><th>%s</th><td><label><input type="checkbox" name="sound_enabled" value="yes"%s /> %s</label></td></tr>',
+			esc_html__( 'Son des alertes', 'cod-tracker-crm' ), checked( CODCRM_Work_Queue::sound_enabled(), true, false ), esc_html__( 'Activer le son quand une nouvelle commande arrive', 'cod-tracker-crm' ) );
 		echo '<tr><th>' . esc_html__( 'Son « nouvelle commande »', 'cod-tracker-crm' ) . '</th><td class="codcrm-sound-row">';
 		foreach ( CODCRM_Work_Queue::sounds() as $key => $label ) {
 			printf( '<label style="display:block;margin:2px 0"><input type="radio" name="live_sound" value="%s"%s /> %s%s</label>',
@@ -593,6 +595,7 @@ class CODCRM_Settings {
 					CODCRM_Abandoned::purge_page_cache(); // les fiches produit en cache doivent charger / retirer le script.
 				}
 				update_option( 'codcrm_abandoned_delay', max( 5, min( 120, absint( $_POST['abandoned_delay'] ?? 15 ) ) ) );
+				update_option( 'codcrm_sound_enabled', ! empty( $_POST['sound_enabled'] ) ? 'yes' : 'no' );
 				update_option( 'codcrm_notify_enabled', ! empty( $_POST['notify_enabled'] ) ? 'yes' : 'no' );
 				$snd = sanitize_key( wp_unslash( $_POST['live_sound'] ?? 'bell' ) );
 				update_option( 'codcrm_live_sound', isset( CODCRM_Work_Queue::sounds()[ $snd ] ) ? $snd : 'bell' );

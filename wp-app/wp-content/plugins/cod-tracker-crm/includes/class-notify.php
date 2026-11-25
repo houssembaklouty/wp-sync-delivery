@@ -42,7 +42,7 @@ class CODCRM_Notify {
 			'queueUrl'       => admin_url( 'admin.php?page=' . CODCRM_Work_Queue::PAGE_QUEUE . '&stage=tous' ),
 			'onQueue'        => false !== strpos( $hook, CODCRM_Work_Queue::PAGE_QUEUE ),
 			'now'            => $now,
-			'sound'          => CODCRM_Work_Queue::live_sound(),
+			'sound'          => CODCRM_Work_Queue::effective_sound(),
 			'volume'         => CODCRM_Work_Queue::live_volume(),
 			'soundAbandoned' => 'yes' === get_option( 'codcrm_live_sound_abandoned', 'yes' ),
 			'icon'           => (string) get_site_icon_url( 128 ),
