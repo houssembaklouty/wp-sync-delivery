@@ -58,6 +58,25 @@ class CODCRM_Order_Editor {
 		return $list;
 	}
 
+	/**
+	 * Couleur de chaque statut WooCommerce : celle de MultiCarrier Sync (réglable dans MCS, comme dans la liste
+	 * des commandes WooCommerce), sinon celle de l'étape correspondante (onglet Couleurs), sinon une teinte neutre.
+	 *
+	 * @param string[] $keys statuts avec préfixe wc-
+	 * @return array<string,string>
+	 */
+	public static function status_colors( array $keys ): array {
+		$mcs  = class_exists( 'WCMCS_Order_Statuses' ) && method_exists( 'WCMCS_Order_Statuses', 'status_colors' ) ? (array) WCMCS_Order_Statuses::status_colors() : [];
+		$base = [ 'pending' => '#94a3b8', 'completed' => '#16a34a', 'cancelled' => '#c0392b', 'refunded' => '#7f8c8d', 'failed' => '#e74c3c', 'checkout-draft' => '#cbd5e1' ];
+		$out  = [];
+		foreach ( $keys as $st ) {
+			$k     = preg_replace( '/^wc-/', '', (string) $st );
+			$stage = CODCRM_Stage_Mapper::from_order_status( $k );
+			$out[ $st ] = $mcs[ $k ] ?? ( $base[ $k ] ?? ( '' !== $stage ? CODCRM_Stages::color( $stage ) : '#64748b' ) );
+		}
+		return $out;
+	}
+
 	public static function is_locked( WC_Order $o ): bool {
 		return 'synced' === (string) $o->get_meta( '_wcmcs_sync_status' ) || in_array( $o->get_status(), self::LOCKED_STATUS, true );
 	}
@@ -280,10 +299,7 @@ class CODCRM_Order_Editor {
 		$states = WC()->countries->get_states( 'TN' ) ?: [];
 		asort( $states );
 		$statuses = wc_get_order_statuses();
-		$colors   = [];
-		foreach ( array_keys( $statuses ) as $st ) {
-			$colors[ $st ] = CODCRM_Stages::color( CODCRM_Stage_Mapper::from_order_status( substr( $st, 3 ) ) );
-		}
+		$colors   = self::status_colors( array_keys( $statuses ) );
 		$strikes  = function_exists( 'wparabic_phone_strikes' ) ? (int) wparabic_phone_strikes( $o->get_billing_phone() ) : 0;
 
 		wp_send_json_success( [

@@ -272,3 +272,17 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
 .codcrm-table tr.codcrm-fade { opacity: .3; transition: opacity .4s; }
 .codcrm-assign { display: inline-flex; gap: 6px; align-items: center; }
 .codcrm-assign select { min-width: 170px; }
+
+/* Statut en couleurs (fenêtre Modifier) */
+.codcrm-ed .ed-status { position: relative; }
+.codcrm-ed .ed-status-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 40px; padding: 6px 12px; border: 1px solid var(--ed-border); border-radius: 8px; background: #fff; cursor: pointer; }
+.codcrm-ed .ed-status-btn:focus { border-color: var(--ed-accent-2); box-shadow: 0 0 0 3px rgba(124, 58, 237, .18); outline: 0; }
+.codcrm-ed .ed-status-btn .ed-pill { font-size: 12px; padding: 3px 12px; vertical-align: 0; }
+.codcrm-ed .ed-caret { color: var(--ed-muted); }
+.codcrm-ed .ed-status-list { position: absolute; left: 0; right: 0; top: 44px; z-index: 20; max-height: 320px; overflow-y: auto; padding: 6px; background: #fff; border: 1px solid var(--ed-border); border-radius: 10px; box-shadow: 0 12px 28px rgba(15, 23, 42, .18); display: flex; flex-direction: column; gap: 4px; }
+.codcrm-ed .ed-status-list[hidden] { display: none !important; }
+.codcrm-ed .ed-status-opt { display: block; width: 100%; padding: 5px 6px; border: 0; border-radius: 8px; background: transparent; text-align: left; cursor: pointer; }
+.codcrm-ed .ed-status-opt .ed-pill { font-size: 12px; padding: 3px 12px; vertical-align: 0; }
+.codcrm-ed .ed-status-opt:hover, .codcrm-ed .ed-status-opt:focus { background: #f1f5f9; outline: 0; }
+.codcrm-ed .ed-status-opt.is-cur { background: var(--ed-accent-bg); }
+.codcrm-ed .ed-status-opt.is-cur::after { content: " ✓"; color: var(--ed-accent); font-weight: 700; }

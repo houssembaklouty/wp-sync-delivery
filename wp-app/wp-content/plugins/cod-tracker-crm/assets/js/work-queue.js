@@ -432,8 +432,17 @@
             build();
         }).fail(function () { close(true); alert(i18n.error); });
 
+        // Texte lisible (noir ou blanc) selon la couleur de fond du statut.
+        function ink(hex) {
+            var h = String(hex || '').replace('#', '');
+            if (h.length === 3) { h = h.replace(/(.)/g, '$1$1'); }
+            if (!/^[0-9a-f]{6}$/i.test(h)) { return '#fff'; }
+            var r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+            return (0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#1e293b' : '#fff';
+        }
         function statusPill(st) {
-            return '<span class="ed-pill" style="background:' + esc(d.status_colors[st] || '#64748b') + '">' + esc(d.statuses[st] || st) + '</span>';
+            var c = d.status_colors[st] || '#64748b';
+            return '<span class="ed-pill" style="background:' + esc(c) + ';color:' + ink(c) + '">' + esc(d.statuses[st] || st) + '</span>';
         }
         function carrierLogo(slug) {
             var u = d.logos[slug || d.carrier_now];
@@ -472,7 +481,11 @@
                 + '</div><aside class="ed-side">'
                 // Commande
                 + '<section class="ed-card"><h3>Commande</h3>'
-                + field('Statut', '<div class="ed-inline"><span class="ed-dot"></span><select class="f-status">' + opts(d.statuses, d.status) + '</select></div>', 'f-wrap-status')
+                + field('Statut', '<div class="ed-status"><input type="hidden" class="f-status" value="' + esc(d.status) + '" />'
+                    + '<button type="button" class="ed-status-btn" aria-haspopup="listbox" aria-expanded="false"></button>'
+                    + '<div class="ed-status-list" role="listbox" hidden>' + $.map(d.statuses, function (label, k) {
+                        return '<button type="button" class="ed-status-opt" role="option" data-v="' + esc(k) + '">' + statusPill(k) + '</button>';
+                    }).join('') + '</div></div>', 'f-wrap-status')
                 + field('Société de livraison', '<div class="ed-inline ed-carrier"><span class="ed-logo">' + carrierLogo(d.carrier) + '</span><select class="f-carrier"' + ro + '>'
                     + opts(d.carriers, d.carrier || '', d.carrier_now ? 'Automatique (' + (d.carriers[d.carrier_now] || d.carrier_now) + ')' : 'Automatique') + '</select></div>')
                 + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">⧉</button>'
@@ -504,7 +517,8 @@
 
         function refreshStatus() {
             var st = $ed.find('.f-status').val();
-            $ed.find('.ed-dot').css('background', d.status_colors[st] || '#64748b');
+            $ed.find('.ed-status-btn').html(statusPill(st) + '<span class="ed-caret">▾</span>');
+            $ed.find('.ed-status-opt').attr('aria-selected', 'false').removeClass('is-cur').filter('[data-v="' + st + '"]').attr('aria-selected', 'true').addClass('is-cur');
         }
 
         function renderItems() {
@@ -573,6 +587,22 @@
                 else { var $i = $('<input>').val(t).appendTo('body').select(); document.execCommand('copy'); $i.remove(); done(); }
             });
             $ed.on('change', '.f-status', refreshStatus);
+            // Liste des statuts en couleurs (remplace le <select> natif, qui ne sait pas colorer ses options).
+            function stList(open) {
+                var $l = $ed.find('.ed-status-list');
+                $l.prop('hidden', !open); $ed.find('.ed-status-btn').attr('aria-expanded', open ? 'true' : 'false');
+                if (open) { ($l.find('.is-cur')[0] || $l.find('.ed-status-opt')[0]).focus(); }
+            }
+            function pickStatus(v) { $ed.find('.f-status').val(v).trigger('change'); setDirty(true); stList(false); $ed.find('.ed-status-btn').trigger('focus'); }
+            $ed.on('click', '.ed-status-btn', function () { stList($ed.find('.ed-status-list').prop('hidden')); });
+            $ed.on('click', '.ed-status-opt', function () { pickStatus($(this).data('v')); });
+            $ed.on('keydown', '.ed-status-list, .ed-status-btn', function (e) {
+                var $o = $ed.find('.ed-status-opt'), i = $o.index(document.activeElement);
+                if (e.key === 'Escape') { if (!$ed.find('.ed-status-list').prop('hidden')) { e.preventDefault(); e.stopPropagation(); stList(false); $ed.find('.ed-status-btn').trigger('focus'); } }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); if ($ed.find('.ed-status-list').prop('hidden')) { stList(true); } else { $o.eq(Math.min($o.length - 1, i + 1)).trigger('focus'); } }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); $o.eq(Math.max(0, i - 1)).trigger('focus'); }
+            });
+            $ed.on('mousedown', function (e) { if (!$(e.target).closest('.ed-status').length) { stList(false); } });
             $ed.on('change', '.f-carrier', function () { $ed.find('.ed-logo').html(carrierLogo($(this).val())); });
             $ed.on('change', '.f-reminder', function () {
                 var on = this.checked, $at = $ed.find('.f-reminder-at');
