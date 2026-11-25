@@ -53,6 +53,16 @@ Ressources tierces embarquees :
 
 == Changelog ==
 
+= 3.15.0 =
+* Icones : Heroicons (heroicons.com, licence MIT) a la place de Font Awesome. Icones en SVG
+  (inc/icons.php, couleur = couleur du texte) ; les glyphes des pseudo-elements CSS (fleches de menu,
+  etoiles de notes, chargement, messages WooCommerce) sont remplaces par des masques CSS
+  (assets/css/icons.css). Marques (WhatsApp, Facebook, Instagram, TikTok) : Simple Icons (CC0).
+* Font Awesome n'est plus charge ni livre (3 feuilles CSS et polices en moins).
+* Widget « avantages » de l'accueil : l'icone se saisit par son nom Heroicons (ex. truck) ; les anciens
+  noms Font Awesome enregistres (fa-truck-fast, fa-award...) sont convertis automatiquement.
+* Formulaire COD : emojis retires des champs et du bouton (fleche en SVG).
+
 = 3.12.0 =
 * Defilement automatique du carrousel produits (option « تحريك تلقائي ») :
 * case d'activation + duree entre deux pas en secondes (2 a 20, defaut 4),

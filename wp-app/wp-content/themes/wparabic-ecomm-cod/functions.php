@@ -7,12 +7,13 @@
 
 defined('ABSPATH') || exit;
 
-define('WPARABIC_VERSION', '3.14.0');
+define('WPARABIC_VERSION', '3.15.0');
 define('WPARABIC_PRIMARY_DEFAULT', '#259bea');
 define('WPARABIC_ACCENT_DEFAULT', '#ea593c');
 
 // Langue de la boutique : charge en premier, la langue doit etre fixee avant
 // le chargement des traductions du theme et des extensions.
+require get_template_directory() . '/inc/icons.php';
 require get_template_directory() . '/inc/languages.php';
 define('WPARABIC_ASSETS', get_template_directory_uri() . '/assets');
 
@@ -325,12 +326,8 @@ function wparabic_enqueue() {
     wp_enqueue_style('hanout-vendor', WPARABIC_ASSETS . '/css/vendor.css', array(), wparabic_asset_ver('assets/css/vendor.css'));
     wp_enqueue_style('wparabic-style', get_stylesheet_uri(), array('hanout-vendor'), wparabic_asset_ver('style.css'));
     wp_enqueue_style('hanout-blocks', WPARABIC_ASSETS . '/css/blocks.css', array('wparabic-style'), wparabic_asset_ver('assets/css/blocks.css'));
-    // Font Awesome Free 6.5.1 auto-heberge (assets/vendor/fontawesome) : plus de
-    // dependance a un CDN. Seuls les styles utilises sont charges : solid
-    // (fas) et brands (fab). Licence : assets/vendor/fontawesome/LICENSE.txt.
-    wp_enqueue_style('fontawesome', WPARABIC_ASSETS . '/vendor/fontawesome/css/fontawesome.min.css', array(), '6.5.1');
-    wp_enqueue_style('fontawesome-solid', WPARABIC_ASSETS . '/vendor/fontawesome/css/solid.min.css', array('fontawesome'), '6.5.1');
-    wp_enqueue_style('fontawesome-brands', WPARABIC_ASSETS . '/vendor/fontawesome/css/brands.min.css', array('fontawesome'), '6.5.1');
+    // Icônes : Heroicons (inc/icons.php, SVG en ligne) ; les pseudo-éléments CSS utilisent des masques (assets/css/icons.css).
+    wp_enqueue_style('wparabic-icons', WPARABIC_ASSETS . '/css/icons.css', array('wparabic-style'), wparabic_asset_ver('assets/css/icons.css'));
     wp_enqueue_style('wparabic-cod', WPARABIC_ASSETS . '/css/cod-form.css', array('wparabic-style'), wparabic_asset_ver('assets/css/cod-form.css'));
     wp_enqueue_style('wparabic-overrides', WPARABIC_ASSETS . '/css/overrides.css', array('wparabic-cod'), wparabic_asset_ver('assets/css/overrides.css'));
 

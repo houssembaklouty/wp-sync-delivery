@@ -51,7 +51,7 @@ $cart_count = (function_exists('WC') && WC() && WC()->cart) ? WC()->cart->get_ca
 
 				<div class="header-branding-wrap">
 					<div class="mobile-nav-trigger">
-						<i class="fas fa-bars"></i> <span class="sr-only"><?php esc_html_e('القائمة', 'wparabic-ecomm-cod'); ?></span>
+						<?php echo WParabic_Icons::svg( 'bars-3' ); ?> <span class="sr-only"><?php esc_html_e('القائمة', 'wparabic-ecomm-cod'); ?></span>
 					</div>
 					<div class="site-branding">
 						<div class="site-logo">
@@ -83,7 +83,7 @@ $cart_count = (function_exists('WC') && WC() && WC()->cart) ? WC()->cart->get_ca
 					<div class="head-mini-cart-wrap">
 						<div class="header-mini-cart">
 							<a href="#" class="header-mini-cart-trigger">
-								<i class="fas fa-shopping-cart"></i><span class="cart-count"><?php echo esc_html($cart_count); ?></span>
+								<?php echo WParabic_Icons::svg( 'shopping-cart' ); ?><span class="cart-count"><?php echo esc_html($cart_count); ?></span>
 							</a>
 							<div class="header-mini-cart-contents">
 								<aside class="widget woocommerce widget_shopping_cart">

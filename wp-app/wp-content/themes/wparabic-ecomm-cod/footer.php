@@ -60,16 +60,16 @@ $phone_tel = preg_replace('/[^0-9+]/', '', $phone);
 							<ul class="list-social-icons">
 								<?php
 								$socials = array(
-									'facebook'  => array(wparabic_mod('social_facebook'), 'fa-facebook-f'),
-									'instagram' => array(wparabic_mod('social_instagram'), 'fa-instagram'),
-									'tiktok'    => array(wparabic_mod('social_tiktok'), 'fa-tiktok'),
+									'facebook'  => array(wparabic_mod('social_facebook'), 'facebook'),
+									'instagram' => array(wparabic_mod('social_instagram'), 'instagram'),
+									'tiktok'    => array(wparabic_mod('social_tiktok'), 'tiktok'),
 								);
 								foreach ($socials as $network => $data) :
 									list($url, $icon) = $data;
 									?>
 									<li>
 										<a href="<?php echo esc_url($url); ?>" class="social-icon" aria-label="<?php echo esc_attr(sprintf(__('رابط لـ %s', 'wparabic-ecomm-cod'), $network)); ?>" target="_blank" rel="noopener">
-											<i class="fab <?php echo esc_attr($icon); ?>"></i>
+											<?php echo WParabic_Icons::svg($icon); ?>
 										</a>
 									</li>
 								<?php endforeach; ?>
@@ -116,7 +116,7 @@ $phone_tel = preg_replace('/[^0-9+]/', '', $phone);
 </footer>
 
 <?php if ($phone_tel) : ?>
-<a href="tel:<?php echo esc_attr($phone_tel); ?>" class="callus-icon"><i class="fas fa-phone-volume"></i></a>
+<a href="tel:<?php echo esc_attr($phone_tel); ?>" class="callus-icon"><?php echo WParabic_Icons::svg( 'phone' ); ?></a>
 <?php endif; ?>
 
 </div><!-- #page -->

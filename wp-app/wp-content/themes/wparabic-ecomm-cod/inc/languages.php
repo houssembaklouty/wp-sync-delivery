@@ -318,7 +318,7 @@ function wparabic_language_switcher($context = 'header') {
     printf(
         '<div class="lang-switcher lang-switcher--%1$s">'
         . '<button type="button" class="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="%2$s" aria-label="%3$s">'
-        . '%4$s<span class="lang-switcher-code">%5$s</span><i class="fas fa-chevron-down lang-switcher-chevron" aria-hidden="true"></i>'
+        . '%4$s<span class="lang-switcher-code">%5$s</span>' . WParabic_Icons::svg( 'chevron-down', 'lang-switcher-chevron' ) . ''
         . '</button><ul id="%2$s" class="lang-switcher-menu">',
         esc_attr($context),
         esc_attr($menu_id),

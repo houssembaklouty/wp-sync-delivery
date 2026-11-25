@@ -455,8 +455,8 @@ function wparabic_cod_form($product) {
     $choose_hint    = $is_variable ? wparabic_cod_choose_hint($product) : '';
 
     $state_placeholder   = __('الولاية', 'wparabic-ecomm-cod');
-    $address_placeholder = '📍 ' . __('العنوان (الشارع، الحي، رقم المنزل)', 'wparabic-ecomm-cod');
-    $email_placeholder   = '✉️ ' . __('البريد الإلكتروني (اختياري)', 'wparabic-ecomm-cod');
+    $address_placeholder = __('العنوان (الشارع، الحي، رقم المنزل)', 'wparabic-ecomm-cod');
+    $email_placeholder   = __('البريد الإلكتروني (اختياري)', 'wparabic-ecomm-cod');
     $city_placeholder  = __('المعتمدية', 'wparabic-ecomm-cod');
 
     /*
@@ -485,7 +485,7 @@ function wparabic_cod_form($product) {
     ?>
     <div id="codplugin-checkout">
         <div class="codplugin-checkout-title">
-            <h3><?php esc_html_e('أضف معلوماتك في الأسفل للطلب', 'wparabic-ecomm-cod'); ?> 👇</h3>
+            <h3><?php esc_html_e('أضف معلوماتك في الأسفل للطلب', 'wparabic-ecomm-cod'); ?> <?php echo WParabic_Icons::svg( 'chevron-down' ); ?></h3>
         </div>
 
         <form id="codplugin_woo_single_form" class="checkout woocommerce-checkout">
@@ -513,7 +513,7 @@ function wparabic_cod_form($product) {
 
             <?php if (wparabic_cod_field_enabled('name')) : ?>
             <label class="sr-only" for="codplugin_full_name"><?php esc_html_e('الاسم بالكامل', 'wparabic-ecomm-cod'); ?></label>
-            <input type="text" name="full_name" id="codplugin_full_name" placeholder="👤 <?php esc_attr_e('الاسم بالكامل', 'wparabic-ecomm-cod'); ?>" required autocomplete="name"<?php echo 'name' === $span_key ? ' class="cod-span-2"' : ''; ?>>
+            <input type="text" name="full_name" id="codplugin_full_name" placeholder="<?php esc_attr_e('الاسم بالكامل', 'wparabic-ecomm-cod'); ?>" required autocomplete="name"<?php echo 'name' === $span_key ? ' class="cod-span-2"' : ''; ?>>
             <?php endif; ?>
             <?php
             /*
@@ -526,7 +526,7 @@ function wparabic_cod_form($product) {
              */
             ?>
             <label class="sr-only" for="codplugin_phone"><?php esc_html_e('رقم الهاتف', 'wparabic-ecomm-cod'); ?></label>
-            <input type="tel" name="phone_number" id="codplugin_phone" placeholder="📞 <?php esc_attr_e('رقم الهاتف', 'wparabic-ecomm-cod'); ?>" required autocomplete="tel-national"
+            <input type="tel" name="phone_number" id="codplugin_phone" placeholder="<?php esc_attr_e('رقم الهاتف', 'wparabic-ecomm-cod'); ?>" required autocomplete="tel-national"
                    inputmode="numeric" pattern="[0-9]{8}"
                    title="<?php esc_attr_e('يجب أن يتكون رقم الهاتف من 8 أرقام', 'wparabic-ecomm-cod'); ?>"<?php echo 'phone' === $span_key ? ' class="cod-span-2"' : ''; ?>>
 
@@ -640,7 +640,7 @@ function wparabic_cod_form($product) {
                 <span id="codplugin_count_button">1</span>
                 <span id="codplugin_remove_button">-</span>
             </div>
-            <input id="nrwooconfirm" type="submit" name="codplugin-submit" value="<?php echo is_rtl() ? '👈' : '👉'; ?> <?php esc_attr_e('انقر هنا لتأكيد الطلب', 'wparabic-ecomm-cod'); ?>" form="codplugin_woo_single_form"<?php disabled(!$can_order); ?>>
+            <input id="nrwooconfirm" type="submit" name="codplugin-submit" value="<?php esc_attr_e('انقر هنا لتأكيد الطلب', 'wparabic-ecomm-cod'); ?>" form="codplugin_woo_single_form"<?php disabled(!$can_order); ?>>
         </div>
 
         <?php
@@ -652,7 +652,7 @@ function wparabic_cod_form($product) {
             ?>
             <div class="whatsapp-order-section">
                 <button id="whatsapp-orders" type="button">
-                    <i class="fab fa-whatsapp"></i>
+                    <?php echo WParabic_Icons::svg( 'whatsapp' ); ?>
                     <span><?php esc_html_e('أنقر هنا للطلب عبر الواتساب', 'wparabic-ecomm-cod'); ?></span>
                 </button>
             </div>
@@ -667,12 +667,12 @@ function wparabic_cod_form($product) {
         <div id="codplugin_order_history" class="clear">
             <div id="codplugin_h_right">
                 <span id="codplugin_h_o">
-                    <i class="fas fa-shopping-cart "></i>
+                    <?php echo WParabic_Icons::svg( 'shopping-cart' ); ?>
                     <?php esc_html_e('ملخص الطلب', 'wparabic-ecomm-cod'); ?>
                 </span>
             </div>
             <div id="codplugin_h_left">
-                <i class="fas fa-chevron-down"></i>
+                <?php echo WParabic_Icons::svg( 'chevron-down' ); ?>
             </div>
         </div>
 
@@ -743,7 +743,7 @@ function wparabic_cod_thanks_popup() {
             <div class="thanks-box-content"><?php esc_html_e('سيقوم فريقنا بالتواصل معكم لتأكيد الطلبية.', 'wparabic-ecomm-cod'); ?></div>
             <div id="thanks-order-summary">
                 <div class="order-summary-title">
-                    <i class="fas fa-shopping-cart"></i>
+                    <?php echo WParabic_Icons::svg( 'shopping-cart' ); ?>
                     <?php esc_html_e('ملخص الطلب', 'wparabic-ecomm-cod'); ?>
                 </div>
             </div>

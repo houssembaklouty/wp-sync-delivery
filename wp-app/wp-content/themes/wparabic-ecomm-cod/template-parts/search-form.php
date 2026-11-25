@@ -42,7 +42,7 @@ $uid = isset($args['uid']) ? $args['uid'] : 'header';
 				<input type="hidden" name="post_type" value="product" />
 			</div>
 			<button type="submit" class="category-search-btn">
-				<i class="fas fa-search"></i><span class="sr-only"><?php esc_html_e('بحث', 'wparabic-ecomm-cod'); ?></span>
+				<?php echo WParabic_Icons::svg( 'magnifying-glass' ); ?><span class="sr-only"><?php esc_html_e('بحث', 'wparabic-ecomm-cod'); ?></span>
 			</button>
 		</form>
 	</div>

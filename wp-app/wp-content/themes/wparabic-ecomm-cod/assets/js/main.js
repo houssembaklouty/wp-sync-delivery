@@ -893,7 +893,7 @@
 		// --- Bascule du recapitulatif ------------------------------------
 		$('#codplugin_order_history').on('click', function () {
 			$('#codplugin_show_hide').slideToggle(200);
-			$('#codplugin_h_left i').toggleClass('fa-chevron-down fa-chevron-up');
+			$('#codplugin_h_left').toggleClass('is-open');
 		});
 
 		// --- Commande par WhatsApp ---------------------------------------

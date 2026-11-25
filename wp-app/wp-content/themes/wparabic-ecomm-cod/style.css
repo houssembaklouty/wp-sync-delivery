@@ -2,7 +2,7 @@
 /*
 Theme Name: WPArabicEcommCOD
 Description: Theme WooCommerce arabe RTL avec paiement a la livraison (COD), formulaire de commande en une etape et design mobile-first. Derive du theme GPL "hanout" de ar-themes.com.
-Version: 3.14.0
+Version: 3.15.0
 Requires at least: 6.0
 Requires PHP: 7.4
 Tested up to: 6.9
@@ -31,7 +31,7 @@ Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, translation-re
  *
  * Ressources tierces embarquees avec ce theme :
  *   - normalize.css v7.0.0 - Nicolas Gallagher - licence MIT
- *   - Font Awesome Free 6  - Fonticons, Inc. - icones CC BY 4.0, polices SIL OFL 1.1, code MIT
+ *   - Heroicons v2 - Tailwind Labs - icones MIT (inc/icons.php, LICENSE-icons.txt) ; marques : Simple Icons - CC0
  *   - Cairo               - Gaetano Gnalvo Vergara et al. - SIL OFL 1.1
  * ---------------------------------------------------------------------------
  */

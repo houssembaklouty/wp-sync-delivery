@@ -433,7 +433,7 @@ class WPArabic_Home_Widget_Products extends WPArabic_Home_Widget {
         ?>
         <div class="woocommerce columns-<?php echo esc_attr($columns); ?> <?php echo esc_attr($extra); ?>"<?php echo $carattr; // phpcs:ignore WordPress.Security.EscapeOutput ?> style="--wparabic-thumb-ratio: <?php echo esc_attr($ratio); ?>">
             <?php if (!empty($i['scroll'])) : ?>
-                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--prev" aria-label="<?php esc_attr_e('السابق', 'wparabic-ecomm-cod'); ?>"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--prev" aria-label="<?php esc_attr_e('السابق', 'wparabic-ecomm-cod'); ?>"><?php echo WParabic_Icons::svg( 'chevron-right' ); ?></button>
             <?php endif; ?>
             <div class="row row-items columns-<?php echo esc_attr($columns); ?> <?php echo empty($i['scroll']) ? '' : 'wparabic-cats-track'; ?>">
                 <?php
@@ -456,7 +456,7 @@ class WPArabic_Home_Widget_Products extends WPArabic_Home_Widget {
                 ?>
             </div>
             <?php if (!empty($i['scroll'])) : ?>
-                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--next" aria-label="<?php esc_attr_e('التالي', 'wparabic-ecomm-cod'); ?>"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--next" aria-label="<?php esc_attr_e('التالي', 'wparabic-ecomm-cod'); ?>"><?php echo WParabic_Icons::svg( 'chevron-left' ); ?></button>
             <?php endif; ?>
         </div>
         <?php
@@ -625,7 +625,7 @@ class WPArabic_Home_Widget_Products_By_Cat extends WPArabic_Home_Widget {
                 <?php wparabic_home_section_heading($group['title'], ''); ?>
                 <div class="woocommerce columns-<?php echo esc_attr($columns); ?> <?php echo esc_attr($extra); ?>"<?php echo $carattr; // phpcs:ignore WordPress.Security.EscapeOutput ?> style="--wparabic-thumb-ratio: <?php echo esc_attr($ratio); ?>">
                     <?php if (!empty($i['scroll'])) : ?>
-                        <button type="button" class="wparabic-cats-nav wparabic-cats-nav--prev" aria-label="<?php esc_attr_e('السابق', 'wparabic-ecomm-cod'); ?>"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" class="wparabic-cats-nav wparabic-cats-nav--prev" aria-label="<?php esc_attr_e('السابق', 'wparabic-ecomm-cod'); ?>"><?php echo WParabic_Icons::svg( 'chevron-right' ); ?></button>
                     <?php endif; ?>
                     <div class="row row-items columns-<?php echo esc_attr($columns); ?> <?php echo empty($i['scroll']) ? '' : 'wparabic-cats-track'; ?>">
                         <?php
@@ -647,7 +647,7 @@ class WPArabic_Home_Widget_Products_By_Cat extends WPArabic_Home_Widget {
                         ?>
                     </div>
                     <?php if (!empty($i['scroll'])) : ?>
-                        <button type="button" class="wparabic-cats-nav wparabic-cats-nav--next" aria-label="<?php esc_attr_e('التالي', 'wparabic-ecomm-cod'); ?>"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                        <button type="button" class="wparabic-cats-nav wparabic-cats-nav--next" aria-label="<?php esc_attr_e('التالي', 'wparabic-ecomm-cod'); ?>"><?php echo WParabic_Icons::svg( 'chevron-left' ); ?></button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -767,10 +767,10 @@ class WPArabic_Home_Widget_Features extends WPArabic_Home_Widget {
         );
 
         $seed = array(
-            array('fa-truck-fast', __('توصيل سريع', 'wparabic-ecomm-cod'), __('إلى جميع ولايات الجمهورية', 'wparabic-ecomm-cod')),
-            array('fa-hand-holding-dollar', __('الدفع عند الاستلام', 'wparabic-ecomm-cod'), __('تدفع فقط عند استلام طلبك', 'wparabic-ecomm-cod')),
-            array('fa-award', __('جودة مضمونة', 'wparabic-ecomm-cod'), __('منتجات مختارة بعناية', 'wparabic-ecomm-cod')),
-            array('fa-rotate-left', __('استبدال مجاني', 'wparabic-ecomm-cod'), __('إن لم يناسبك المنتج', 'wparabic-ecomm-cod')),
+            array('truck', __('توصيل سريع', 'wparabic-ecomm-cod'), __('إلى جميع ولايات الجمهورية', 'wparabic-ecomm-cod')),
+            array('banknotes', __('الدفع عند الاستلام', 'wparabic-ecomm-cod'), __('تدفع فقط عند استلام طلبك', 'wparabic-ecomm-cod')),
+            array('trophy', __('جودة مضمونة', 'wparabic-ecomm-cod'), __('منتجات مختارة بعناية', 'wparabic-ecomm-cod')),
+            array('arrow-uturn-left', __('استبدال مجاني', 'wparabic-ecomm-cod'), __('إن لم يناسبك المنتج', 'wparabic-ecomm-cod')),
         );
 
         foreach ($seed as $n => $item) {
@@ -813,7 +813,7 @@ class WPArabic_Home_Widget_Features extends WPArabic_Home_Widget {
                 <div class="col-xl-3 col-lg-4 col-sm-6 col-6">
                     <div class="item">
                         <?php if ($item[0] !== '') : ?>
-                            <div class="item-thumb"><i class="fas <?php echo esc_attr($item[0]); ?>"></i></div>
+                            <div class="item-thumb"><?php echo WParabic_Icons::svg( function_exists('wparabic_icon_name') ? wparabic_icon_name($item[0]) : $item[0] ); ?></div>
                         <?php endif; ?>
                         <div class="item-content">
                             <p class="item-title"><?php echo esc_html($item[1]); ?></p>
@@ -838,7 +838,7 @@ class WPArabic_Home_Widget_Features extends WPArabic_Home_Widget {
         $this->field_text($i, 'title', __('العنوان', 'wparabic-ecomm-cod'));
         $this->field_text($i, 'subtitle', __('الوصف', 'wparabic-ecomm-cod'));
 
-        echo '<p class="description">' . esc_html__('الأيقونات من Font Awesome، مثال : fa-truck-fast', 'wparabic-ecomm-cod') . '</p>';
+        echo '<p class="description">' . esc_html__('الأيقونات من Heroicons (heroicons.com)، مثال : truck', 'wparabic-ecomm-cod') . '</p>';
 
         for ($n = 1; $n <= self::ITEMS; $n++) {
             printf('<fieldset style="border:1px solid #dcdcde;padding:8px;margin:0 0 10px"><legend>%s %d</legend>',
@@ -858,7 +858,7 @@ class WPArabic_Home_Widget_Features extends WPArabic_Home_Widget {
         );
 
         for ($n = 1; $n <= self::ITEMS; $n++) {
-            // Classe Font Awesome : on ne laisse passer que ce qui peut en etre une.
+            // Nom d'icône Heroicons (ou ancien nom Font Awesome, converti à l'affichage) : caractères sûrs seulement.
             $out['item' . $n . '_icon']  = preg_replace('/[^a-z0-9 _-]/i', '', (string) ($new['item' . $n . '_icon'] ?? ''));
             $out['item' . $n . '_title'] = sanitize_text_field($new['item' . $n . '_title'] ?? '');
             $out['item' . $n . '_text']  = sanitize_text_field($new['item' . $n . '_text'] ?? '');
@@ -1098,7 +1098,7 @@ class WPArabic_Home_Widget_Categories extends WPArabic_Home_Widget {
         ?>
         <div class="<?php echo esc_attr($classes); ?>" style="--wparabic-ratio: <?php echo esc_attr($ratio); ?>"<?php echo $layout === 'carousel' ? ' data-wparabic-carousel' : ''; ?>>
             <?php if ($layout === 'carousel') : ?>
-                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--prev" aria-label="<?php esc_attr_e('السابق', 'wparabic-ecomm-cod'); ?>"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--prev" aria-label="<?php esc_attr_e('السابق', 'wparabic-ecomm-cod'); ?>"><?php echo WParabic_Icons::svg( 'chevron-right' ); ?></button>
             <?php endif; ?>
             <ul class="wparabic-cats-track">
                 <?php foreach ($terms as $term) : ?>
@@ -1125,7 +1125,7 @@ class WPArabic_Home_Widget_Categories extends WPArabic_Home_Widget {
                 <?php endforeach; ?>
             </ul>
             <?php if ($layout === 'carousel') : ?>
-                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--next" aria-label="<?php esc_attr_e('التالي', 'wparabic-ecomm-cod'); ?>"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                <button type="button" class="wparabic-cats-nav wparabic-cats-nav--next" aria-label="<?php esc_attr_e('التالي', 'wparabic-ecomm-cod'); ?>"><?php echo WParabic_Icons::svg( 'chevron-left' ); ?></button>
             <?php endif; ?>
         </div>
         <?php
@@ -1509,4 +1509,26 @@ function wparabic_render_home_default_sections() {
         // reglages du personnalisateur.
         $widget->widget($args, array());
     }
+}
+
+
+/**
+ * Nom d'icône Heroicons à partir d'une valeur saisie : nom Heroicons (« truck »), ou ancien nom Font Awesome
+ * enregistré avant la migration (« fa-truck-fast », « fas fa-award ») converti ; « check-circle » par défaut.
+ */
+function wparabic_icon_name($value) {
+    $v = strtolower(trim((string) $value));
+    $v = preg_replace('/^fa-/', '', trim(preg_replace('/(?:^|\s)fa[srb]?(?=\s)/', '', $v)));
+    $map = array(
+        'truck-fast' => 'truck', 'truck' => 'truck', 'hand-holding-dollar' => 'banknotes', 'money-bill' => 'banknotes', 'money-bill-wave' => 'banknotes',
+        'credit-card' => 'banknotes', 'award' => 'trophy', 'medal' => 'trophy', 'rotate-left' => 'arrow-uturn-left', 'rotate' => 'arrow-path',
+        'shield-halved' => 'shield-check', 'shield' => 'shield-check', 'gift' => 'gift', 'tag' => 'tag', 'tags' => 'tag', 'percent' => 'tag',
+        'heart' => 'heart', 'star' => 'star', 'clock' => 'clock', 'phone' => 'phone', 'headset' => 'phone', 'lock' => 'lock-closed',
+        'check' => 'check', 'circle-check' => 'check-circle', 'box' => 'cube', 'box-open' => 'cube', 'bolt' => 'bolt', 'location-dot' => 'map-pin',
+        'envelope' => 'envelope', 'store' => 'building-storefront', 'shop' => 'building-storefront', 'house' => 'home', 'calendar' => 'calendar',
+    );
+    if (isset($map[$v])) {
+        $v = $map[$v];
+    }
+    return (class_exists('WParabic_Icons') && WParabic_Icons::has($v)) ? $v : 'check-circle';
 }
