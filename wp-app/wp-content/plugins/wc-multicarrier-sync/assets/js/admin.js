@@ -5,6 +5,7 @@
 /* global wcmcsAdmin, jQuery */
 (function ($) {
     'use strict';
+    var ic = function (n, c) { return window.wcmcsIcons ? window.wcmcsIcons.svg(n, c) : ''; };
 
     // ─────────────────────────────────────────────
     //  Utilitaires
@@ -35,7 +36,7 @@
         var color = type === 'success' ? '#28a745' : '#dc3545';
         $container.html(
             '<div style="padding:8px;background:' + color + ';color:#fff;border-radius:4px;font-size:12px;margin-top:4px">' +
-            escHtml(message) +
+            ic(type === 'success' ? 'check-circle' : 'x-circle') + ' ' + escHtml(message) +
             '</div>'
         );
         setTimeout(function () {
@@ -110,7 +111,7 @@
                 if (data.tracking_id) {
                     msg += ' [' + data.tracking_id + ']';
                 }
-                showResult($result, 'success', '✓ ' + msg);
+                showResult($result, 'success', msg);
                 // Mettre à jour les colonnes sans recharger la page
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
@@ -121,16 +122,16 @@
                 }
             } else {
                 var errMsg = data.message || wcmcsAdmin.i18n.error;
-                showResult($result, 'error', '✗ ' + errMsg);
+                showResult($result, 'error', errMsg);
                 // Mettre à jour les colonnes même en erreur
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
             }
         }).fail(function () {
-            showResult($result, 'error', '✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            showResult($result, 'error', (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
         }).always(function () {
-            $btn.prop('disabled', false).text(wcmcsAdmin.i18n.sync_btn || '⇄ Synchroniser');
+            $btn.prop('disabled', false).html(ic('arrow-path') + ' ' + escHtml(wcmcsAdmin.i18n.sync_btn || 'Synchroniser'));
         });
     });
 
@@ -154,22 +155,22 @@
         }, function (response) {
             var data = response.success ? response.data : (response.data || {});
             if (response.success) {
-                showResult($result, 'success', '✓ ' + data.message);
+                showResult($result, 'success', data.message);
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
                 setTimeout(function () { location.reload(); }, 2000);
             } else {
                 var errMsg = data.message || wcmcsAdmin.i18n.error;
-                showResult($result, 'error', '✗ ' + errMsg);
+                showResult($result, 'error', errMsg);
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
             }
         }).fail(function () {
-            showResult($result, 'error', '✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            showResult($result, 'error', (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
         }).always(function () {
-            $btn.prop('disabled', false).text(wcmcsAdmin.i18n.retry_btn || '↺ Retry');
+            $btn.prop('disabled', false).html(ic('arrow-path') + ' ' + escHtml(wcmcsAdmin.i18n.retry_btn || 'Retry'));
         });
     });
 
@@ -196,7 +197,7 @@
                 if (data.changed) {
                     msg += ' — ' + wcmcsAdmin.i18n.status_updated + ' ' + (data.order_status_label || data.order_status);
                 }
-                showResult($result, 'success', '✓ ' + msg);
+                showResult($result, 'success', msg);
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
@@ -204,12 +205,12 @@
                     setTimeout(function () { location.reload(); }, 2500);
                 }
             } else {
-                showResult($result, 'error', '✗ ' + (data.message || wcmcsAdmin.i18n.error));
+                showResult($result, 'error', (data.message || wcmcsAdmin.i18n.error));
             }
         }).fail(function () {
-            showResult($result, 'error', '✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            showResult($result, 'error', (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
         }).always(function () {
-            $btn.prop('disabled', false).text(wcmcsAdmin.i18n.status_btn || '📍 Vérifier le statut');
+            $btn.prop('disabled', false).html(ic('map-pin') + ' ' + escHtml(wcmcsAdmin.i18n.status_btn || 'Vérifier le statut'));
         });
     });
 
@@ -236,21 +237,21 @@
         }, function (response) {
             var data = response.success ? response.data : (response.data || {});
             if (response.success) {
-                showResult($result, 'success', '✓ ' + data.message);
+                showResult($result, 'success', data.message);
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
                 setTimeout(function () { location.reload(); }, 2000);
             } else {
-                showResult($result, 'error', '✗ ' + (data.message || wcmcsAdmin.i18n.error));
+                showResult($result, 'error', (data.message || wcmcsAdmin.i18n.error));
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
             }
         }).fail(function () {
-            showResult($result, 'error', '✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            showResult($result, 'error', (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
         }).always(function () {
-            $btn.prop('disabled', false).text(wcmcsAdmin.i18n.cancel_btn || '✕ Annuler le colis');
+            $btn.prop('disabled', false).html(ic('x-mark') + ' ' + escHtml(wcmcsAdmin.i18n.cancel_btn || 'Annuler le colis'));
         });
     });
 
@@ -282,7 +283,7 @@
             var data = response.success ? response.data : (response.data || {});
             if (response.success) {
                 $row.css('background', '#d4edda');
-                $link.text('✓ ' + (wcmcsAdmin.i18n.cancelled_word || 'Annulé'));
+                $link.html(ic('check') + ' ' + escHtml('' + (wcmcsAdmin.i18n.cancelled_word || 'Annulé')));
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
@@ -292,10 +293,10 @@
                 }, 3000);
             } else {
                 $row.css('background', '#f8d7da');
-                $link.text('✗ ' + (wcmcsAdmin.i18n.error || 'Erreur'));
+                $link.html(ic('x-circle') + ' ' + escHtml('' + (wcmcsAdmin.i18n.error || 'Erreur')));
                 setTimeout(function () {
                     $row.css('background', '');
-                    $link.text('✕ ' + (wcmcsAdmin.i18n.cancel_short || 'Annuler'));
+                    $link.html(ic('x-mark') + ' ' + escHtml('' + (wcmcsAdmin.i18n.cancel_short || 'Annuler')));
                 }, 3000);
                 if (data.message) {
                     window.alert(data.message);
@@ -303,10 +304,10 @@
             }
         }).fail(function () {
             $row.css('background', '#f8d7da');
-            $link.text('✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            $link.html(ic('x-circle') + ' ' + escHtml('' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.')));
             setTimeout(function () {
                 $row.css('background', '');
-                $link.text('✕ ' + (wcmcsAdmin.i18n.cancel_short || 'Annuler'));
+                $link.html(ic('x-mark') + ' ' + escHtml('' + (wcmcsAdmin.i18n.cancel_short || 'Annuler')));
             }, 3000);
         });
     });
@@ -335,31 +336,31 @@
             var data = response.success ? response.data : (response.data || {});
             if (response.success) {
                 $row.css('background', '#d4edda');
-                $link.text('✓ OK');
+                $link.html(ic('check') + ' ' + escHtml('OK'));
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
                 setTimeout(function () {
                     $row.css('background', '');
-                    $link.text('⇄ Sync');
+                    $link.html(ic('arrow-path') + ' ' + escHtml('Sync'));
                 }, 3000);
             } else {
                 $row.css('background', '#f8d7da');
-                $link.text('✗ Erreur');
+                $link.html(ic('x-circle') + ' ' + escHtml('Erreur'));
                 if (data.columns) {
                     updateOrderColumns(orderId, data.columns);
                 }
                 setTimeout(function () {
                     $row.css('background', '');
-                    $link.text('⇄ Sync');
+                    $link.html(ic('arrow-path') + ' ' + escHtml('Sync'));
                 }, 3000);
             }
         }).fail(function () {
             $row.css('background', '#f8d7da');
-            $link.text('✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            $link.html(ic('x-circle') + ' ' + escHtml('' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.')));
             setTimeout(function () {
                 $row.css('background', '');
-                $link.text('⇄ Sync');
+                $link.html(ic('arrow-path') + ' ' + escHtml('Sync'));
             }, 3000);
         });
     });
@@ -378,7 +379,7 @@
             return;
         }
         var $btn = $('<button type="button" class="button" id="wcmcs-status-scan"></button>')
-            .text(wcmcsAdmin.i18n.scan_btn || '📍 Vérifier tous les statuts')
+            .html(ic('map-pin') + ' ' + escHtml(wcmcsAdmin.i18n.scan_btn || 'Vérifier tous les statuts'))
             .css({ marginLeft: '8px', verticalAlign: 'middle' });
         $top.append($btn);
     }
@@ -409,7 +410,7 @@
         }).fail(function () {
             alert(wcmcsAdmin.i18n.network_error || 'Erreur réseau.');
         }).always(function () {
-            $btn.prop('disabled', false).text(wcmcsAdmin.i18n.scan_btn || '📍 Vérifier tous les statuts');
+            $btn.prop('disabled', false).html(ic('map-pin') + ' ' + escHtml(wcmcsAdmin.i18n.scan_btn || 'Vérifier tous les statuts'));
         });
     });
 
@@ -496,7 +497,7 @@
     function scanFullBtn() {
         var i = wcmcsAdmin.i18n;
         return '<button type="button" class="wcmcs-scan-full" title="' + escHtml(i.fullscreen_on || 'Plein écran') + '" aria-label="' + escHtml(i.fullscreen_on || 'Plein écran') + '">'
-            + '<span class="dashicons dashicons-fullscreen-alt" aria-hidden="true"></span></button>';
+            + ic('arrows-pointing-out') + '</button>';
     }
 
     /**
@@ -513,8 +514,8 @@
         var i = wcmcsAdmin.i18n;
         $modal.find('.wcmcs-scan-full')
             .html(on
-                ? '<span class="dashicons dashicons-fullscreen-exit-alt" aria-hidden="true"></span>'
-                : '<span class="dashicons dashicons-fullscreen-alt" aria-hidden="true"></span>')
+                ? ic('arrows-pointing-in')
+                : ic('arrows-pointing-out'))
             .attr('title', on ? (i.fullscreen_off || 'Réduire') : (i.fullscreen_on || 'Plein écran'))
             .attr('aria-label', on ? (i.fullscreen_off || 'Réduire') : (i.fullscreen_on || 'Plein écran'));
         if (on) {
@@ -728,11 +729,11 @@
     }
 
     function markRowError($row, message) {
-        $row.find('.wcmcs-scan-result').html('<span style="color:#dc3545">✗ ' + escHtml(message || '') + '</span>');
+        $row.find('.wcmcs-scan-result').html('<span style="color:#dc3545">' + ic('x-circle') + ' ' + escHtml(message || '') + '</span>');
     }
 
     function renderScanSuccess($row, data, i18n) {
-        var res = '✓ ' + escHtml(data.state_label || '');
+        var res = ic('check') + ' ' + escHtml(data.state_label || '');
         if (data.changed) {
             res += ' <strong style="color:#28a745">→ ' + escHtml(data.order_status_label || data.order_status) + '</strong>';
         }
@@ -884,30 +885,30 @@
                 var msg = data.state_label || '';
                 if (data.changed) {
                     $row.css('background', '#d4edda');
-                    $link.text('✓ ' + (data.order_status_label || data.order_status));
+                    $link.html(ic('check') + ' ' + escHtml('' + (data.order_status_label || data.order_status)));
                     setTimeout(function () { location.reload(); }, 2000);
                 } else {
                     $row.css('background', '#d4edda');
-                    $link.text('✓ ' + msg);
+                    $link.html(ic('check') + ' ' + escHtml('' + msg));
                     setTimeout(function () {
                         $row.css('background', '');
-                        $link.text('📍 Statut');
+                        $link.html(ic('map-pin') + ' ' + escHtml('Statut'));
                     }, 3000);
                 }
             } else {
                 $row.css('background', '#f8d7da');
-                $link.text('✗ Erreur');
+                $link.html(ic('x-circle') + ' ' + escHtml('Erreur'));
                 setTimeout(function () {
                     $row.css('background', '');
-                    $link.text('📍 Statut');
+                    $link.html(ic('map-pin') + ' ' + escHtml('Statut'));
                 }, 3000);
             }
         }).fail(function () {
             $row.css('background', '#f8d7da');
-            $link.text('✗ Réseau');
+            $link.html(ic('x-circle') + ' ' + escHtml('Réseau'));
             setTimeout(function () {
                 $row.css('background', '');
-                $link.text('📍 Statut');
+                $link.html(ic('map-pin') + ' ' + escHtml('Statut'));
             }, 3000);
         });
     });
@@ -931,7 +932,7 @@
                     '<div class="wcmcs-error-modal" style="' +
                     'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center">' +
                     '<div style="background:#fff;padding:24px;border-radius:8px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto">' +
-                    '<h3 style="margin:0 0 12px">❌ Erreur — Commande #' + escHtml(orderId) + '</h3>' +
+                    '<h3 style="margin:0 0 12px">' + ic('x-circle') + ' Erreur — Commande #' + escHtml(orderId) + '</h3>' +
                     '<p><strong>Message :</strong> ' + escHtml(data.error_message) + '</p>' +
                     '<p><strong>Date :</strong> ' + escHtml(data.sync_date) + '</p>' +
                     '<p><strong>Tentatives :</strong> ' + escHtml(data.retry_count) + '</p>' +
@@ -970,7 +971,7 @@
         var orderId = $btn.data('order-id');
         var $result = $btn.closest('.wcmcs-metabox').find('.wcmcs-ajax-result');
 
-        $btn.prop('disabled', true).text('📄 ' + (wcmcsAdmin.i18n.downloading || 'Téléchargement...'));
+        $btn.prop('disabled', true).html(ic('document-text') + ' ' + escHtml('' + (wcmcsAdmin.i18n.downloading || 'Téléchargement...')));
 
         $.post(wcmcsAdmin.ajaxUrl, {
             action: 'wcmcs_get_label_pdf',
@@ -979,15 +980,15 @@
         }, function (response) {
             if (response.success && response.data.label_url) {
                 window.open(response.data.label_url, '_blank');
-                showResult($result, 'success', '✓ ' + (wcmcsAdmin.i18n.label_downloaded || 'Étiquette téléchargée'));
+                showResult($result, 'success', (wcmcsAdmin.i18n.label_downloaded || 'Étiquette téléchargée'));
             } else {
                 var errMsg = response.data ? response.data.message : (wcmcsAdmin.i18n.error || 'Erreur');
-                showResult($result, 'error', '✗ ' + errMsg);
+                showResult($result, 'error', errMsg);
             }
         }).fail(function () {
-            showResult($result, 'error', '✗ ' + (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
+            showResult($result, 'error', (wcmcsAdmin.i18n.network_error || 'Erreur réseau.'));
         }).always(function () {
-            $btn.prop('disabled', false).text('📄 ' + (wcmcsAdmin.i18n.label_pdf || 'Étiquette PDF'));
+            $btn.prop('disabled', false).html(ic('document-text') + ' ' + escHtml('' + (wcmcsAdmin.i18n.label_pdf || 'Étiquette PDF')));
         });
     });
 
@@ -1079,13 +1080,13 @@
             // Statut réel de la sync (pas le transporteur) + transporteur de la
             // dernière tentative en info secondaire grise.
             var statusHtml = ord.already_synced
-                ? '✓ ' + escHtml(wcmcsAdmin.i18n.bulk_already_synced)
+                ? ic('check') + ' ' + escHtml(wcmcsAdmin.i18n.bulk_already_synced)
                 : escHtml(ord.status_label || '—');
             if (ord.carrier_label) {
                 statusHtml += ' <span style="color:#8c8f94;font-size:11px">· ' + escHtml(ord.carrier_label) + '</span>';
             }
             var resultText = ord.already_synced
-                ? '✓ ' + escHtml(wcmcsAdmin.i18n.bulk_already_synced)
+                ? ic('check') + ' ' + escHtml(wcmcsAdmin.i18n.bulk_already_synced)
                 : '—';
 
             html += '<tr data-order-id="' + ord.id + '" data-already-synced="' + (ord.already_synced ? '1' : '0') + '"' + rowClass + '>' +
@@ -1163,14 +1164,14 @@
                 if (isSuccess) {
                     successes++;
                     $row.removeClass('wcmcs-bulk-row-active').addClass('wcmcs-bulk-row-done');
-                    $row.find('.wcmcs-bulk-result').html('✓ ' + $('<span>').text(data.message || wcmcsAdmin.i18n.success).html());
+                    $row.find('.wcmcs-bulk-result').html(ic('check') + ' ' + $('<span>').text(data.message || wcmcsAdmin.i18n.success).html());
                     if (data.tracking_id) {
                         $row.find('.wcmcs-bulk-result').append(' <code>' + $('<span>').text(data.tracking_id).html() + '</code>');
                     }
                 } else {
                     failures++;
                     $row.removeClass('wcmcs-bulk-row-active').addClass('wcmcs-bulk-row-failed');
-                    $row.find('.wcmcs-bulk-result').html('✗ ' + $('<span>').text(data.message || wcmcsAdmin.i18n.error).html());
+                    $row.find('.wcmcs-bulk-result').html(ic('x-circle') + ' ' + $('<span>').text(data.message || wcmcsAdmin.i18n.error).html());
                 }
 
                 if (data.columns) {
@@ -1180,7 +1181,7 @@
                 var pct = Math.round((processed / total) * 100);
                 $('.wcmcs-bulk-progress-fill').css('width', pct + '%');
                 $('.wcmcs-bulk-progress-text').text(
-                    processed + '/' + total + ' — ' + successes + ' ✓, ' + failures + ' ✗'
+                    processed + '/' + total + ' — ' + successes + ' OK, ' + failures + ' KO'
                 );
 
                 processNext();
@@ -1188,12 +1189,12 @@
                 processed++;
                 failures++;
                 $row.removeClass('wcmcs-bulk-row-active').addClass('wcmcs-bulk-row-failed');
-                $row.find('.wcmcs-bulk-result').html('✗ ' + wcmcsAdmin.i18n.network_error);
+                $row.find('.wcmcs-bulk-result').html(ic('x-circle') + ' ' + wcmcsAdmin.i18n.network_error);
 
                 var pct = Math.round((processed / total) * 100);
                 $('.wcmcs-bulk-progress-fill').css('width', pct + '%');
                 $('.wcmcs-bulk-progress-text').text(
-                    processed + '/' + total + ' — ' + successes + ' ✓, ' + failures + ' ✗'
+                    processed + '/' + total + ' — ' + successes + ' OK, ' + failures + ' KO'
                 );
 
                 processNext();
@@ -1209,7 +1210,7 @@
         $('#wcmcs-bulk-cancel').hide();
         $('#wcmcs-bulk-close').show();
 
-        var summary = wcmcsAdmin.i18n.bulk_done + ' — ' + successes + ' ✓, ' + failures + ' ✗';
+        var summary = wcmcsAdmin.i18n.bulk_done + ' — ' + successes + ' OK, ' + failures + ' KO';
         $('.wcmcs-bulk-progress-text').text(summary);
     }
 

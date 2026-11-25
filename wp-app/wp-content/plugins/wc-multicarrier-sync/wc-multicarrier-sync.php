@@ -3,7 +3,7 @@
  * Plugin Name:       MultiCarrier Sync TN
  * Plugin URI:        https://baklouty.tn
  * Description:       Synchronisation manuelle multi-transporteurs pour WooCommerce. Supporte FirstDelivery, Colissimo et plus.
- * Version:           2.10.5
+ * Version:           2.11.0
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            Houssem Baklouti
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 // ─────────────────────────────────────────────
 //  Constants
 // ─────────────────────────────────────────────
-define( 'WCMCS_VERSION',     '2.10.5' );
+define( 'WCMCS_VERSION',     '2.11.0' );
 define( 'WCMCS_PLUGIN_FILE', __FILE__ );
 define( 'WCMCS_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WCMCS_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
@@ -47,6 +47,12 @@ function wcmcs_activation_check() {
     WCMCS_Installer::install();
     WCMCS_License::activate();
 }
+
+add_action( 'admin_head', static function () {
+    if ( class_exists( 'WCMCS_Icons' ) ) {
+        echo '<style id="wcmcs-icons-css">' . WCMCS_Icons::css() . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput
+    }
+} );
 
 register_deactivation_hook( __FILE__, 'wcmcs_deactivation' );
 function wcmcs_deactivation() {
@@ -98,6 +104,7 @@ spl_autoload_register( function( $class ) {
 
     $map = [
         'WCMCS_License'                => 'includes/class-license.php',
+        'WCMCS_Icons'                  => 'includes/class-icons.php',
         'WCMCS_WC_Compat'              => 'compatibility/class-wc-compat.php',
         'WCMCS_Logger'                 => 'logs/class-logger.php',
         'WCMCS_Installer'              => 'includes/class-installer.php',

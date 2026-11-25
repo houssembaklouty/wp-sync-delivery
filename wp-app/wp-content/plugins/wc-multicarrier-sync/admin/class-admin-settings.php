@@ -192,23 +192,23 @@ class WCMCS_Admin_Settings {
                 <?php esc_html_e( 'MultiCarrier Sync TN — Configuration', 'wc-multicarrier-sync' ); ?>
                 <?php if ( WCMCS_WC_Compat::is_hpos() ) : ?>
                 <span class="wcmcs-badge-hpos" style="font-size:12px;background:#0073aa;color:#fff;padding:2px 8px;border-radius:3px;vertical-align:middle">
-                    HPOS ✓
+                    HPOS <?php echo WCMCS_Icons::svg( 'check' ); // phpcs:ignore ?>
                 </span>
                 <?php endif; ?>
                 <?php if ( WCMCS_WC_Compat::has_action_scheduler() ) : ?>
                 <span class="wcmcs-badge-as" style="font-size:12px;background:#28a745;color:#fff;padding:2px 8px;border-radius:3px;vertical-align:middle">
-                    Action Scheduler ✓
+                    Action Scheduler <?php echo WCMCS_Icons::svg( 'check' ); // phpcs:ignore ?>
                 </span>
                 <?php endif; ?>
             </h1>
 
             <nav class="nav-tab-wrapper">
-                <?php $this->render_tab( 'general', __( '⚙ Général', 'wc-multicarrier-sync' ), $active_tab ); ?>
-                <?php $this->render_tab( 'statuses', __( '🔄 Statuts de commande', 'wc-multicarrier-sync' ), $active_tab ); ?>
-                <?php $this->render_tab( 'license', __( '🔑 Licence', 'wc-multicarrier-sync' ), $active_tab ); ?>
-                <?php $this->render_tab( 'rules', __( '🗺 Règles de détection', 'wc-multicarrier-sync' ), $active_tab ); ?>
-                <?php $this->render_tab( 'history', __( '📜 Historique', 'wc-multicarrier-sync' ), $active_tab ); ?>
-                <?php $this->render_tab( 'logs', __( '📋 Logs', 'wc-multicarrier-sync' ), $active_tab ); ?>
+                <?php $this->render_tab( 'general', __( 'Général', 'wc-multicarrier-sync' ), $active_tab ); ?>
+                <?php $this->render_tab( 'statuses', __( 'Statuts de commande', 'wc-multicarrier-sync' ), $active_tab ); ?>
+                <?php $this->render_tab( 'license', __( 'Licence', 'wc-multicarrier-sync' ), $active_tab ); ?>
+                <?php $this->render_tab( 'rules', __( 'Règles de détection', 'wc-multicarrier-sync' ), $active_tab ); ?>
+                <?php $this->render_tab( 'history', __( 'Historique', 'wc-multicarrier-sync' ), $active_tab ); ?>
+                <?php $this->render_tab( 'logs', __( 'Logs', 'wc-multicarrier-sync' ), $active_tab ); ?>
             </nav>
 
             <div class="wcmcs-tab-content" style="background:#fff;padding:20px;border:1px solid #ccd0d4;border-top:none">
@@ -522,9 +522,9 @@ class WCMCS_Admin_Settings {
             <div class="wcmcs-license-status-card <?php echo esc_attr( $card_class ); ?>">
                 <div class="wcmcs-license-status-icon">
                     <?php if ( $is_licensed ) : ?>
-                        <span style="font-size:40px">🔑</span>
+                        <span class="wcmcs-big-icon"><?php echo WCMCS_Icons::svg( 'key' ); // phpcs:ignore ?></span>
                     <?php elseif ( $is_trial_active ) : ?>
-                        <span style="font-size:40px">⏱</span>
+                        <span class="wcmcs-big-icon"><?php echo WCMCS_Icons::svg( 'clock' ); // phpcs:ignore ?></span>
                     <?php else : ?>
                         <span style="font-size:40px">🆓</span>
                     <?php endif; ?>
@@ -694,7 +694,7 @@ class WCMCS_Admin_Settings {
                     $is_enabled      = WCMCS_Carrier_Detector::is_carrier_enabled( $slug );
                     $has_provider    = isset( $providers[ $slug ] );
                     $is_configured   = $has_provider && $providers[ $slug ]->is_configured();
-                    $icon            = $info['icon'] ?? '📦';
+                    $icon            = $info['icon'] ?? 'cube';
                     $search_data     = strtolower( remove_accents( $info['label'] . ' ' . $slug ) );
                 ?>
                 <div class="wcmcs-carrier-card <?php echo $is_active ? 'wcmcs-card-active' : 'wcmcs-card-inactive'; ?>"
@@ -706,16 +706,16 @@ class WCMCS_Admin_Settings {
                     <?php if ( $is_active ) :
                         $features = WCMCS_Carrier_Detector::get_carrier_features( $slug );
                         $feature_labels = [
-                            'bordereau'  => __( '📄 Bordereau', 'wc-multicarrier-sync' ),
-                            'suivi'      => __( '📍 Suivi', 'wc-multicarrier-sync' ),
-                            'annulation' => __( '↺ Annulation', 'wc-multicarrier-sync' ),
+                            'bordereau'  => __( 'Bordereau', 'wc-multicarrier-sync' ),
+                            'suivi'      => __( 'Suivi', 'wc-multicarrier-sync' ),
+                            'annulation' => __( 'Annulation', 'wc-multicarrier-sync' ),
                         ];
                         if ( $features ) : ?>
                     <div class="wcmcs-card-features">
                         <?php foreach ( $feature_labels as $fkey => $flabel ) :
                             $fon = ! empty( $features[ $fkey ] ); ?>
                         <span class="wcmcs-feature-chip <?php echo $fon ? 'wcmcs-feature-on' : 'wcmcs-feature-off'; ?>">
-                            <?php echo esc_html( $flabel ); ?> <?php echo $fon ? '✓' : '✗'; ?>
+                            <?php echo esc_html( $flabel ); ?> <?php echo WCMCS_Icons::svg( $fon ? 'check' : 'x-mark' ); // phpcs:ignore ?>
                         </span>
                 <?php endforeach; ?>
             </div>
@@ -747,8 +747,8 @@ class WCMCS_Admin_Settings {
                                     class="<?php echo $is_configured ? 'wcmcs-card-config-btn wcmcs-card-configured' : 'wcmcs-card-config-btn'; ?>"
                                     data-provider="<?php echo esc_attr( $slug ); ?>">
                                 <?php echo $is_configured
-                                    ? '✓ ' . esc_html__( 'Configuré', 'wc-multicarrier-sync' )
-                                    : '⚙ ' . esc_html__( 'Configurer', 'wc-multicarrier-sync' ); ?>
+                                    ? WCMCS_Icons::svg( 'check' ) . ' ' . esc_html__( 'Configuré', 'wc-multicarrier-sync' )
+                                    : WCMCS_Icons::svg( 'cog-6-tooth' ) . ' ' . esc_html__( 'Configurer', 'wc-multicarrier-sync' ); // phpcs:ignore ?>
                             </button>
                         <?php else : ?>
                             <span class="wcmcs-footer-badge wcmcs-footer-na">—</span>
@@ -797,7 +797,7 @@ class WCMCS_Admin_Settings {
                 continue;
             }
             $slug  = $provider->get_slug();
-            $icon  = WCMCS_Carrier_Detector::get_carrier_registry()[ $slug ]['icon'] ?? '📦';
+            $icon  = WCMCS_Carrier_Detector::get_carrier_registry()[ $slug ]['icon'] ?? 'cube';
             $group = self::OPTION_GROUP . '_' . $slug;
             $warning_class = ! $provider->is_configured() ? 'notice notice-warning inline' : '';
         ?>
@@ -812,7 +812,7 @@ class WCMCS_Admin_Settings {
                 </div>
                 <?php if ( ! $provider->is_configured() ) : ?>
                 <div class="notice notice-warning inline" style="margin:12px 16px 0">
-                    <p><?php printf( esc_html__( '⚠ %s n\'est pas encore configuré.', 'wc-multicarrier-sync' ), esc_html( $provider->get_label() ) ); ?></p>
+                    <p><?php echo WCMCS_Icons::svg( 'exclamation-triangle' ) . ' '; printf( esc_html__( '%s n\'est pas encore configuré.', 'wc-multicarrier-sync' ), esc_html( $provider->get_label() ) ); ?></p>
                 </div>
                 <?php endif; ?>
                 <div class="wcmcs-config-modal-body">
@@ -942,7 +942,7 @@ class WCMCS_Admin_Settings {
                         );
                         ?>
                     </select>
-                    <button type="button" class="button wcmcs-remove-rule">✕</button>
+                    <button type="button" class="button wcmcs-remove-rule"><?php echo WCMCS_Icons::svg( 'x-mark' ); // phpcs:ignore ?></button>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -1029,7 +1029,7 @@ class WCMCS_Admin_Settings {
                        add_query_arg( array_filter( $base_query, static fn( $v ) => '' !== $v ) + [ 'action' => 'wcmcs_export_history' ], admin_url( 'admin-post.php' ) ),
                        'wcmcs_export_history'
                    ) ); ?>">
-                    ⬇ <?php esc_html_e( 'Exporter CSV', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'arrow-down-tray' ); // phpcs:ignore ?> <?php esc_html_e( 'Exporter CSV', 'wc-multicarrier-sync' ); ?>
                 </a>
             </div>
         </form>
@@ -1161,8 +1161,8 @@ class WCMCS_Admin_Settings {
         </p>
         <table class="widefat" style="max-width:600px">
             <tr><td><?php esc_html_e( 'Version WooCommerce', 'wc-multicarrier-sync' ); ?></td><td><?php echo esc_html( WCMCS_WC_Compat::wc_version() ); ?></td></tr>
-            <tr><td><?php esc_html_e( 'HPOS activé', 'wc-multicarrier-sync' ); ?></td><td><?php echo WCMCS_WC_Compat::is_hpos() ? '✅ Oui' : '❌ Non'; ?></td></tr>
-            <tr><td><?php esc_html_e( 'Action Scheduler', 'wc-multicarrier-sync' ); ?></td><td><?php echo WCMCS_WC_Compat::has_action_scheduler() ? '✅ Disponible' : '❌ Requis (fourni avec WooCommerce)'; ?></td></tr>
+            <tr><td><?php esc_html_e( 'HPOS activé', 'wc-multicarrier-sync' ); ?></td><td><?php echo WCMCS_WC_Compat::is_hpos() ? WCMCS_Icons::svg( 'check-circle' ) . ' ' . esc_html__( 'Oui', 'wc-multicarrier-sync' ) : WCMCS_Icons::svg( 'x-circle' ) . ' ' . esc_html__( 'Non', 'wc-multicarrier-sync' ); // phpcs:ignore ?></td></tr>
+            <tr><td><?php esc_html_e( 'Action Scheduler', 'wc-multicarrier-sync' ); ?></td><td><?php echo WCMCS_WC_Compat::has_action_scheduler() ? WCMCS_Icons::svg( 'check-circle' ) . ' ' . esc_html__( 'Disponible', 'wc-multicarrier-sync' ) : WCMCS_Icons::svg( 'x-circle' ) . ' ' . esc_html__( 'Requis (fourni avec WooCommerce)', 'wc-multicarrier-sync' ); // phpcs:ignore ?></td></tr>
             <tr><td><?php esc_html_e( 'Queue en attente', 'wc-multicarrier-sync' ); ?></td><td><?php echo esc_html( WCMCS_Queue_Manager::get_queue_size() ); ?> commande(s)</td></tr>
             <?php
             global $wpdb;
@@ -1184,14 +1184,14 @@ class WCMCS_Admin_Settings {
      * Logo HTML d'un transporteur : image réelle (assets/images/carriers/)
      * si présente, emoji de secours sinon. HTML entièrement échappé.
      */
-    private function get_carrier_icon_html( string $slug, string $fallback_icon = '📦', string $label = '' ): string {
+    private function get_carrier_icon_html( string $slug, string $fallback_icon = 'cube', string $label = '' ): string {
         static $cache = [];
         $cache_key = $slug . '|' . $label;
         if ( isset( $cache[ $cache_key ] ) ) {
             return $cache[ $cache_key ];
         }
 
-        $html = '<span class="wcmcs-card-icon">' . esc_html( $fallback_icon ) . '</span>';
+        $html = '<span class="wcmcs-card-icon">' . ( WCMCS_Icons::has( $fallback_icon ) ? WCMCS_Icons::svg( $fallback_icon ) : esc_html( $fallback_icon ) ) . '</span>';
         foreach ( [ 'png', 'svg', 'webp', 'jpg', 'jpeg' ] as $ext ) {
             $file = WCMCS_PLUGIN_DIR . 'assets/images/carriers/' . $slug . '.' . $ext;
             if ( file_exists( $file ) ) {
@@ -1213,12 +1213,14 @@ class WCMCS_Admin_Settings {
     private function render_tab( string $slug, string $label, string $active_tab, bool $warn = false ): void {
         $class = ( $slug === $active_tab ) ? 'nav-tab nav-tab-active' : 'nav-tab';
         $url   = add_query_arg( [ 'page' => self::PAGE_SLUG, 'tab' => $slug ], admin_url( 'admin.php' ) );
+        $tab_icons = [ 'general' => 'cog-6-tooth', 'statuses' => 'arrow-path', 'license' => 'key', 'rules' => 'map', 'history' => 'clock', 'logs' => 'clipboard-document-list' ];
         printf(
-            '<a href="%s" class="%s">%s%s</a>',
+            '<a href="%s" class="%s">%s%s%s</a>',
             esc_url( $url ),
             esc_attr( $class ),
+            isset( $tab_icons[ $slug ] ) ? WCMCS_Icons::svg( $tab_icons[ $slug ] ) . ' ' : '', // phpcs:ignore WordPress.Security.EscapeOutput
             esc_html( $label ),
-            $warn ? ' <span style="color:#dc3545">⚠</span>' : ''
+            $warn ? ' <span style="color:#dc3545">' . WCMCS_Icons::svg( 'exclamation-triangle' ) . '</span>' : ''
         );
     }
 

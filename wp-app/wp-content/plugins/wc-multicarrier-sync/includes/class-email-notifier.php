@@ -120,7 +120,7 @@ class WCMCS_Email_Notifier {
 			return;
 		}
 
-		$subject = sprintf( '[%s] ✓ Commande #%d récupérée — %s', get_bloginfo( 'name' ), $order->get_id(), $carrier_slug );
+		$subject = sprintf( '[%s] Commande #%d récupérée — %s', get_bloginfo( 'name' ), $order->get_id(), $carrier_slug );
 		$body = sprintf(
 			"La commande #%d qui avait échoué vient de réussir via %s.\n\n" .
 			"Tracking : %s\n" .
@@ -162,10 +162,10 @@ class WCMCS_Email_Notifier {
 			return;
 		}
 
-		$subject = sprintf( '[%s] ⚠ %d commande(s) échouée(s) — MultiCarrier Sync TN', get_bloginfo( 'name' ), count( $digest ) );
+		$subject = sprintf( '[%s] %d commande(s) échouée(s) — MultiCarrier Sync TN', get_bloginfo( 'name' ), count( $digest ) );
 
 		$body = '<html><body style="font-family:Arial,sans-serif;font-size:14px;color:#333">';
-		$body .= '<h2 style="color:#dc3545;margin:0 0 16px">⚠ ' . count( $digest ) . ' commande(s) échouée(s)</h2>';
+		$body .= '<h2 style="color:#dc3545;margin:0 0 16px">' . count( $digest ) . ' commande(s) échouée(s)</h2>';
 		$body .= '<p style="color:#666;font-size:12px">' . esc_html( get_bloginfo( 'name' ) ) . ' — ' . esc_html( home_url() ) . '</p>';
 		$body .= '<table style="border-collapse:collapse;width:100%;margin-top:16px" border="1" cellpadding="8" cellspacing="0">';
 		$body .= '<tr style="background:#f8d7da;font-weight:bold"><th>Commande</th><th>Transporteur</th><th>Erreur</th><th>Client</th><th>Montant</th><th>Voir</th></tr>';

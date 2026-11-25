@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.11.0
+
+- **Icônes : Heroicons** (https://heroicons.com, licence MIT) partout dans l'administration : boutons, onglets, cartes transporteurs (icône de repli), statuts, licence, résultats de synchronisation / suivi / annulation, modal « Vérifier les statuts » (plein écran). Les emojis et dashicons sont supprimés.
+- Emails : sujets et titres en texte simple (sans emoji).
+- Nouveau fichier `LICENSE-icons.txt` ; bibliothèque `includes/class-icons.php` (`WCMCS_Icons::svg()`) et `assets/js/icons.js`.
+
 ## 2.10.5
 
 - Nouveau : hook `wcmcs_tracking_state_changed( $order, $slug, $ancien_etat, $nouvel_etat, $categorie, $status )` — déclenché à chaque changement d'état transporteur (base du plugin COD Tracker CRM).

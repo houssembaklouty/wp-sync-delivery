@@ -655,8 +655,7 @@ body.auto-fold .wcmcs-bulk-overlay.wcmcs-scan-fs {
     color: #135e96;
 }
 
-.wcmcs-scan-full .dashicons {
-    font-size: 20px;
+.wcmcs-scan-full .hi {
     width: 20px;
     height: 20px;
     display: block;
@@ -995,3 +994,13 @@ body.auto-fold .wcmcs-bulk-overlay.wcmcs-scan-fs {
 .wcmcs-scan-pager-bottom {
     margin: 10px 2px 0;
 }
+
+/* Heroicons */
+.wcmcs-card-icon .hi { width: 32px; height: 32px; color: #64748b; vertical-align: middle; }
+.wcmcs-big-icon .hi { width: 40px; height: 40px; }
+.wcmcs-feature-chip .hi { width: 12px; height: 12px; vertical-align: -.12em; }
+.nav-tab .hi { width: 16px; height: 16px; vertical-align: -.2em; }
+.button .hi, .wcmcs-card-config-btn .hi { width: 16px; height: 16px; vertical-align: -.2em; }
+.wcmcs-badge-hpos .hi, .wcmcs-badge-as .hi { width: 13px; height: 13px; }
+.wcmcs-label-link .hi, .wcmcs-view-error .hi, .wcmcs-retry-link .hi { width: 15px; height: 15px; vertical-align: -.2em; }
+.wcmcs-error-box .hi, .wcmcs-history-box .hi { width: 15px; height: 15px; vertical-align: -.2em; }

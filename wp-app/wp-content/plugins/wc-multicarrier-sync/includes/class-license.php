@@ -659,7 +659,7 @@ class WCMCS_License {
             );
             printf(
                 '<div class="notice notice-success is-dismissible wcmcs-license-notice">' .
-                '<p><span class="dashicons dashicons-yes-alt" style="color:#28a745"></span> ' .
+                '<p><span style="color:#28a745">' . WCMCS_Icons::svg( 'check-circle' ) . '</span> ' .
                 '<strong>MultiCarrier Sync TN :</strong> %s. ' .
                 '<a href="%s">%s</a></p></div>',
                 esc_html__( 'Licence activée avec succès', 'wc-multicarrier-sync' ),
@@ -679,7 +679,7 @@ class WCMCS_License {
             // Mode gratuit permanent : quota quotidien, aucune fonctionnalité retirée.
             printf(
                 '<div class="notice notice-info wcmcs-license-notice">' .
-                '<p><span class="dashicons dashicons-unlock" style="color:#0073aa"></span> ' .
+                '<p><span style="color:#0073aa">' . WCMCS_Icons::svg( 'lock-open' ) . '</span> ' .
                 '<strong>MultiCarrier Sync TN :</strong> %s. ' .
                 '<a href="%s" class="button button-primary" style="margin-left:8px">%s</a></p></div>',
                 esc_html( sprintf(
@@ -695,7 +695,7 @@ class WCMCS_License {
         $remaining = $this->get_trial_remaining();
         printf(
             '<div class="notice notice-info wcmcs-license-notice">' .
-            '<p><span class="dashicons dashicons-clock" style="color:#0073aa"></span> ' .
+            '<p><span style="color:#0073aa">' . WCMCS_Icons::svg( 'clock' ) . '</span> ' .
             '<strong>MultiCarrier Sync TN :</strong> ' .
             esc_html__( 'Période d\'essai gratuite active', 'wc-multicarrier-sync' ) .
             ' — <strong>%s</strong>. ' .

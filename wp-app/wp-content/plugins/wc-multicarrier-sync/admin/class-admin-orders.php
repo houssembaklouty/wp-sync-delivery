@@ -132,13 +132,13 @@ class WCMCS_Admin_Orders {
                         'wcmcs_retry_' . $order->get_id()
                     );
                     $html .= sprintf(
-                        '<br><a href="%s" class="wcmcs-retry-link" title="%s">↺ %s</a>',
+                        '<br><a href="%s" class="wcmcs-retry-link" title="%s">' . WCMCS_Icons::svg( 'arrow-path' ) . ' %s</a>',
                         esc_url( $retry_url ),
                         esc_attr__( 'Réessayer la synchronisation', 'wc-multicarrier-sync' ),
                         esc_html__( 'Retry', 'wc-multicarrier-sync' )
                     );
                     $html .= sprintf(
-                        ' <a href="#" class="wcmcs-view-error" data-order-id="%d" title="%s">⚠ %s</a>',
+                        ' <a href="#" class="wcmcs-view-error" data-order-id="%d" title="%s">' . WCMCS_Icons::svg( 'exclamation-triangle' ) . ' %s</a>',
                         esc_attr( $order->get_id() ),
                         esc_attr__( 'Voir le détail de l\'erreur', 'wc-multicarrier-sync' ),
                         esc_html__( 'Voir erreur', 'wc-multicarrier-sync' )
@@ -165,7 +165,7 @@ class WCMCS_Admin_Orders {
                     $label_url = WCMCS_Order_Meta::get_label_url( $order );
                     if ( $label_url ) {
                         $html .= sprintf(
-                            ' <a href="%s" target="_blank" class="wcmcs-label-link" title="%s">📄</a>',
+                            ' <a href="%s" target="_blank" class="wcmcs-label-link" title="%s">' . WCMCS_Icons::svg( 'document-text' ) . '</a>',
                             esc_url( $this->get_label_display_url( $order, $label_url ) ),
                             esc_attr__( 'Télécharger étiquette', 'wc-multicarrier-sync' )
                         );
@@ -237,11 +237,11 @@ class WCMCS_Admin_Orders {
     // ─────────────────────────────────────────────
 
     public function register_bulk_actions( array $actions ): array {
-        $actions['wcmcs_sync'] = __( '📦 Synchroniser commandes', 'wc-multicarrier-sync' );
+        $actions['wcmcs_sync'] = __( 'Synchroniser commandes', 'wc-multicarrier-sync' );
 
         // Statuts pipeline : le core WC traite tout « mark_* » automatiquement (ListTable → update_status).
-        $actions['mark_wcmcs-confirmed'] = __( '☎ Marquer confirmée', 'wc-multicarrier-sync' );
-        $actions['mark_wcmcs-packed']    = __( '📦 Marquer emballée', 'wc-multicarrier-sync' );
+        $actions['mark_wcmcs-confirmed'] = __( 'Marquer confirmée', 'wc-multicarrier-sync' );
+        $actions['mark_wcmcs-packed']    = __( 'Marquer emballée', 'wc-multicarrier-sync' );
 
         return $actions;
     }
@@ -697,7 +697,7 @@ class WCMCS_Admin_Orders {
         $screen = WCMCS_WC_Compat::is_hpos() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
         add_meta_box(
             'wcmcs_sync_box',
-            __( '📦 Synchronisation transporteur', 'wc-multicarrier-sync' ),
+            __( 'Synchronisation transporteur', 'wc-multicarrier-sync' ),
             [ $this, 'render_order_metabox' ],
             $screen,
             'side',
@@ -749,7 +749,7 @@ class WCMCS_Admin_Orders {
                 <code><?php echo esc_html( $tracking ); ?></code>
                 <?php if ( $label_url ) : ?>
                 <a href="<?php echo esc_url( $this->get_label_display_url( $order, $label_url ) ); ?>" target="_blank">
-                    📄 <?php esc_html_e( 'Étiquette', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'document-text' ); // phpcs:ignore ?> <?php esc_html_e( 'Étiquette', 'wc-multicarrier-sync' ); ?>
                 </a>
                 <?php endif; ?>
             </p>
@@ -764,7 +764,7 @@ class WCMCS_Admin_Orders {
 
             <?php if ( $error ) : ?>
             <div class="wcmcs-error-box" style="background:#fff3f3;border:1px solid #dc3545;padding:8px;border-radius:4px;margin:8px 0;">
-                <strong style="color:#dc3545">⚠ <?php esc_html_e( 'Erreur :', 'wc-multicarrier-sync' ); ?></strong>
+                <strong style="color:#dc3545"><?php echo WCMCS_Icons::svg( 'exclamation-triangle' ); // phpcs:ignore ?> <?php esc_html_e( 'Erreur :', 'wc-multicarrier-sync' ); ?></strong>
                 <p style="margin:4px 0"><?php echo esc_html( $error ); ?></p>
                 <?php if ( $retry_count > 0 ) : ?>
                 <small><?php printf( esc_html__( '%d tentative(s)', 'wc-multicarrier-sync' ), $retry_count ); ?></small>
@@ -776,7 +776,7 @@ class WCMCS_Admin_Orders {
             $history = WCMCS_Order_Meta::get_sync_history( $order->get_id() );
             if ( $history ) : ?>
             <div class="wcmcs-history-box" style="margin:8px 0">
-                <strong>📜 <?php printf( esc_html__( 'Historique (%d)', 'wc-multicarrier-sync' ), count( $history ) ); ?></strong>
+                <strong><?php echo WCMCS_Icons::svg( 'clock' ); // phpcs:ignore ?> <?php printf( esc_html__( 'Historique (%d)', 'wc-multicarrier-sync' ), count( $history ) ); ?></strong>
                 <ul style="margin:4px 0 0;padding-left:2px;list-style:none;font-size:12px">
                     <?php foreach ( $history as $h ) :
                         $h_provider = WCMCS_Carrier_Detector::get_provider_by_slug( $h->carrier_slug );
@@ -817,7 +817,7 @@ class WCMCS_Admin_Orders {
                         class="button button-primary wcmcs-btn-sync"
                         data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
                         data-nonce="<?php echo esc_attr( wp_create_nonce( 'wcmcs_ajax' ) ); ?>">
-                    ⇄ <?php esc_html_e( 'Synchroniser', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'arrow-path' ); // phpcs:ignore ?> <?php esc_html_e( 'Synchroniser', 'wc-multicarrier-sync' ); ?>
                 </button>
 
                 <?php
@@ -827,7 +827,7 @@ class WCMCS_Admin_Orders {
                         class="button wcmcs-btn-status"
                         data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
                         data-nonce="<?php echo esc_attr( wp_create_nonce( 'wcmcs_ajax' ) ); ?>">
-                    📍 <?php esc_html_e( 'Vérifier le statut', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'map-pin' ); // phpcs:ignore ?> <?php esc_html_e( 'Vérifier le statut', 'wc-multicarrier-sync' ); ?>
                 </button>
                 <?php endif; ?>
 
@@ -838,7 +838,7 @@ class WCMCS_Admin_Orders {
                         data-tracking="<?php echo esc_attr( $tracking ); ?>"
                         data-nonce="<?php echo esc_attr( wp_create_nonce( 'wcmcs_ajax' ) ); ?>"
                         title="<?php echo esc_attr__( 'Annule le colis chez le transporteur — uniquement s\'il est encore en attente (avant enlèvement). La commande redevient synchronisable.', 'wc-multicarrier-sync' ); ?>">
-                    ✕ <?php esc_html_e( 'Annuler le colis', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'x-mark' ); // phpcs:ignore ?> <?php esc_html_e( 'Annuler le colis', 'wc-multicarrier-sync' ); ?>
                 </button>
                 <?php endif; ?>
 
@@ -847,7 +847,7 @@ class WCMCS_Admin_Orders {
                         class="button wcmcs-btn-retry"
                         data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
                         data-nonce="<?php echo esc_attr( wp_create_nonce( 'wcmcs_ajax' ) ); ?>">
-                    ↺ <?php esc_html_e( 'Retry', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'arrow-path' ); // phpcs:ignore ?> <?php esc_html_e( 'Retry', 'wc-multicarrier-sync' ); ?>
                 </button>
                 <?php endif; ?>
 
@@ -858,7 +858,7 @@ class WCMCS_Admin_Orders {
                         class="button wcmcs-btn-label"
                         data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"
                         data-nonce="<?php echo esc_attr( wp_create_nonce( 'wcmcs_ajax' ) ); ?>">
-                    📄 <?php esc_html_e( 'Étiquette PDF', 'wc-multicarrier-sync' ); ?>
+                    <?php echo WCMCS_Icons::svg( 'document-text' ); // phpcs:ignore ?> <?php esc_html_e( 'Étiquette PDF', 'wc-multicarrier-sync' ); ?>
                 </button>
                 <?php endif; ?>
             </div>
@@ -1014,11 +1014,12 @@ class WCMCS_Admin_Orders {
             WCMCS_VERSION
         );
 
-        // JS
+        // JS (icônes Heroicons d'abord)
+        wp_enqueue_script( 'wcmcs-icons', WCMCS_PLUGIN_URL . 'assets/js/icons.js?v=' . WCMCS_VERSION, [], WCMCS_VERSION, true );
         wp_enqueue_script(
             'wcmcs-admin',
             WCMCS_PLUGIN_URL . 'assets/js/admin.js?v=' . WCMCS_VERSION . '-' . (int) @filemtime( WCMCS_PLUGIN_DIR . 'assets/js/admin.js' ),
-            [ 'jquery' ],
+            [ 'jquery', 'wcmcs-icons' ],
             WCMCS_VERSION,
             true
         );
@@ -1029,19 +1030,19 @@ class WCMCS_Admin_Orders {
             'statusColors' => WCMCS_Order_Statuses::status_colors(),
             'i18n'    => [
                 'syncing'              => __( 'Synchronisation...', 'wc-multicarrier-sync' ),
-                'sync_btn'             => __( '⇄ Synchroniser', 'wc-multicarrier-sync' ),
-                'retry_btn'            => __( '↺ Retry', 'wc-multicarrier-sync' ),
+                'sync_btn'             => __( 'Synchroniser', 'wc-multicarrier-sync' ),
+                'retry_btn'            => __( 'Retry', 'wc-multicarrier-sync' ),
                 'retrying'             => __( 'Retry en cours...', 'wc-multicarrier-sync' ),
                 'checking'             => __( 'Vérification...', 'wc-multicarrier-sync' ),
-                'status_btn'           => __( '📍 Vérifier le statut', 'wc-multicarrier-sync' ),
-                'cancel_btn'           => __( '✕ Annuler le colis', 'wc-multicarrier-sync' ),
+                'status_btn'           => __( 'Vérifier le statut', 'wc-multicarrier-sync' ),
+                'cancel_btn'           => __( 'Annuler le colis', 'wc-multicarrier-sync' ),
                 'cancel_short'         => __( 'Annuler', 'wc-multicarrier-sync' ),
                 'cancelling'           => __( 'Annulation...', 'wc-multicarrier-sync' ),
                 'cancelled_word'       => __( 'Annulé', 'wc-multicarrier-sync' ),
                 'confirm_cancel'       => __( 'Annuler le colis chez le transporteur ? Uniquement s\'il est encore en attente (avant enlèvement) — action irréversible.', 'wc-multicarrier-sync' ),
                 'state_of_carrier'     => __( 'État transporteur', 'wc-multicarrier-sync' ),
                 'status_updated'       => __( 'Statut commande mis à jour →', 'wc-multicarrier-sync' ),
-                'scan_btn'             => __( '📍 Vérifier tous les statuts', 'wc-multicarrier-sync' ),
+                'scan_btn'             => __( 'Vérifier tous les statuts', 'wc-multicarrier-sync' ),
                 'scan_title'           => __( 'Vérifier les statuts des colis', 'wc-multicarrier-sync' ),
                 'scan_col_order'       => __( 'Commande', 'wc-multicarrier-sync' ),
                 'scan_col_carrier'     => __( 'Transporteur', 'wc-multicarrier-sync' ),
@@ -1056,7 +1057,7 @@ class WCMCS_Admin_Orders {
                 'scan_errors_word'     => __( 'erreur(s) API', 'wc-multicarrier-sync' ),
                 'scan_checked_word'    => __( 'colis vérifié(s)', 'wc-multicarrier-sync' ),
                 'scan_not_configured'  => __( 'non configuré', 'wc-multicarrier-sync' ),
-                'scan_start'           => __( '▶ Lancer la vérification', 'wc-multicarrier-sync' ),
+                'scan_start'           => __( 'Lancer la vérification', 'wc-multicarrier-sync' ),
                 'scan_none_selected'   => __( 'Aucun colis sélectionné.', 'wc-multicarrier-sync' ),
                 'scan_rate_limited'    => __( 'API saturée — pause 3 s puis nouvel essai...', 'wc-multicarrier-sync' ),
                 'scan_filter_word'     => __( 'Filtrer', 'wc-multicarrier-sync' ),
@@ -1137,7 +1138,7 @@ class WCMCS_Admin_Orders {
         if ( '' !== WCMCS_Order_Meta::get_tracking_id( $order ) && '' !== WCMCS_Order_Meta::get_carrier_slug( $order ) ) {
             $actions['wcmcs_track_status'] = [
                 'url'    => '#',
-                'name'   => __( '📍 Statut', 'wc-multicarrier-sync' ),
+                'name'   => __( 'Statut', 'wc-multicarrier-sync' ),
                 'action' => 'wcmcs-status',
                 'title'  => __( 'Vérifier le statut du colis chez le transporteur', 'wc-multicarrier-sync' ),
             ];
@@ -1147,7 +1148,7 @@ class WCMCS_Admin_Orders {
         if ( $this->is_cancel_available( $order ) ) {
             $actions['wcmcs_cancel_shipment'] = [
                 'url'    => '#',
-                'name'   => __( '✕ Annuler', 'wc-multicarrier-sync' ),
+                'name'   => __( 'Annuler', 'wc-multicarrier-sync' ),
                 'action' => 'wcmcs-cancel',
                 'title'  => __( 'Annuler le colis chez le transporteur (colis en attente uniquement)', 'wc-multicarrier-sync' ),
             ];
