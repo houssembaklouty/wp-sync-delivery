@@ -2,6 +2,7 @@
  * window.codcrmAlert.announce(items, opts) : anti-doublon (tous onglets), pastille, son, bandeau, notification de bureau. */
 (function ($) {
     'use strict';
+    var ic = function (n, c) { return window.codcrmIcons ? window.codcrmIcons.svg(n, c) : ''; };
     var C = window.codcrmNotify;
     if (!C) { return; }
     var NOTIF = 'codcrm_notified', CUR = 'codcrm_notify_cursor', UNSEEN = 'codcrm_unseen', MUTE = 'codcrm_mute', LATER = 'codcrm_alert_later';
@@ -52,9 +53,9 @@
         if (p === 'granted' || p === 'unsupported' || (parseInt(ls(LATER) || '0', 10) > Date.now())) { return; }
         var $b = $('<div id="codcrm-alert-bar" role="region"></div>');
         if (p === 'denied') {
-            $b.html('<span>🔕 ' + i18n.blocked + '</span>');
+            $b.html('<span>' + ic('bell-slash') + ' ' + i18n.blocked + '</span>');
         } else {
-            $b.html('<span>🔔 ' + i18n.bannerText + '</span>');
+            $b.html('<span>' + ic('bell') + ' ' + i18n.bannerText + '</span>');
             $('<button type="button" class="button button-primary"></button>').text(i18n.enableAll).appendTo($b).on('click', function () {
                 unlockAll();
                 Notification.requestPermission().then(function () { banner(); soundState(); if (perm() === 'granted') { window.codcrmAlert.test(); } });
@@ -81,7 +82,7 @@
     function toast(it, more) {
         var label = it.abandoned ? i18n.abandoned : i18n['new'];
         var $t = $('<a class="codcrm-notify-toast" role="alert"></a>').attr('href', C.queueUrl)
-            .text('🔔 ' + label + ' #' + it.number + (it.phone ? ' — ' + it.phone : '') + (more ? ' (+' + more + ')' : ''));
+            .html(ic('bell') + ' ').append(document.createTextNode(label + ' #' + it.number + (it.phone ? ' — ' + it.phone : '') + (more ? ' (+' + more + ')' : '')));
         $('.codcrm-notify-toast').slice(2).remove();
         $t.appendTo('body'); setTimeout(function () { $t.addClass('is-in'); }, 10);
         setTimeout(function () { $t.removeClass('is-in'); setTimeout(function () { $t.remove(); }, 300); }, 8000);

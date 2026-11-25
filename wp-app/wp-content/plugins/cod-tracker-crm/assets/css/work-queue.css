@@ -285,4 +285,16 @@ a.codcrm-h-order { display: block; text-decoration: none; color: inherit; }
 .codcrm-ed .ed-status-opt .ed-pill { font-size: 12px; padding: 3px 12px; vertical-align: 0; }
 .codcrm-ed .ed-status-opt:hover, .codcrm-ed .ed-status-opt:focus { background: #f1f5f9; outline: 0; }
 .codcrm-ed .ed-status-opt.is-cur { background: var(--ed-accent-bg); }
-.codcrm-ed .ed-status-opt.is-cur::after { content: " ✓"; color: var(--ed-accent); font-weight: 700; }
+.codcrm-ed .ed-status-opt.is-cur { box-shadow: inset 3px 0 0 var(--ed-accent); }
+
+/* Heroicons : tailles dans les boutons / pastilles */
+.codcrm-act .hi, .codcrm-cbadge .hi, .codcrm-pill .hi { width: 1.05em; height: 1.05em; vertical-align: -.18em; }
+.codcrm-ed .ed-icon .hi, .codcrm-ed .ed-del .hi, .codcrm-ed .ed-unsync .hi, .codcrm-ed .ed-copy .hi { width: 18px; height: 18px; vertical-align: middle; }
+.codcrm-ed .ed-search-ico .hi { width: 16px; height: 16px; vertical-align: middle; }
+.codcrm-ed .ed-caret .hi { width: 14px; height: 14px; vertical-align: middle; }
+.codcrm-ed .ed-lock .hi { width: 14px; height: 14px; }
+.codcrm-ed .ed-noimg .hi, .codcrm-noimg .hi { width: 22px; height: 22px; color: #94a3b8; }
+.codcrm-ed .ed-btn .hi { width: 16px; height: 16px; vertical-align: -.2em; }
+.codcrm-notice-warn .hi { width: 18px; height: 18px; vertical-align: -.25em; }
+.codcrm-ab-count + .hi { display: none; }
+.codcrm-ed .ed-icon { color: #334155; }

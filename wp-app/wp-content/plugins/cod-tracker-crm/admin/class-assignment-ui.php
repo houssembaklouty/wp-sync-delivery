@@ -28,9 +28,9 @@ class CODCRM_Assignment_UI {
 		}
 		foreach ( CODCRM_Agents::get_agents() as $u ) {
 			/* translators: %s: nom de l'agent */
-			$actions[ 'codcrm_assign_' . (int) $u->ID ] = sprintf( __( '👤 Assigner à %s', 'cod-tracker-crm' ), $u->display_name );
+			$actions[ 'codcrm_assign_' . (int) $u->ID ] = sprintf( __( 'Assigner à %s', 'cod-tracker-crm' ), $u->display_name );
 		}
-		$actions['codcrm_unassign'] = __( '👤 Retirer l\'assignation', 'cod-tracker-crm' );
+		$actions['codcrm_unassign'] = __( 'Retirer l\'assignation', 'cod-tracker-crm' );
 		return $actions;
 	}
 

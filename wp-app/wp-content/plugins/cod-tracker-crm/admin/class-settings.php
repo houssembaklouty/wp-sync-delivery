@@ -58,6 +58,7 @@ class CODCRM_Settings {
 		// navigation entre onglets se fait sans rechargement de la page.
 		wp_enqueue_script( 'wc-enhanced-select' );
 		wp_enqueue_style( 'woocommerce_admin_styles' );
+		CODCRM_Icon_Assets::register();
 		wp_enqueue_script( 'codcrm-sounds', $v( 'assets/js/sounds.js' ), [], null, true );
 		wp_localize_script( 'codcrm-sounds', 'codcrmSoundFiles', CODCRM_Work_Queue::sound_files() );
 		wp_enqueue_script( 'codcrm-settings', $v( 'assets/js/settings.js' ), [ 'jquery', 'codcrm-sounds' ], null, true );
@@ -150,7 +151,7 @@ class CODCRM_Settings {
 		foreach ( CODCRM_Work_Queue::sounds() as $key => $label ) {
 			printf( '<label style="display:block;margin:2px 0"><input type="radio" name="live_sound" value="%s"%s /> %s%s</label>',
 				esc_attr( $key ), checked( CODCRM_Work_Queue::live_sound(), $key, false ), esc_html( $label ),
-				'none' === $key ? '' : ' <button type="button" class="button button-small codcrm-sound-preview" data-sound="' . esc_attr( $key ) . '">▶ ' . esc_html__( 'Écouter', 'cod-tracker-crm' ) . '</button>' );
+				'none' === $key ? '' : ' <button type="button" class="button button-small codcrm-sound-preview" data-sound="' . esc_attr( $key ) . '">' . CODCRM_Icons::svg( 'play' ) . ' ' . esc_html__( 'Écouter', 'cod-tracker-crm' ) . '</button>' );
 		}
 		printf( '<p><label>%s <input type="range" min="0" max="100" step="5" name="live_volume" value="%d" class="codcrm-sound-vol" /> <span class="codcrm-sound-vol-n">%d</span>%%</label></p>',
 			esc_html__( 'Volume', 'cod-tracker-crm' ), CODCRM_Work_Queue::live_volume(), CODCRM_Work_Queue::live_volume() );
@@ -372,7 +373,7 @@ class CODCRM_Settings {
 		$h .= '<div class="codcrm-w-state"><select class="wc-enhanced-select" multiple style="width:100%" name="' . esc_attr( $name( 'state' ) ) . '[]">' . $opts( self::states(), 'state' === $type ? $vals : [] ) . '</select></div>';
 		$h .= '<div class="codcrm-w-carrier"><select class="wc-enhanced-select" multiple style="width:100%" name="' . esc_attr( $name( 'carrier' ) ) . '[]">' . $opts( self::carriers(), 'carrier' === $type ? $vals : [] ) . '</select></div>';
 		$h .= '<div class="codcrm-w-total">' . esc_html__( 'Entre', 'cod-tracker-crm' ) . ' <input type="number" step="0.001" min="0" name="' . esc_attr( $name( 'min' ) ) . '" value="' . esc_attr( 'total' === $type ? (string) ( $c['min'] ?? '' ) : '' ) . '" class="small-text" /> ' . esc_html__( 'et', 'cod-tracker-crm' ) . ' <input type="number" step="0.001" min="0" name="' . esc_attr( $name( 'max' ) ) . '" value="' . esc_attr( 'total' === $type ? (string) ( $c['max'] ?? '' ) : '' ) . '" class="small-text" /> DT <span class="description">' . esc_html__( '(un seul champ suffit)', 'cod-tracker-crm' ) . '</span></div>';
-		$h .= '<button type="button" class="button-link codcrm-cond-del" aria-label="' . esc_attr__( 'Supprimer la condition', 'cod-tracker-crm' ) . '">✕</button>';
+		$h .= '<button type="button" class="button-link codcrm-cond-del" aria-label="' . esc_attr__( 'Supprimer la condition', 'cod-tracker-crm' ) . '">' . CODCRM_Icons::svg( 'x-mark' ) . '</button>';
 		$h .= '</div>';
 		return $h;
 	}
@@ -387,7 +388,7 @@ class CODCRM_Settings {
 			}
 		}
 
-		printf( '<p><a href="%s">← %s</a></p><h2>%s</h2><p>%s</p>', esc_url( self::url( [ 'tab' => 'rules' ] ) ), esc_html__( 'Toutes les règles', 'cod-tracker-crm' ),
+		printf( '<p><a href="%s">' . CODCRM_Icons::svg( 'arrow-left' ) . ' %s</a></p><h2>%s</h2><p>%s</p>', esc_url( self::url( [ 'tab' => 'rules' ] ) ), esc_html__( 'Toutes les règles', 'cod-tracker-crm' ),
 			esc_html( $rule['id'] ? __( 'Modifier la règle de répartition', 'cod-tracker-crm' ) : __( 'Créer une nouvelle règle de répartition', 'cod-tracker-crm' ) ),
 			esc_html__( 'Définissez les conditions et le membre de l\'équipe qui traitera les commandes correspondantes.', 'cod-tracker-crm' ) );
 
@@ -513,7 +514,7 @@ class CODCRM_Settings {
 		}
 		echo '</tbody></table>';
 
-		echo '<p><button type="button" class="button codcrm-color-reset-all">↺ ' . esc_html__( 'Tout remettre par défaut', 'cod-tracker-crm' ) . '</button> <span class="description">' . esc_html__( '(effectif après « Enregistrer »)', 'cod-tracker-crm' ) . '</span></p>';
+		echo '<p><button type="button" class="button codcrm-color-reset-all">' . CODCRM_Icons::svg( 'arrow-path' ) . ' ' . esc_html__( 'Tout remettre par défaut', 'cod-tracker-crm' ) . '</button> <span class="description">' . esc_html__( '(effectif après « Enregistrer »)', 'cod-tracker-crm' ) . '</span></p>';
 		self::form_close();
 	}
 

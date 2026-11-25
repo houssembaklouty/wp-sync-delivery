@@ -44,8 +44,9 @@ class CODCRM_Scanner {
 			return;
 		}
 		wp_enqueue_style( 'codcrm-scanner', self::asset( 'assets/css/scanner.css' ), [], null );
+		CODCRM_Icon_Assets::register();
 		wp_enqueue_script( 'codcrm-h5q', self::asset( 'assets/vendor/html5-qrcode.min.js' ), [], null, true );
-		wp_enqueue_script( 'codcrm-scanner', self::asset( 'assets/js/scanner.js' ), [ 'jquery', 'codcrm-h5q' ], null, true );
+		wp_enqueue_script( 'codcrm-scanner', self::asset( 'assets/js/scanner.js' ), [ 'jquery', 'codcrm-h5q', 'codcrm-icons' ], null, true );
 		wp_localize_script( 'codcrm-scanner', 'codcrmScan', [
 			'ajax'  => admin_url( 'admin-ajax.php' ),
 			'nonce' => wp_create_nonce( 'codcrm_scan' ),
@@ -55,7 +56,7 @@ class CODCRM_Scanner {
 				'net'       => __( 'Erreur réseau.', 'cod-tracker-crm' ),
 				'none'      => __( 'Aucun colis valide à valider.', 'cod-tracker-crm' ),
 				'full'      => __( 'Liste pleine (200 maximum) : validez d\'abord.', 'cod-tracker-crm' ),
-				'cam_on'    => __( '📷 Activer la caméra', 'cod-tracker-crm' ),
+				'cam_on'    => __( 'Activer la caméra', 'cod-tracker-crm' ),
 				'cam_off'   => __( '⏹ Arrêter la caméra', 'cod-tracker-crm' ),
 				'cam_err'   => __( 'Caméra indisponible (HTTPS ou localhost requis, et autorisation de la caméra).', 'cod-tracker-crm' ),
 				'ok_word'   => __( 'prêts', 'cod-tracker-crm' ),
@@ -75,8 +76,8 @@ class CODCRM_Scanner {
 			<h1><?php esc_html_e( 'Scanner les colis', 'cod-tracker-crm' ); ?></h1>
 
 			<div class="codcrm-scan-modes">
-				<label><input type="radio" name="codcrm_mode" value="pack" checked /> 📦 <?php esc_html_e( 'Emballée', 'cod-tracker-crm' ); ?></label>
-				<label><input type="radio" name="codcrm_mode" value="return" /> ↩ <?php esc_html_e( 'Retour reçu', 'cod-tracker-crm' ); ?></label>
+				<label><input type="radio" name="codcrm_mode" value="pack" checked /> <?php echo CODCRM_Icons::svg( 'cube' ); // phpcs:ignore ?> <?php esc_html_e( 'Emballée', 'cod-tracker-crm' ); ?></label>
+				<label><input type="radio" name="codcrm_mode" value="return" /> <?php echo CODCRM_Icons::svg( 'arrow-uturn-left' ); // phpcs:ignore ?> <?php esc_html_e( 'Retour reçu', 'cod-tracker-crm' ); ?></label>
 			</div>
 
 			<div class="codcrm-scan-input">
@@ -178,7 +179,7 @@ class CODCRM_Scanner {
 		}
 		// Enlevé par le transporteur mais retour pas encore déclaré : on l'accepte en le signalant.
 		if ( CODCRM_Stages::is_picked_stage( (string) $order->get_meta( CODCRM_Event_Collector::META_STAGE ) ) ) {
-			return [ 'ok' => true, 'warn' => true, 'msg' => __( '⚠ Retour pas encore déclaré par le transporteur — réception enregistrée quand même.', 'cod-tracker-crm' ) ];
+			return [ 'ok' => true, 'warn' => true, 'msg' => __( 'Retour pas encore déclaré par le transporteur — réception enregistrée quand même.', 'cod-tracker-crm' ) ];
 		}
 		return [ 'ok' => false, 'warn' => false, 'msg' => __( 'Colis jamais enlevé par le transporteur : il ne peut pas être un retour.', 'cod-tracker-crm' ) ];
 	}

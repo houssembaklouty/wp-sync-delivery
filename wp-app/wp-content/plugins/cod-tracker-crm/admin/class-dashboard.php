@@ -198,7 +198,7 @@ class CODCRM_Dashboard {
 		// Colis bloqués.
 		printf( '<h2>%s</h2>', esc_html( sprintf( /* translators: %d jours */ __( 'Colis bloqués (même étape depuis plus de %d jours)', 'cod-tracker-crm' ), CODCRM_KPIs::stuck_days() ) ) );
 		if ( ! $k['stuck'] ) {
-			echo '<p>' . esc_html__( 'Aucun colis bloqué. 🎉', 'cod-tracker-crm' ) . '</p>';
+			echo '<p>' . esc_html__( 'Aucun colis bloqué.', 'cod-tracker-crm' ) . '</p>';
 		} else {
 			echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Commande', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Étape', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Depuis', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Transporteur', 'cod-tracker-crm' ) . '</th><th>' . esc_html__( 'Agent', 'cod-tracker-crm' ) . '</th></tr></thead><tbody>';
 			foreach ( array_slice( $k['stuck'], 0, 50 ) as $r ) {
@@ -230,7 +230,7 @@ class CODCRM_Dashboard {
 			echo '<div class="notice notice-success inline"><p>' . esc_html( absint( $_GET['return_marked'] ) ? __( 'Retour marqué comme reçu (stock réintégré si applicable).', 'cod-tracker-crm' ) : __( 'Retour déjà reçu ou introuvable.', 'cod-tracker-crm' ) ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification
 		}
 		if ( ! $rows ) {
-			echo '<p>' . esc_html__( 'Aucun colis retour manquant. 🎉', 'cod-tracker-crm' ) . '</p>';
+			echo '<p>' . esc_html__( 'Aucun colis retour manquant.', 'cod-tracker-crm' ) . '</p>';
 			return;
 		}
 		echo '<p class="description">' . esc_html__( 'Le transporteur a déclaré ces colis retournés, mais ils n\'ont pas été scannés « Retour reçu ». Réclamez-les au transporteur ; si un colis est bien rentré sans scan, marquez-le reçu.', 'cod-tracker-crm' ) . '</p>';

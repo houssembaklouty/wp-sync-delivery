@@ -57,7 +57,7 @@ class CODCRM_Timeline {
 			echo esc_html( CODCRM_Agents::agent_name( $agent_id ) ?: '—' );
 		}
 		if ( CODCRM_Agents::can_handle( $order ) && CODCRM_Work_Queue::norm_phone( $order->get_billing_phone() ) ) {
-			printf( ' <a href="#" class="button button-small codcrm-msg" data-order="%d">✉ %s</a>', (int) $order->get_id(), esc_html__( 'Message', 'cod-tracker-crm' ) );
+			printf( ' <a href="#" class="button button-small codcrm-msg" data-order="%d">' . CODCRM_Icons::svg( 'chat-bubble-left-right' ) . ' %s</a>', (int) $order->get_id(), esc_html__( 'Message', 'cod-tracker-crm' ) );
 		}
 		echo '</p>';
 
@@ -70,7 +70,7 @@ class CODCRM_Timeline {
 			esc_html__( 'Échecs :', 'cod-tracker-crm' ), $failed, CODCRM_Attempts::threshold()
 		);
 		if ( $risk ) {
-			printf( '<span class="codcrm-pill" style="background:#c0392b">⚠ %s</span>', esc_html__( 'Risque de retour', 'cod-tracker-crm' ) );
+			printf( '<span class="codcrm-pill" style="background:#c0392b">' . CODCRM_Icons::svg( 'exclamation-triangle' ) . ' %s</span>', esc_html__( 'Risque de retour', 'cod-tracker-crm' ) );
 		}
 		echo '</div>';
 
@@ -84,7 +84,7 @@ class CODCRM_Timeline {
 			if ( 'contact' === $e->type ) {
 				$title = sprintf( '%s — %s', CODCRM_Contacts::channel_label( (string) $e->channel ), CODCRM_Contacts::outcome_label( (string) $e->channel, (string) $e->outcome ) );
 			} elseif ( in_array( $e->type, [ 'assignment', 'task' ], true ) ) {
-				$title = ( 'task' === $e->type ? ( 'done' === $e->outcome ? '✓ ' : '⏰ ' ) : '👤 ' ) . $e->note;
+				$title = ( 'task' === $e->type ? ( 'done' === $e->outcome ? '' : '' ) : '' ) . $e->note;
 			} else {
 				$title = '' !== $e->carrier_state ? $e->carrier_state : ( '' !== $e->stage ? CODCRM_Stages::label( $e->stage ) : $e->note );
 			}

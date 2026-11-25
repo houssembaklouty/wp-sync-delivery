@@ -1,6 +1,7 @@
 /* global jQuery, codcrmScan, Html5Qrcode */
 (function ($) {
     'use strict';
+    var ic = function (n, c) { return window.codcrmIcons ? window.codcrmIcons.svg(n, c) : ''; };
 
     var i18n = codcrmScan.i18n;
     var items = [];          // { code, order_id, number, client, ok, warn, msg, status }
@@ -32,8 +33,8 @@
             html += '<tr class="' + cls + '"><td><code>' + esc(it.code) + '</code></td>'
                 + '<td>' + (it.number ? '#' + esc(it.number) : '—') + '</td>'
                 + '<td>' + esc(it.client) + '</td>'
-                + '<td>' + (it.status === 'DONE' ? '✓ ' : (it.ok ? (it.warn ? '' : '✓ ') : '✗ ')) + esc(it.msg) + '</td>'
-                + '<td>' + (it.status === 'DONE' ? '' : '<a href="#" class="codcrm-rm" data-i="' + i + '">✕</a>') + '</td></tr>';
+                + '<td>' + (it.status === 'DONE' ? ic('check') + ' ' : (it.ok ? (it.warn ? ic('exclamation-triangle') + ' ' : ic('check') + ' ') : ic('x-circle') + ' ')) + esc(it.msg) + '</td>'
+                + '<td>' + (it.status === 'DONE' ? '' : '<a href="#" class="codcrm-rm" data-i="' + i + '">' + ic('x-mark') + '</a>') + '</td></tr>';
         });
         $('#codcrm-list tbody').html(html);
         $('#codcrm-sum').html('<strong>' + ok + '</strong> ' + esc(i18n.ok_word) + ' · <strong>' + ko + '</strong> ' + esc(i18n.ko_word));

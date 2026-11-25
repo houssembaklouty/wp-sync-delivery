@@ -33,8 +33,9 @@ class CODCRM_Notify {
 			wp_enqueue_script( 'codcrm-sounds', $v( 'assets/js/sounds.js' ), [], null, true );
 			wp_localize_script( 'codcrm-sounds', 'codcrmSoundFiles', CODCRM_Work_Queue::sound_files() );
 		}
+		CODCRM_Icon_Assets::register();
 		wp_enqueue_style( 'codcrm-notify', $v( 'assets/css/notify.css' ), [], null );
-		wp_enqueue_script( 'codcrm-notify', $v( 'assets/js/notify.js' ), [ 'jquery', 'codcrm-sounds' ], null, true );
+		wp_enqueue_script( 'codcrm-notify', $v( 'assets/js/notify.js' ), [ 'jquery', 'codcrm-sounds', 'codcrm-icons' ], null, true );
 		$now = self::now();
 		wp_localize_script( 'codcrm-notify', 'codcrmNotify', [
 			'ajax'           => admin_url( 'admin-ajax.php' ),
@@ -69,7 +70,7 @@ class CODCRM_Notify {
 		}
 		$bar->add_node( [
 			'id'    => 'codcrm-notify',
-			'title' => '<span class="ab-icon dashicons dashicons-bell" aria-hidden="true"></span><span class="codcrm-ab-count" hidden></span>',
+			'title' => '<span class="ab-icon">' . CODCRM_Icons::svg( 'bell' ) . '</span><span class="codcrm-ab-count" hidden></span>',
 			'href'  => admin_url( 'admin.php?page=' . CODCRM_Work_Queue::PAGE_QUEUE ),
 			'meta'  => [ 'title' => __( 'Suivi COD — nouvelles commandes', 'cod-tracker-crm' ) ],
 		] );

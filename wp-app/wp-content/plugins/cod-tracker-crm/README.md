@@ -184,3 +184,6 @@ Cinquième son proposé dans Réglages → Général → « Son nouvelle command
 - « Mes suivis » (responsables) : cochez des commandes (ou « Sélectionner tous les résultats du filtre », jusqu'à 1000) → liste **« Affecter à… »** (un agent ou « ✕ Retirer l'agent ») → **Affecter**. Chaque affectation est tracée dans la chronologie ; ces affectations manuelles ne sont jamais réattribuées automatiquement.
 - Toutes les commandes peuvent être cochées (même sans numéro valide : elles sont simplement ignorées par les messages groupés).
 - Agent supprimé : ses commandes sont transférées à l'utilisateur choisi par WordPress (« attribuer le contenu à »), sinon remises « en attente d'un agent » pour être réparties de nouveau.
+
+## Icônes Heroicons (v1.12.0)
+Toutes les icônes de l'interface (boutons, badges, cloche et menu, fenêtre « Modifier », scanner, réglages) sont des **Heroicons** (https://heroicons.com, MIT) en SVG : `includes/class-icons.php` (`CODCRM_Icons::svg()`) et `assets/js/icons.js` (`codcrmIcons.svg()`), couleur = couleur du texte. Emojis et dashicons supprimés de l'interface (les modèles de messages WhatsApp / SMS envoyés aux clients gardent leurs emojis : ce sont des messages, pas des icônes). Licence : `LICENSE-icons.txt`.

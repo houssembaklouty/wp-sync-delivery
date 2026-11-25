@@ -119,23 +119,23 @@ class CODCRM_Customers {
 		}
 		$h = [];
 		if ( $s['orders'] >= 2 ) {
-			$h[] = sprintf( '<span class="codcrm-cbadge is-reg" title="%s">★ %s</span>', esc_attr( sprintf( /* translators: %d nombre */ __( '%d commandes avec ce numéro', 'cod-tracker-crm' ), $s['orders'] ) ), esc_html__( 'Client régulier', 'cod-tracker-crm' ) );
+			$h[] = sprintf( '<span class="codcrm-cbadge is-reg" title="%s">' . CODCRM_Icons::svg( 'star' ) . ' %s</span>', esc_attr( sprintf( /* translators: %d nombre */ __( '%d commandes avec ce numéro', 'cod-tracker-crm' ), $s['orders'] ) ), esc_html__( 'Client régulier', 'cod-tracker-crm' ) );
 		} else {
 			$h[] = '<span class="codcrm-cbadge is-new">' . esc_html__( 'Nouveau client', 'cod-tracker-crm' ) . '</span>';
 		}
 		$closed = $s['delivered'] + $s['returned'];
 		if ( $closed ) {
 			$pct = (int) round( 100 * $s['delivered'] / $closed );
-			$h[] = sprintf( '<span class="codcrm-cbadge is-%s" title="%s">🚚 %d%%</span>', self::tone( $pct ), esc_attr( sprintf( /* translators: 1 livrées 2 clôturées */ __( 'Taux de livraison : %1$d livrée(s) sur %2$d colis clôturé(s)', 'cod-tracker-crm' ), $s['delivered'], $closed ) ), $pct );
+			$h[] = sprintf( '<span class="codcrm-cbadge is-%s" title="%s">' . CODCRM_Icons::svg( 'truck' ) . ' %d%%</span>', self::tone( $pct ), esc_attr( sprintf( /* translators: 1 livrées 2 clôturées */ __( 'Taux de livraison : %1$d livrée(s) sur %2$d colis clôturé(s)', 'cod-tracker-crm' ), $s['delivered'], $closed ) ), $pct );
 		}
 		if ( $s['calls'] ) {
 			$pct = (int) round( 100 * $s['answered'] / $s['calls'] );
-			$h[] = sprintf( '<span class="codcrm-cbadge is-%s" title="%s">📞 %d%%</span>', self::tone( $pct ), esc_attr( sprintf( /* translators: 1 répondus 2 appels */ __( 'Taux de réponse : %1$d appel(s) répondu(s) sur %2$d', 'cod-tracker-crm' ), $s['answered'], $s['calls'] ) ), $pct );
+			$h[] = sprintf( '<span class="codcrm-cbadge is-%s" title="%s">' . CODCRM_Icons::svg( 'phone' ) . ' %d%%</span>', self::tone( $pct ), esc_attr( sprintf( /* translators: 1 répondus 2 appels */ __( 'Taux de réponse : %1$d appel(s) répondu(s) sur %2$d', 'cod-tracker-crm' ), $s['answered'], $s['calls'] ) ), $pct );
 		}
 		if ( function_exists( 'wparabic_phone_strikes' ) ) {
 			$strikes = (int) wparabic_phone_strikes( $order->get_billing_phone() );
 			if ( $strikes ) {
-				$h[] = sprintf( '<span class="codcrm-cbadge is-bad" title="%s">⚠ %d</span>', esc_attr__( 'Signalements (liste noire)', 'cod-tracker-crm' ), $strikes );
+				$h[] = sprintf( '<span class="codcrm-cbadge is-bad" title="%s">' . CODCRM_Icons::svg( 'exclamation-triangle' ) . ' %d</span>', esc_attr__( 'Signalements (liste noire)', 'cod-tracker-crm' ), $strikes );
 			}
 		}
 		return '<div class="codcrm-cbadges codcrm-client-hist" data-order="' . (int) $order->get_id() . '">' . implode( '', $h ) . '</div>';

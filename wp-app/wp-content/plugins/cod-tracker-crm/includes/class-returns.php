@@ -349,7 +349,7 @@ class CODCRM_Returns {
 			return;
 		}
 		printf(
-			'<div class="notice notice-warning"><p>⚠ <strong>%s</strong> <a href="%s">%s</a></p></div>',
+			'<div class="notice notice-warning"><p>' . CODCRM_Icons::svg( 'exclamation-triangle' ) . ' <strong>%s</strong> <a href="%s">%s</a></p></div>',
 			esc_html( sprintf(
 				/* translators: 1 nombre, 2 jours */
 				_n( '%1$d colis retour n\'est pas revenu à la boutique %2$d jours après le retour annoncé par le transporteur.', '%1$d colis retour ne sont pas revenus à la boutique %2$d jours après le retour annoncé par le transporteur.', $n, 'cod-tracker-crm' ),

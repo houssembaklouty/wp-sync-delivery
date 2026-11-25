@@ -11,3 +11,9 @@
 #codcrm-alert-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 20px 0 2px; padding: 10px 14px; border-radius: 8px; background: #ede9fe; border: 1px solid #c4b5fd; color: #3b0764; font-weight: 500; }
 #codcrm-alert-bar .button-primary { background: #6d28d9; border-color: #6d28d9; }
 #codcrm-alert-bar .codcrm-alert-later { margin-left: auto; color: #6d28d9; }
+
+#wpadminbar #wp-admin-bar-codcrm-notify .ab-icon { display: inline-flex; align-items: center; height: 32px; width: auto; }
+#wpadminbar #wp-admin-bar-codcrm-notify .ab-icon:before { content: none; }
+#wpadminbar #wp-admin-bar-codcrm-notify .ab-icon .hi { width: 20px; height: 20px; vertical-align: middle; }
+#codcrm-alert-bar .hi { width: 18px; height: 18px; vertical-align: -.25em; }
+.codcrm-notify-toast .hi { width: 18px; height: 18px; vertical-align: -.25em; }

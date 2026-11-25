@@ -95,7 +95,7 @@ class CODCRM_Cash_Page {
 		}
 		printf( '</select> <label>%s <input type="date" name="from" value="%s" /></label> <label>%s <input type="date" name="to" value="%s" /></label> <input type="search" name="q" value="%s" placeholder="%s" /> <button class="button">%s</button> ',
 			esc_html__( 'Créés du', 'cod-tracker-crm' ), esc_attr( $f['from'] ), esc_html__( 'au', 'cod-tracker-crm' ), esc_attr( $f['to'] ), esc_attr( $f['q'] ), esc_attr__( 'N° de suivi / commande', 'cod-tracker-crm' ), esc_html__( 'Filtrer', 'cod-tracker-crm' ) );
-		printf( '<a class="button" href="%s">⬇ %s</a> <span class="codcrm-count"><strong>%d</strong> %s</span></form>',
+		printf( '<a class="button" href="%s">' . CODCRM_Icons::svg( 'arrow-down-tray' ) . ' %s</a> <span class="codcrm-count"><strong>%d</strong> %s</span></form>',
 			esc_url( wp_nonce_url( add_query_arg( array_filter( $f ) + [ 'action' => 'codcrm_cash_export' ], admin_url( 'admin-post.php' ) ), 'codcrm_cash_export' ) ),
 			esc_html__( 'Exporter CSV', 'cod-tracker-crm' ), $list['total'], esc_html__( 'colis', 'cod-tracker-crm' ) );
 

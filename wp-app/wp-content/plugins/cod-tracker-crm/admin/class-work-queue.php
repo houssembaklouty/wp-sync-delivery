@@ -26,8 +26,8 @@ class CODCRM_Work_Queue {
 		foreach ( CODCRM_Agents::get_agents() as $u ) {
 			$h .= '<option value="' . (int) $u->ID . '">' . esc_html( $u->display_name ) . '</option>';
 		}
-		$h .= '<option value="0">' . esc_html__( '✕ Retirer l\'agent', 'cod-tracker-crm' ) . '</option></select>';
-		$h .= ' <button type="button" class="button codcrm-assign-go" disabled>👤 ' . esc_html__( 'Affecter', 'cod-tracker-crm' ) . '</button></span>';
+		$h .= '<option value="0">' . esc_html__( 'Retirer l\'agent', 'cod-tracker-crm' ) . '</option></select>';
+		$h .= ' <button type="button" class="button codcrm-assign-go" disabled>' . CODCRM_Icons::svg( 'user-plus' ) . ' ' . esc_html__( 'Affecter', 'cod-tracker-crm' ) . '</button></span>';
 		return $h;
 	}
 
@@ -201,7 +201,7 @@ class CODCRM_Work_Queue {
 			CODCRM_Agents::CAP_WORK,
 			self::PAGE_QUEUE,
 			[ __CLASS__, 'render_queue' ],
-			'dashicons-phone',
+			CODCRM_Icon_Assets::menu_icon(),
 			56
 		);
 		add_submenu_page( self::PAGE_QUEUE, __( 'Mes suivis', 'cod-tracker-crm' ), __( 'Mes suivis', 'cod-tracker-crm' ), CODCRM_Agents::CAP_WORK, self::PAGE_QUEUE, [ __CLASS__, 'render_queue' ] );
@@ -220,9 +220,10 @@ class CODCRM_Work_Queue {
 			return;
 		}
 		wp_enqueue_style( 'codcrm-queue', self::asset( 'assets/css/work-queue.css' ), [], null );
+		CODCRM_Icon_Assets::register();
 		wp_enqueue_script( 'codcrm-sounds', self::asset( 'assets/js/sounds.js' ), [], null, true );
 		wp_localize_script( 'codcrm-sounds', 'codcrmSoundFiles', self::sound_files() );
-		wp_enqueue_script( 'codcrm-queue', self::asset( 'assets/js/work-queue.js' ), [ 'jquery', 'codcrm-sounds' ], null, true );
+		wp_enqueue_script( 'codcrm-queue', self::asset( 'assets/js/work-queue.js' ), [ 'jquery', 'codcrm-sounds', 'codcrm-icons' ], null, true );
 		wp_localize_script( 'codcrm-queue', 'codcrm', [
 			'ajax'     => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'codcrm' ),
@@ -537,7 +538,7 @@ class CODCRM_Work_Queue {
 		$flts = [
 			''        => __( 'Tous les colis', 'cod-tracker-crm' ),
 			'failed'  => __( 'Avec échec(s) de livraison', 'cod-tracker-crm' ),
-			'risk'    => __( '⚠ Risque de retour', 'cod-tracker-crm' ),
+			'risk'    => __( 'Risque de retour', 'cod-tracker-crm' ),
 			'abandoned' => __( 'Commandes abandonnées', 'cod-tracker-crm' ),
 			'waiting' => __( 'En attente d\'un agent', 'cod-tracker-crm' ),
 			'due'     => __( 'Rappels du jour', 'cod-tracker-crm' ),
@@ -560,7 +561,7 @@ class CODCRM_Work_Queue {
 
 		// Barre d'actions groupées (sélection par cases à cocher).
 		echo '<div class="codcrm-bulkbar"><strong class="codcrm-selcount">0</strong> ' . esc_html__( 'sélectionné(s)', 'cod-tracker-crm' )
-			. ' <button type="button" class="button button-primary codcrm-bulk-open" disabled>✉ ' . esc_html__( 'Message groupé', 'cod-tracker-crm' ) . '</button>'
+			. ' <button type="button" class="button button-primary codcrm-bulk-open" disabled>' . CODCRM_Icons::svg( 'chat-bubble-left-right' ) . ' ' . esc_html__( 'Message groupé', 'cod-tracker-crm' ) . '</button>'
 			. ( $is_manager ? self::assign_controls() : '' )
 			. ' <a href="#" class="codcrm-sel-all" style="display:none">' . esc_html( sprintf( /* translators: %d plafond */ __( 'Sélectionner tous les résultats du filtre (jusqu\'à %d)', 'cod-tracker-crm' ), CODCRM_Bulk::MAX_ORDERS ) ) . '</a>'
 			. ' <a href="' . esc_url( admin_url( 'admin.php?page=' . CODCRM_Bulk_UI::PAGE ) ) . '">' . esc_html__( 'Voir les envois groupés', 'cod-tracker-crm' ) . '</a></div>';
@@ -634,7 +635,7 @@ class CODCRM_Work_Queue {
 			$img    = CODCRM_Customers::item_image( $item );
 			$attrs  = CODCRM_Customers::item_attrs( $item );
 			$title  = trim( $item->get_name() . ( $attrs ? ' (' . $attrs . ')' : '' ) ) . ' × ' . (int) $item->get_quantity();
-			$thumbs .= '<span class="codcrm-prod' . ( $item->get_variation_id() || $order->get_status() !== 'codcrm-abandoned' ? '' : ' is-partial' ) . '" title="' . esc_attr( $title ) . '">' . ( $img ? '<img src="' . esc_url( $img ) . '" alt="" />' : '<span class="codcrm-noimg">📦</span>' ) . '<b>' . (int) $item->get_quantity() . '</b></span>';
+			$thumbs .= '<span class="codcrm-prod' . ( $item->get_variation_id() || $order->get_status() !== 'codcrm-abandoned' ? '' : ' is-partial' ) . '" title="' . esc_attr( $title ) . '">' . ( $img ? '<img src="' . esc_url( $img ) . '" alt="" />' : '<span class="codcrm-noimg">' . CODCRM_Icons::svg( 'cube' ) . '</span>' ) . '<b>' . (int) $item->get_quantity() . '</b></span>';
 		}
 		if ( $n > 3 ) {
 			$thumbs .= '<span class="codcrm-prod-more">+' . ( $n - 3 ) . '</span>';
@@ -645,12 +646,12 @@ class CODCRM_Work_Queue {
 			? '<span class="codcrm-pill codcrm-status-pill" data-order="' . (int) $id . '" style="' . esc_attr( CODCRM_Stages::badge_style( CODCRM_Stages::color( $stage ) ) ) . '">' . esc_html( CODCRM_Stages::label( $stage ) ) . '</span>'
 			: '—' );
 
-		printf( '<td>%d / %d%s</td>', (int) $order->get_meta( CODCRM_Attempts::META_ATTEMPTS ), CODCRM_Attempts::threshold(), $risk ? ' <span class="codcrm-pill" style="background:#c0392b">⚠</span>' : '' );
+		printf( '<td>%d / %d%s</td>', (int) $order->get_meta( CODCRM_Attempts::META_ATTEMPTS ), CODCRM_Attempts::threshold(), $risk ? ' <span class="codcrm-pill" style="background:#c0392b">' . CODCRM_Icons::svg( 'exclamation-triangle' ) . '</span>' : '' );
 		printf( '<td>%s</td>', $last ? esc_html( human_time_diff( strtotime( $last ), current_time( 'timestamp' ) ) ) : '—' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp
 		unset( $failed );
 
 		if ( $task ) {
-			printf( '<td class="%s">%s<br><small>%s</small> <a href="#" class="codcrm-done" data-task="%d">✓</a></td>',
+			printf( '<td class="%s">%s<br><small>%s</small> <a href="#" class="codcrm-done" data-task="%d">' . CODCRM_Icons::svg( 'check' ) . '</a></td>',
 				$overdue ? 'codcrm-overdue' : '',
 				esc_html( CODCRM_Tasks::kind_label( (string) $task->kind ) ),
 				esc_html( mysql2date( 'd/m H:i', $task->due_at ) ),
@@ -663,11 +664,11 @@ class CODCRM_Work_Queue {
 		printf( '<td>%s</td>', $agent ? esc_html( $agent ) : '—' );
 
 		echo '<td class="codcrm-actions">';
-		printf( '<a class="codcrm-act codcrm-edit" href="#" data-order="%d" title="%s">✎ %s</a>', (int) $id, esc_attr__( 'Modifier la commande', 'cod-tracker-crm' ), esc_html__( 'Modifier', 'cod-tracker-crm' ) );
+		printf( '<a class="codcrm-act codcrm-edit" href="#" data-order="%d" title="%s">' . CODCRM_Icons::svg( 'pencil-square' ) . ' %s</a>', (int) $id, esc_attr__( 'Modifier la commande', 'cod-tracker-crm' ), esc_html__( 'Modifier', 'cod-tracker-crm' ) );
 		if ( $phone8 ) {
-			printf( '<a class="codcrm-act codcrm-call" href="tel:+216%s" data-order="%d" title="%s" aria-label="%3$s">📞</a>', esc_attr( $phone8 ), (int) $id, esc_attr__( 'Appeler (résultat tracé)', 'cod-tracker-crm' ) );
+			printf( '<a class="codcrm-act codcrm-call" href="tel:+216%s" data-order="%d" title="%s" aria-label="%3$s">' . CODCRM_Icons::svg( 'phone' ) . '</a>', esc_attr( $phone8 ), (int) $id, esc_attr__( 'Appeler (résultat tracé)', 'cod-tracker-crm' ) );
 			// WhatsApp et SMS, FR et AR : une seule fenêtre « Message » (modèle suggéré selon l'étape).
-			printf( '<a class="codcrm-act codcrm-msg" href="#" data-order="%d" title="%s" aria-label="%2$s">✉</a>', (int) $id, esc_attr__( 'Envoyer un message (WhatsApp / SMS)', 'cod-tracker-crm' ) );
+			printf( '<a class="codcrm-act codcrm-msg" href="#" data-order="%d" title="%s" aria-label="%2$s">' . CODCRM_Icons::svg( 'chat-bubble-left-right' ) . '</a>', (int) $id, esc_attr__( 'Envoyer un message (WhatsApp / SMS)', 'cod-tracker-crm' ) );
 		} else {
 			echo '<br><em class="codcrm-muted">' . esc_html__( 'Numéro invalide', 'cod-tracker-crm' ) . '</em>';
 		}

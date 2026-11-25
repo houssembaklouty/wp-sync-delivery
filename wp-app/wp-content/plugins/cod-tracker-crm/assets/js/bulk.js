@@ -1,6 +1,7 @@
 /* Envois groupés : progression en direct + liens WhatsApp tracés. */
 (function ($) {
     'use strict';
+    var ic = function (n, c) { return window.codcrmIcons ? window.codcrmIcons.svg(n, c) : ''; };
     var cfg = window.codcrmBulk;
     if (!cfg || !cfg.job) { return; }
 
@@ -37,8 +38,8 @@
         post({ action: 'codcrm_bulk_wa', job: cfg.job, order_id: $tr.data('order') }).done(function (r) {
             if (r && r.success) {
                 if (w) { w.location.href = r.data.url; } else { location.href = r.data.url; }
-                $tr.find('.codcrm-bulk-st').text('✓');
-                $b.text('↻').prop('disabled', false);
+                $tr.find('.codcrm-bulk-st').html(ic('check'));
+                $b.html(ic('arrow-path')).prop('disabled', false);
             } else {
                 if (w) { w.close(); }
                 alert((r && r.data && r.data.message) || cfg.error);

@@ -1,6 +1,7 @@
 /* global jQuery, codcrm */
 (function ($) {
     'use strict';
+    var ic = function (n, c) { return window.codcrmIcons ? window.codcrmIcons.svg(n, c) : ''; };
 
     var i18n = codcrm.i18n;
 
@@ -151,7 +152,7 @@
             var d = r.data;
             st.lang = d.lang; st.context = d.suggested; st.phone8 = d.phone8; st.sms = !!d.sms;
 
-            var ctxOpts = '<option value="' + esc(d.suggested) + '">★ ' + esc(d.contexts[d.suggested]) + ' (' + esc(i18n.msg_suggest) + ')</option>';
+            var ctxOpts = '<option value="' + esc(d.suggested) + '">' + esc(d.contexts[d.suggested]) + ' (' + esc(i18n.msg_suggest) + ')</option>';
             $.each(d.contexts, function (k, label) {
                 if (k !== d.suggested) { ctxOpts += '<option value="' + esc(k) + '">' + esc(label) + '</option>'; }
             });
@@ -261,7 +262,7 @@
         if (allMode) { data.all = 1; } else { data.ids = ids; }
         $.post(codcrm.ajax + (allMode ? location.search : ''), data).done(function (r) {
             if (r && r.success) {
-                toast('✓ ' + i18n.assign_done.replace('%d', r.data.done));
+                toast(i18n.assign_done.replace('%d', r.data.done));
                 setTimeout(function () { location.reload(); }, 900);
             } else {
                 window.alert((r && r.data && r.data.message) || i18n.error); $b.prop('disabled', false);
@@ -379,7 +380,7 @@
     }
     // Avertissement persistant (reste affiché jusqu'à fermeture) : le colis existe encore chez le transporteur.
     function notice(msg) {
-        var $n = $('<div class="codcrm-notice-warn" role="alert"><strong>⚠ ' + esc(i18n.ed_not_deleted) + '</strong><p>' + esc(msg) + '</p><button type="button" class="ed-btn">OK</button></div>').appendTo('body');
+        var $n = $('<div class="codcrm-notice-warn" role="alert"><strong>' + ic('exclamation-triangle') + ' ' + esc(i18n.ed_not_deleted) + '</strong><p>' + esc(msg) + '</p><button type="button" class="ed-btn">OK</button></div>').appendTo('body');
         $n.on('click', 'button', function () { $n.remove(); });
     }
     var FIELD_LABELS = { first_name: 'prénom', last_name: 'nom', phone: 'téléphone', phone2: 'téléphone 2', state: 'ville', address: 'adresse', email: 'email',
@@ -450,24 +451,24 @@
         }
 
         function build() {
-            var L = d.locked, ro = L ? ' disabled' : '', lock = L ? ' <span class="ed-lock" title="' + esc(i18n.ed_locked) + '">🔒</span>' : '';
+            var L = d.locked, ro = L ? ' disabled' : '', lock = L ? ' <span class="ed-lock" title="' + esc(i18n.ed_locked) + '">' + ic('lock-closed') + '</span>' : '';
             var agentMap = {}; $.each(d.agents, function (_, a) { agentMap[a.id] = a.name; });
             var p8 = phone8(d.phone);
             var h = ''
                 + '<header class="ed-top"><div class="ed-title"><h2 id="codcrm-ed-title">Commande n°' + esc(d.number) + '</h2> <span class="ed-cur-pill">' + statusPill(d.status) + '</span>' + '<span class="ed-htotal"><span class="s-total">0</span> DT</span>'
-                + '<div class="ed-sub">' + esc($.trim(d.first + ' ' + d.last)) + (d.phone ? ' · ' + esc(d.phone) : '') + (d.strikes ? ' · <span class="ed-strike">⚠ ' + d.strikes + ' signalement(s)</span>' : '') + '</div></div>'
-                + '<div class="ed-top-actions"><span class="ed-dirty">● Modifications non enregistrées</span>'
-                + '<button type="button" class="ed-btn ed-primary ed-save" disabled title="Ctrl + S"><span class="ed-spin"></span>💾 Enregistrer</button>'
+                + '<div class="ed-sub">' + esc($.trim(d.first + ' ' + d.last)) + (d.phone ? ' · ' + esc(d.phone) : '') + (d.strikes ? ' · <span class="ed-strike">' + ic('exclamation-triangle') + ' ' + d.strikes + ' signalement(s)</span>' : '') + '</div></div>'
+                + '<div class="ed-top-actions"><span class="ed-dirty">Modifications non enregistrées</span>'
+                + '<button type="button" class="ed-btn ed-primary ed-save" disabled title="Ctrl + S"><span class="ed-spin"></span>' + ic('check') + ' Enregistrer</button>'
                 + '<button type="button" class="ed-x" aria-label="Fermer">×</button></div></header>'
                 + '<div class="ed-alert ed-err" role="alert" hidden></div>'
-                + (L ? '<div class="ed-alert ed-warn">🔒 ' + esc(i18n.ed_locked) + '</div>' : '')
+                + (L ? '<div class="ed-alert ed-warn">' + ic('lock-closed') + ' ' + esc(i18n.ed_locked) + '</div>' : '')
                 + '<div class="ed-body"><div class="ed-main">'
                 // Client
                 + '<section class="ed-card' + (L ? ' is-locked' : '') + '"><h3>Détails du client' + lock + '</h3><div class="ed-grid">'
                 + field('Prénom', '<input class="f-first" value="' + esc(d.first) + '"' + ro + ' />')
                 + field('Nom', '<input class="f-last" value="' + esc(d.last) + '"' + ro + ' />')
                 + field('Téléphone', '<div class="ed-inline"><input type="tel" inputmode="tel" class="f-phone" value="' + esc(d.phone) + '"' + ro + ' />'
-                    + (p8 ? '<a class="ed-icon codcrm-call" href="tel:+216' + esc(p8) + '" data-order="' + d.id + '" title="Appeler (résultat tracé)">📞</a>' : '') + '</div>', 'f-wrap-phone')
+                    + (p8 ? '<a class="ed-icon codcrm-call" href="tel:+216' + esc(p8) + '" data-order="' + d.id + '" title="Appeler (résultat tracé)">' + ic('phone') + '</a>' : '') + '</div>', 'f-wrap-phone')
                 + field('Téléphone 2', '<input type="tel" inputmode="tel" class="f-phone2" value="' + esc(d.phone2) + '" placeholder="Optionnel"' + ro + ' />', 'f-wrap-phone2')
                 + field('Ville (gouvernorat)', '<select class="f-state"' + ro + '>' + opts(d.states, d.state, '— Choisir —') + '</select>', 'f-wrap-state')
                 + field('Email', '<input type="email" class="f-email" value="' + esc(d.email) + '" placeholder="Optionnel"' + ro + ' />')
@@ -476,7 +477,7 @@
                 + '</div></section>'
                 // Produits
                 + '<section class="ed-card' + (L ? ' is-locked' : '') + '"><h3>Produits' + lock + ' <span class="ed-count"></span></h3>'
-                + (L ? '' : '<div class="ed-search"><span class="ed-search-ico">🔍</span><input type="search" class="f-psearch" placeholder="Ajouter un produit : tapez son nom…" autocomplete="off" role="combobox" aria-expanded="false" /><div class="ed-results" role="listbox"></div></div>')
+                + (L ? '' : '<div class="ed-search"><span class="ed-search-ico">' + ic('magnifying-glass') + '</span><input type="search" class="f-psearch" placeholder="Ajouter un produit : tapez son nom…" autocomplete="off" role="combobox" aria-expanded="false" /><div class="ed-results" role="listbox"></div></div>')
                 + '<div class="ed-undo" hidden></div><div class="ed-items"></div></section>'
                 + '</div><aside class="ed-side">'
                 // Commande
@@ -488,8 +489,8 @@
                     }).join('') + '</div></div>', 'f-wrap-status')
                 + field('Société de livraison', '<div class="ed-inline ed-carrier"><span class="ed-logo">' + carrierLogo(d.carrier) + '</span><select class="f-carrier"' + ro + '>'
                     + opts(d.carriers, d.carrier || '', d.carrier_now ? 'Automatique (' + (d.carriers[d.carrier_now] || d.carrier_now) + ')' : 'Automatique') + '</select></div>')
-                + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">⧉</button>'
-                    + (d.can_unsync ? '<button type="button" class="ed-icon ed-unsync" title="Supprimer le colis chez le transporteur" aria-label="Supprimer le colis"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>' : '') + '</div></div>' : '')
+                + (d.tracking ? '<div class="ed-field"><label>Code à barre du colis</label><div class="ed-inline ed-track"><code class="ed-code">' + esc(d.tracking) + '</code><button type="button" class="ed-icon ed-copy" title="Copier" aria-label="Copier le code">' + ic('clipboard-document') + '</button>'
+                    + (d.can_unsync ? '<button type="button" class="ed-icon ed-unsync" title="Supprimer le colis chez le transporteur" aria-label="Supprimer le colis">' + ic('trash') + '</button>' : '') + '</div></div>' : '')
                 + field('Attribuée à', '<select class="f-agent"' + (d.manager ? '' : ' disabled title="Réservé aux responsables"') + '>' + opts(agentMap, d.agent || '', '— Non assignée —') + '</select>')
                 + '</section>'
                 // Options
@@ -517,7 +518,7 @@
 
         function refreshStatus() {
             var st = $ed.find('.f-status').val();
-            $ed.find('.ed-status-btn').html(statusPill(st) + '<span class="ed-caret">▾</span>');
+            $ed.find('.ed-status-btn').html(statusPill(st) + '<span class="ed-caret">' + ic('chevron-down') + '</span>');
             $ed.find('.ed-status-opt').attr('aria-selected', 'false').removeClass('is-cur').filter('[data-v="' + st + '"]').attr('aria-selected', 'true').addClass('is-cur');
         }
 
@@ -526,12 +527,12 @@
             if (!items.length) { h = '<p class="ed-empty">Aucun produit — ajoutez-en un avec la recherche.</p>'; }
             $.each(items, function (i, it) {
                 h += '<div class="ed-item" data-i="' + i + '">'
-                    + (it.image ? '<img src="' + esc(it.image) + '" alt="" />' : '<span class="ed-noimg">📦</span>')
+                    + (it.image ? '<img src="' + esc(it.image) + '" alt="" />' : '<span class="ed-noimg">' + ic('cube') + '</span>')
                     + '<div class="ed-item-info"><strong>' + esc(it.name) + '</strong>' + (it.attrs ? '<small>' + esc(it.attrs) + '</small>' : '') + '</div>'
                     + '<div class="ed-qty"><button type="button" class="q-minus" aria-label="Moins"' + ro + '>−</button><input type="number" min="1" class="i-qty" value="' + it.qty + '" aria-label="Quantité"' + ro + ' /><button type="button" class="q-plus" aria-label="Plus"' + ro + '>+</button></div>'
                     + '<div class="ed-price"><input type="number" step="0.001" min="0" class="i-price" value="' + money(it.price) + '" aria-label="Prix unitaire"' + ro + ' /><span class="ed-unit">DT</span></div>'
                     + '<strong class="ed-line">' + money(it.qty * it.price) + ' DT</strong>'
-                    + (L ? '' : '<button type="button" class="ed-del" title="Retirer" aria-label="Retirer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>')
+                    + (L ? '' : '<button type="button" class="ed-del" title="Retirer" aria-label="Retirer">' + ic('trash') + '</button>')
                     + '</div>';
             });
             $ed.find('.ed-items').html(h);
@@ -571,7 +572,7 @@
                         delete histCache[orderId];
                         var $old = $('tr[data-order="' + orderId + '"]');
                         if (r.data.row && $old.length) { var $new = $(r.data.row).addClass('codcrm-flash'); $old.replaceWith($new); $trigger = $new.find('.codcrm-edit'); }
-                        toast('✓ ' + (r.data.message || i18n.ed_unsync_done));
+                        toast(r.data.message || i18n.ed_unsync_done);
                         close(true); openEditor(orderId, $trigger); // rouvre : la commande est de nouveau modifiable.
                         if (r.data.warning) { notice(r.data.warning); } // colis NON supprimé chez le transporteur.
                     } else {
@@ -582,7 +583,7 @@
             });
             $ed.on('click', '.ed-copy', function () {
                 var $b = $(this), t = d.tracking;
-                function done() { $b.text('✓'); setTimeout(function () { $b.text('⧉'); }, 1500); }
+                function done() { $b.html(ic('check')); setTimeout(function () { $b.html(ic('clipboard-document')); }, 1500); }
                 if (navigator.clipboard) { navigator.clipboard.writeText(t).then(done); }
                 else { var $i = $('<input>').val(t).appendTo('body').select(); document.execCommand('copy'); $i.remove(); done(); }
             });
@@ -669,7 +670,7 @@
                         res = (r && r.success) ? r.data : []; active = res.length ? 0 : -1;
                         var h = '';
                         $.each(res, function (i, p) {
-                            h += '<a href="#" class="ed-res" role="option" data-i="' + i + '">' + (p.image ? '<img src="' + esc(p.image) + '" alt="" />' : '<span class="ed-noimg">📦</span>')
+                            h += '<a href="#" class="ed-res" role="option" data-i="' + i + '">' + (p.image ? '<img src="' + esc(p.image) + '" alt="" />' : '<span class="ed-noimg">' + ic('cube') + '</span>')
                                 + '<span class="ed-res-t"><strong>' + esc(p.name) + '</strong><small>' + esc(p.attrs || '') + (p.stock ? ' · ' + esc(p.stock) : '') + '</small></span>'
                                 + '<b>' + money(p.price) + ' DT</b></a>';
                         });
@@ -721,7 +722,7 @@
                         $trigger = $new.find('.codcrm-edit');
                     }
                     var ch = $.map(r.data.changed || [], function (k) { return FIELD_LABELS[k] || k; });
-                    toast('✓ Commande n°' + d.number + ' enregistrée' + (ch.length ? ' — ' + ch.join(', ') : ' (aucun changement)'));
+                    toast('Commande n°' + d.number + ' enregistrée' + (ch.length ? ' — ' + ch.join(', ') : ' (aucun changement)'));
                     setDirty(false); close(true);
                     return;
                 }
@@ -773,7 +774,7 @@
             if (window.codcrmAlert && !first) {
                 var mapped = $.map(items, function (a) { return { id: a.id, number: (a.meta && a.meta.number) || a.id, phone: (a.meta && a.meta.phone) || '', abandoned: !!(a.meta && a.meta.abandoned) }; });
                 var fr = window.codcrmAlert.announce(mapped, { toast: false, badge: false });
-                if (fr.length) { var f0 = fr[0]; toast('🔔 ' + (f0.abandoned ? i18n.live_abandoned : i18n.live_new) + ' #' + f0.number + (f0.phone ? ' — ' + f0.phone : '') + (fr.length > 1 ? ' (+' + (fr.length - 1) + ')' : '')); }
+                if (fr.length) { var f0 = fr[0]; toast((f0.abandoned ? i18n.live_abandoned : i18n.live_new) + ' #' + f0.number + (f0.phone ? ' — ' + f0.phone : '') + (fr.length > 1 ? ' (+' + (fr.length - 1) + ')' : '')); }
                 sndBtn();
                 return;
             }
@@ -783,7 +784,7 @@
             if (first) { return; } // premier passage : pas de son pour ce qui existait déjà.
             var abandoned = $.grep(fresh, function (it) { return it.meta && it.meta.abandoned; }).length === fresh.length;
             var it0 = fresh[0], label = (it0.meta && it0.meta.abandoned) ? i18n.live_abandoned : i18n.live_new;
-            toast('🔔 ' + label + ' #' + (it0.meta.number || it0.id) + (it0.meta.phone ? ' — ' + it0.meta.phone : '') + (fresh.length > 1 ? ' (+' + (fresh.length - 1) + ')' : ''));
+            toast(label + ' #' + (it0.meta.number || it0.id) + (it0.meta.phone ? ' — ' + it0.meta.phone : '') + (fresh.length > 1 ? ' (+' + (fresh.length - 1) + ')' : ''));
             if (L.sound !== 'none' && !muted && (L.soundAbandoned || !abandoned)) { window.codcrmSound.play(L.sound, L.volume); }
             sndBtn();
         }

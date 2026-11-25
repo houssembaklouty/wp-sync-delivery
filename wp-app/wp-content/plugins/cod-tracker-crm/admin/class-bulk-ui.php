@@ -22,7 +22,8 @@ class CODCRM_Bulk_UI {
 		}
 		$v = CODCRM_VERSION . '-' . (int) @filemtime( CODCRM_DIR . 'assets/js/bulk.js' );
 		wp_enqueue_style( 'codcrm-queue', CODCRM_URL . 'assets/css/work-queue.css?v=' . CODCRM_VERSION . '-' . (int) @filemtime( CODCRM_DIR . 'assets/css/work-queue.css' ), [], null );
-		wp_enqueue_script( 'codcrm-bulk', CODCRM_URL . 'assets/js/bulk.js?v=' . $v, [ 'jquery' ], null, true );
+		CODCRM_Icon_Assets::register();
+		wp_enqueue_script( 'codcrm-bulk', CODCRM_URL . 'assets/js/bulk.js?v=' . $v, [ 'jquery', 'codcrm-icons' ], null, true );
 		wp_localize_script( 'codcrm-bulk', 'codcrmBulk', [
 			'ajax'  => admin_url( 'admin-ajax.php' ),
 			'nonce' => wp_create_nonce( 'codcrm' ),
@@ -95,7 +96,7 @@ class CODCRM_Bulk_UI {
 		$u   = get_userdata( (int) $job->created_by );
 		$tot = (int) $job->total;
 
-		printf( '<p><a href="%s">← %s</a></p>', esc_url( admin_url( 'admin.php?page=' . self::PAGE ) ), esc_html__( 'Tous les envois', 'cod-tracker-crm' ) );
+		printf( '<p><a href="%s">' . CODCRM_Icons::svg( 'arrow-left' ) . ' %s</a></p>', esc_url( admin_url( 'admin.php?page=' . self::PAGE ) ), esc_html__( 'Tous les envois', 'cod-tracker-crm' ) );
 		printf( '<h2>#%d — %s · %s · %s</h2>', $id, esc_html( $wa ? 'WhatsApp' : 'SMS' ), esc_html( CODCRM_Templates::context_label( (string) $job->context ) ), esc_html( 'auto' === $job->lang ? __( 'langue de chaque client', 'cod-tracker-crm' ) : strtoupper( (string) $job->lang ) ) );
 		printf( '<p class="description">%s %s — %s</p>', esc_html__( 'Créé par', 'cod-tracker-crm' ), esc_html( $u ? $u->display_name : '—' ), esc_html( mysql2date( 'd/m/Y H:i', $job->created_at ) ) );
 
@@ -113,22 +114,22 @@ class CODCRM_Bulk_UI {
 		}
 
 		// Actions.
-		$btn = static function ( string $do, string $label, string $confirm = '' ) use ( $id ): void {
+		$btn = static function ( string $do, string $label, string $confirm = '', string $icon = '' ) use ( $id ): void {
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" style="display:inline"' . ( $confirm ? ' onsubmit="return confirm(\'' . esc_js( $confirm ) . '\')"' : '' ) . '><input type="hidden" name="action" value="codcrm_bulk_action" /><input type="hidden" name="job" value="' . (int) $id . '" /><input type="hidden" name="do" value="' . esc_attr( $do ) . '" />';
 			wp_nonce_field( 'codcrm_bulk_' . $id );
-			echo '<button class="button">' . esc_html( $label ) . '</button></form> ';
+			echo '<button class="button">' . ( $icon ? CODCRM_Icons::svg( $icon ) . ' ' : '' ) . esc_html( $label ) . '</button></form> '; // phpcs:ignore WordPress.Security.EscapeOutput
 		};
 		if ( 'running' === $job->status && ! $wa ) {
-			$btn( 'pause', __( '⏸ Mettre en pause', 'cod-tracker-crm' ) );
+			$btn( 'pause', __( 'Mettre en pause', 'cod-tracker-crm' ), '', 'pause' );
 		}
 		if ( 'paused' === $job->status ) {
-			$btn( 'resume', __( '▶ Reprendre', 'cod-tracker-crm' ) );
+			$btn( 'resume', __( 'Reprendre', 'cod-tracker-crm' ), '', 'play' );
 		}
 		if ( in_array( $job->status, [ 'preparing', 'running', 'paused' ], true ) ) {
-			$btn( 'cancel', __( '✕ Annuler les envois restants', 'cod-tracker-crm' ), __( 'Annuler tous les envois en attente ?', 'cod-tracker-crm' ) );
+			$btn( 'cancel', __( 'Annuler les envois restants', 'cod-tracker-crm' ), __( 'Annuler tous les envois en attente ?', 'cod-tracker-crm' ), 'x-mark' );
 		}
 		if ( ! $wa && $c['failed'] ) {
-			$btn( 'retry', sprintf( /* translators: %d nombre */ __( '↻ Relancer les %d échecs', 'cod-tracker-crm' ), $c['failed'] ), __( 'Relancer les échecs ? Un SMS « état incertain » a peut-être déjà été reçu par le client.', 'cod-tracker-crm' ) );
+			$btn( 'retry', sprintf( /* translators: %d nombre */ __( 'Relancer les %d échecs', 'cod-tracker-crm' ), $c['failed'] ), __( 'Relancer les échecs ? Un SMS « état incertain » a peut-être déjà été reçu par le client.', 'cod-tracker-crm' ) , 'arrow-path' );
 		}
 
 		$paged  = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -160,7 +161,7 @@ class CODCRM_Bulk_UI {
 					'' !== $r->error ? ' <small>— ' . esc_html( $r->error ) . '</small>' : ''
 				);
 				if ( $wa && in_array( $r->status, [ 'pending', 'sent' ], true ) && 'cancelled' !== $job->status ) {
-					echo '<a href="#" class="button button-small codcrm-bulk-wa">' . esc_html( 'pending' === $r->status ? '💬 ' . __( 'Ouvrir WhatsApp', 'cod-tracker-crm' ) : '↻ ' . __( 'Rouvrir', 'cod-tracker-crm' ) ) . '</a>';
+					echo '<a href="#" class="button button-small codcrm-bulk-wa">' . CODCRM_Icons::svg( 'pending' === $r->status ? 'chat-bubble-left' : 'arrow-path' ) . ' ' . esc_html( 'pending' === $r->status ? __( 'Ouvrir WhatsApp', 'cod-tracker-crm' ) : __( 'Rouvrir', 'cod-tracker-crm' ) ) . '</a>';
 				}
 				echo '</td></tr>';
 			}
